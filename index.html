@@ -1,0 +1,1920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEURALLEMPIRE - Where AI Meets ALL</title>
+    <meta name="description" content="Transform your business with 10,000+ AI agents. We don't just optimize marketing - we dominate markets. Join the empire that's revolutionizing digital growth.">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>🧠</text></svg>">
+
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --neural-black: #0A0A0A;
+            --empire-gold: #FFD700;
+            --neural-blue: #00D9FF;
+            --dark-grey: #1A1A1A;
+            --light-grey: #2A2A2A;
+            --white: #FFFFFF;
+            --text-grey: #A0A0A0;
+            --success-green: #00FF88;
+            --gradient-gold: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            --gradient-neural: linear-gradient(135deg, #00D9FF 0%, #0066FF 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--neural-black);
+            color: var(--white);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--dark-grey);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--empire-gold);
+            border-radius: 4px;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes slideInLeft {
+            from { transform: translateX(-100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes neuralPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            padding: 20px 0;
+            transition: all 0.3s ease;
+        }
+
+        nav.scrolled {
+            padding: 15px 0;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            background: var(--gradient-gold);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo::before {
+            content: '🧠';
+            font-size: 32px;
+            -webkit-text-fill-color: initial;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-grey);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--empire-gold);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--empire-gold);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .nav-cta {
+            background: var(--gradient-gold);
+            color: var(--neural-black);
+            padding: 12px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+        }
+
+        .nav-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 40px rgba(255, 215, 0, 0.5);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            padding: 120px 40px 80px;
+        }
+
+        .neural-network-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            background-image:
+                radial-gradient(circle at 20% 50%, var(--neural-blue) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, var(--empire-gold) 0%, transparent 50%);
+            animation: neuralPulse 4s ease-in-out infinite;
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            text-align: center;
+            z-index: 1;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid var(--empire-gold);
+            color: var(--empire-gold);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 30px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(48px, 8vw, 96px);
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--white) 0%, var(--empire-gold) 50%, var(--neural-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 200% auto;
+            animation: gradient 3s ease infinite;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .hero-subtitle {
+            font-size: clamp(20px, 3vw, 28px);
+            color: var(--text-grey);
+            margin-bottom: 40px;
+            font-weight: 300;
+        }
+
+        .hero-cta-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .primary-cta {
+            background: var(--gradient-gold);
+            color: var(--neural-black);
+            padding: 18px 40px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .primary-cta::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .primary-cta:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .primary-cta:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 50px rgba(255, 215, 0, 0.6);
+        }
+
+        .secondary-cta {
+            background: transparent;
+            color: var(--white);
+            padding: 18px 40px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 18px;
+            border: 2px solid var(--white);
+            transition: all 0.3s ease;
+        }
+
+        .secondary-cta:hover {
+            background: var(--white);
+            color: var(--neural-black);
+            transform: translateY(-3px);
+        }
+
+        /* Stats Section */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            max-width: 1200px;
+            margin: 80px auto;
+            padding: 0 40px;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: 40px;
+            background: var(--dark-grey);
+            border-radius: 20px;
+            border: 1px solid var(--light-grey);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, var(--empire-gold) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .stat-box:hover::before {
+            opacity: 0.05;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-5px);
+            border-color: var(--empire-gold);
+        }
+
+        .stat-number {
+            font-size: 48px;
+            font-weight: 700;
+            background: var(--gradient-gold);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 18px;
+            color: var(--text-grey);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 100px 40px;
+            background: var(--dark-grey);
+            position: relative;
+        }
+
+        .section-header {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 80px;
+        }
+
+        .section-badge {
+            display: inline-block;
+            background: rgba(0, 217, 255, 0.1);
+            border: 1px solid var(--neural-blue);
+            color: var(--neural-blue);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(36px, 5vw, 56px);
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .section-subtitle {
+            font-size: 20px;
+            color: var(--text-grey);
+            font-weight: 300;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: var(--neural-black);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid var(--light-grey);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--gradient-gold);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover::before {
+            transform: translateX(0);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .feature-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .feature-description {
+            color: var(--text-grey);
+            line-height: 1.6;
+        }
+
+        /* Agent Showcase */
+        .agents-section {
+            padding: 100px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .agents-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .agent-categories {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 60px;
+            flex-wrap: wrap;
+        }
+
+        .category-btn {
+            background: transparent;
+            border: 2px solid var(--light-grey);
+            color: var(--text-grey);
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+
+        .category-btn.active {
+            background: var(--gradient-gold);
+            color: var(--neural-black);
+            border-color: transparent;
+        }
+
+        .category-btn:hover {
+            border-color: var(--empire-gold);
+            color: var(--empire-gold);
+        }
+
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .agent-card {
+            background: var(--dark-grey);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid var(--light-grey);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .agent-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-neural);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+            transform-origin: left;
+        }
+
+        .agent-card:hover::after {
+            transform: scaleX(1);
+        }
+
+        .agent-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.2);
+        }
+
+        .agent-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .agent-capability {
+            color: var(--text-grey);
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .agent-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--light-grey);
+        }
+
+        .agent-stat {
+            text-align: center;
+        }
+
+        .agent-stat-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--neural-blue);
+        }
+
+        .agent-stat-label {
+            font-size: 12px;
+            color: var(--text-grey);
+        }
+
+        /* Process Section */
+        .process {
+            padding: 100px 40px;
+            background: var(--dark-grey);
+        }
+
+        .process-timeline {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .process-timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--light-grey);
+            transform: translateX(-50%);
+        }
+
+        .process-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 80px;
+            position: relative;
+        }
+
+        .process-step:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .step-content {
+            flex: 1;
+            padding: 0 40px;
+        }
+
+        .step-number {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 60px;
+            background: var(--gradient-gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--neural-black);
+            z-index: 1;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+        }
+
+        .step-title {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .step-description {
+            color: var(--text-grey);
+            line-height: 1.6;
+        }
+
+        /* Case Studies */
+        .case-studies {
+            padding: 100px 40px;
+        }
+
+        .case-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .case-card {
+            background: var(--dark-grey);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .case-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .case-image {
+            height: 250px;
+            background: var(--gradient-neural);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .case-image::before {
+            content: '📈';
+            font-size: 80px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0.3;
+        }
+
+        .case-content {
+            padding: 30px;
+        }
+
+        .case-client {
+            font-size: 14px;
+            color: var(--neural-blue);
+            margin-bottom: 10px;
+        }
+
+        .case-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .case-results {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--light-grey);
+        }
+
+        .case-metric {
+            flex: 1;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--success-green);
+        }
+
+        .metric-label {
+            font-size: 14px;
+            color: var(--text-grey);
+        }
+
+        /* Testimonials */
+        .testimonials {
+            padding: 100px 40px;
+            background: var(--dark-grey);
+        }
+
+        .testimonial-slider {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .testimonial-card {
+            background: var(--neural-black);
+            padding: 50px;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid var(--light-grey);
+        }
+
+        .testimonial-text {
+            font-size: 24px;
+            font-weight: 300;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .testimonial-text::before {
+            content: '"';
+            font-size: 80px;
+            color: var(--empire-gold);
+            position: absolute;
+            top: -40px;
+            left: -20px;
+            opacity: 0.3;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .author-avatar {
+            width: 60px;
+            height: 60px;
+            background: var(--gradient-gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .author-info {
+            text-align: left;
+        }
+
+        .author-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .author-role {
+            color: var(--text-grey);
+            font-size: 14px;
+        }
+
+        /* Pricing Section */
+        .pricing {
+            padding: 100px 40px;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .pricing-card {
+            background: var(--dark-grey);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid var(--light-grey);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .pricing-card.featured {
+            border-color: var(--empire-gold);
+            transform: scale(1.05);
+        }
+
+        .pricing-card.featured::before {
+            content: 'MOST POPULAR';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gradient-gold);
+            color: var(--neural-black);
+            padding: 5px 20px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .pricing-card.featured:hover {
+            transform: scale(1.05) translateY(-5px);
+        }
+
+        .plan-name {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .plan-description {
+            color: var(--text-grey);
+            margin-bottom: 30px;
+        }
+
+        .plan-price {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .plan-price span {
+            font-size: 20px;
+            font-weight: 400;
+            color: var(--text-grey);
+        }
+
+        .plan-features {
+            list-style: none;
+            margin: 30px 0;
+        }
+
+        .plan-features li {
+            padding: 15px 0;
+            border-bottom: 1px solid var(--light-grey);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .plan-features li:last-child {
+            border-bottom: none;
+        }
+
+        .plan-features li::before {
+            content: '✓';
+            color: var(--success-green);
+            font-weight: 600;
+        }
+
+        .plan-cta {
+            display: block;
+            text-align: center;
+            padding: 15px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 2px solid var(--light-grey);
+            color: var(--white);
+        }
+
+        .plan-cta:hover {
+            border-color: var(--empire-gold);
+            color: var(--empire-gold);
+        }
+
+        .pricing-card.featured .plan-cta {
+            background: var(--gradient-gold);
+            color: var(--neural-black);
+            border: none;
+        }
+
+        .pricing-card.featured .plan-cta:hover {
+            box-shadow: 0 5px 30px rgba(255, 215, 0, 0.5);
+        }
+
+        /* Contact Section */
+        .contact {
+            padding: 100px 40px;
+            background: var(--dark-grey);
+        }
+
+        .contact-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+        }
+
+        .contact-info {
+            padding: 40px;
+        }
+
+        .contact-title {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .contact-text {
+            color: var(--text-grey);
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .contact-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .contact-form {
+            background: var(--neural-black);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid var(--light-grey);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        input, textarea {
+            width: 100%;
+            background: var(--dark-grey);
+            border: 1px solid var(--light-grey);
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: var(--white);
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--empire-gold);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-submit {
+            width: 100%;
+            background: var(--gradient-gold);
+            color: var(--neural-black);
+            padding: 15px 30px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .form-submit:hover {
+            box-shadow: 0 5px 30px rgba(255, 215, 0, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* Footer */
+        footer {
+            padding: 60px 40px 30px;
+            border-top: 1px solid var(--light-grey);
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 60px;
+            margin-bottom: 40px;
+        }
+
+        .footer-brand {
+            max-width: 400px;
+        }
+
+        .footer-logo {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            background: var(--gradient-gold);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .footer-description {
+            color: var(--text-grey);
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            background: var(--dark-grey);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-grey);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .social-link:hover {
+            background: var(--empire-gold);
+            color: var(--neural-black);
+            transform: translateY(-3px);
+        }
+
+        .footer-column h4 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 15px;
+        }
+
+        .footer-links a {
+            color: var(--text-grey);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--empire-gold);
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links, .nav-cta {
+                display: none;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            h1 {
+                font-size: clamp(36px, 10vw, 64px);
+            }
+
+            .hero-subtitle {
+                font-size: 18px;
+            }
+
+            .hero-cta-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .primary-cta, .secondary-cta {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .contact-container {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .social-links {
+                justify-content: center;
+            }
+
+            .process-timeline::before {
+                display: none;
+            }
+
+            .process-step {
+                flex-direction: column !important;
+            }
+
+            .step-number {
+                position: static;
+                margin-bottom: 20px;
+            }
+        }
+
+        /* Loading Animation */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--neural-black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .loader.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loader-content {
+            text-align: center;
+        }
+
+        .loader-logo {
+            font-size: 48px;
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        .loader-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 24px;
+            margin-top: 20px;
+            background: var(--gradient-gold);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loader" id="loader">
+        <div class="loader-content">
+            <div class="loader-logo">🧠</div>
+            <div class="loader-text">NEURALLEMPIRE</div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav id="navbar">
+        <div class="nav-container">
+            <div class="logo">NEURALLEMPIRE</div>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#agents">AI Agents</a></li>
+                <li><a href="#process">Process</a></li>
+                <li><a href="#results">Results</a></li>
+                <li><a href="#pricing">Pricing</a></li>
+            </ul>
+            <a href="#contact" class="nav-cta">Start Your Empire</a>
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">☰</button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="neural-network-bg"></div>
+        <div class="hero-content">
+            <div class="hero-badge">🚀 10,000+ AI Agents Ready to Deploy</div>
+            <h1>We Don't Just Optimize Marketing<br>We Dominate Markets</h1>
+            <p class="hero-subtitle">
+                Deploy an army of AI agents that work 24/7/365, converting browsers into buyers with
+                97% precision while you sleep. Welcome to the future of digital dominance.
+            </p>
+            <div class="hero-cta-container">
+                <a href="#contact" class="primary-cta">Claim Your AI Army</a>
+                <a href="#demo" class="secondary-cta">Watch Them Work</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-container">
+        <div class="stat-box">
+            <div class="stat-number">10,000+</div>
+            <div class="stat-label">AI Agents Deployed</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">312%</div>
+            <div class="stat-label">Average ROI Increase</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">₹847M</div>
+            <div class="stat-label">Client Revenue Generated</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">0.03s</div>
+            <div class="stat-label">Response Time</div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="section-header">
+            <div class="section-badge">NEURAL CAPABILITIES</div>
+            <h2>AI That Thinks, Acts, and Conquers</h2>
+            <p class="section-subtitle">
+                Every feature is a weapon. Every capability is a competitive advantage.
+                This isn't just marketing technology—it's market domination technology.
+            </p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🧠</div>
+                <h3 class="feature-title">Predictive Personalization</h3>
+                <p class="feature-description">
+                    Our AI predicts customer behavior 7 steps ahead, crafting personalized experiences
+                    that feel like mind reading. 94% conversion rate on targeted campaigns.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3 class="feature-title">Instant Optimization</h3>
+                <p class="feature-description">
+                    Real-time campaign adjustments every 0.3 seconds. Our agents optimize faster than
+                    your competitors can think. Never miss a conversion opportunity again.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3 class="feature-title">Surgical Targeting</h3>
+                <p class="feature-description">
+                    Identify and engage your perfect customer with laser precision. Our AI analyzes
+                    847 data points per prospect to ensure every rupee spent hits its mark.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🚀</div>
+                <h3 class="feature-title">Exponential Scaling</h3>
+                <p class="feature-description">
+                    From 100 to 1 million customers without breaking a sweat. Our infrastructure
+                    scales infinitely while maintaining sub-second response times.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💎</div>
+                <h3 class="feature-title">Premium Positioning</h3>
+                <p class="feature-description">
+                    Transform your brand into a luxury. Our AI crafts positioning that allows you to
+                    charge 10x your competitors while having customers thank you for it.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔮</div>
+                <h3 class="feature-title">Future-Proof Tech</h3>
+                <p class="feature-description">
+                    Built on tomorrow's technology today. Quantum-ready architecture ensures you're
+                    always ahead of the curve, no matter how fast the market evolves.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Agents Section -->
+    <section class="agents-section" id="agents">
+        <div class="section-header">
+            <div class="section-badge">AGENT ARSENAL</div>
+            <h2>Meet Your Digital Army</h2>
+            <p class="section-subtitle">
+                10,000+ specialized AI agents, each a master of its domain. Deploy one or deploy them all—domination is just a click away.
+            </p>
+        </div>
+        <div class="agents-container">
+            <div class="agent-categories">
+                <button class="category-btn active">Lead Generation</button>
+                <button class="category-btn">Content Creation</button>
+                <button class="category-btn">Conversion</button>
+                <button class="category-btn">Analytics</button>
+            </div>
+            <div class="agents-grid">
+                <div class="agent-card">
+                    <h3 class="agent-name">LeadHunter Pro</h3>
+                    <p class="agent-capability">Identifies and qualifies 10,000+ leads per day across 15 platforms</p>
+                    <div class="agent-stats">
+                        <div class="agent-stat">
+                            <div class="agent-stat-value">97%</div>
+                            <div class="agent-stat-label">Accuracy</div>
+                        </div>
+                        <div class="agent-stat">
+                            <div class="agent-stat-value">24/7</div>
+                            <div class="agent-stat-label">Active</div>
+                        </div>
+                        <div class="agent-stat">
+                            <div class="agent-stat-value">₹47</div>
+                            <div class="agent-stat-label">Per Lead</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="agent-card">
+                    <h3 class="agent-name">EmailAssassin</h3>
+                    <p class="agent-capability">Crafts personalized emails with 67% open rates and 23% CTR</p>
+                    <div class="agent-stats">
+                        <div class="agent-stat">
+                            <div class="agent-stat-value">1M+</div>
+                            <div class="agent-stat-label">Emails/Day</div>
+                        </div>
+                        <div class="agent-stat">
+                            <div class="agent-stat-value">0.7s</div>
+                            <div class="agent-stat-label">Per Email</div>
+                        </div>
+                        <div class="agent-stat">
+                            <div class="agent-stat-value">18</div>
+                            <div class="agent-stat-label">Languages</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="agent-card">
+                    <h3 class="agent-name">SocialViral</h3>
+                    <p class="agent-capability">Creates viral content with built-in psychological triggers</p>
+                    <div class="agent-stats">
+                        <div class="agent-stat">
+                            <div class="agent-stat-value">10M+</div>
+                            <div class="agent-stat-label">Reach</div>
+                        </div>
+                        <div class="agent-stat">
+                            <div class="agent-stat-value">847%</div>
+                            <div class="agent-stat-label">Engagement</div>
+                        </div>
+                        <div class="agent-stat">
+                            <div class="agent-stat-value">2.3</div>
+                            <div class="agent-stat-label">Viral Score</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="agent-card">
+                    <h3 class="agent-name">AdOptimizer</h3>
+                    <p class="agent-capability">Manages and optimizes ads across all platforms in real-time</p>
+                    <div class="agent-stats">
+                        <div class="agent-stat">
+                            <div class="agent-stat-value">312%</div>
+                            <div class="agent-stat-label">ROI Boost</div>
+                        </div>
+                        <div class="agent-stat">
+                            <div class="agent-stat-value">₹2.3</div>
+                            <div class="agent-stat-label">CPA</div>
+                        </div>
+                        <div class="agent-stat">
+                            <div class="agent-stat-value">15</div>
+                            <div class="agent-stat-label">Platforms</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Process Section -->
+    <section class="process" id="process">
+        <div class="section-header">
+            <div class="section-badge">THE METHOD</div>
+            <h2>From Zero to Empire in 4 Steps</h2>
+            <p class="section-subtitle">
+                Our battle-tested process transforms businesses into market leaders.
+                Simple. Scalable. Unstoppable.
+            </p>
+        </div>
+        <div class="process-timeline">
+            <div class="process-step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3 class="step-title">Neural Analysis</h3>
+                    <p class="step-description">
+                        We deploy our reconnaissance agents to analyze your market, competitors, and opportunities.
+                        Within 48 hours, we know your industry better than you do.
+                    </p>
+                </div>
+            </div>
+            <div class="process-step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3 class="step-title">Agent Deployment</h3>
+                    <p class="step-description">
+                        Custom-selected AI agents are configured and deployed across all channels.
+                        Your digital army begins its march toward market domination.
+                    </p>
+                </div>
+            </div>
+            <div class="process-step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3 class="step-title">Optimization Loop</h3>
+                    <p class="step-description">
+                        Our agents learn, adapt, and evolve every millisecond. What works is amplified,
+                        what doesn't is eliminated. Continuous improvement on autopilot.
+                    </p>
+                </div>
+            </div>
+            <div class="process-step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h3 class="step-title">Scale to Infinity</h3>
+                    <p class="step-description">
+                        With systems perfected, we unleash the full force. Your business scales exponentially
+                        while costs decrease. Welcome to your empire.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Case Studies Section -->
+    <section class="case-studies" id="results">
+        <div class="section-header">
+            <div class="section-badge">PROOF OF DOMINANCE</div>
+            <h2>Empires We've Built</h2>
+            <p class="section-subtitle">
+                Don't take our word for it. Let the numbers speak.
+                These aren't just case studies—they're conquest stories.
+            </p>
+        </div>
+        <div class="case-grid">
+            <div class="case-card">
+                <div class="case-image"></div>
+                <div class="case-content">
+                    <div class="case-client">FINTECH STARTUP</div>
+                    <h3 class="case-title">From ₹0 to ₹100 Crores in 6 Months</h3>
+                    <div class="case-results">
+                        <div class="case-metric">
+                            <div class="metric-value">1,247%</div>
+                            <div class="metric-label">Revenue Growth</div>
+                        </div>
+                        <div class="case-metric">
+                            <div class="metric-value">₹2.30</div>
+                            <div class="metric-label">Cost Per Acquisition</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="case-card">
+                <div class="case-image"></div>
+                <div class="case-content">
+                    <div class="case-client">E-COMMERCE BRAND</div>
+                    <h3 class="case-title">Market Leader in 90 Days</h3>
+                    <div class="case-results">
+                        <div class="case-metric">
+                            <div class="metric-value">847K</div>
+                            <div class="metric-label">New Customers</div>
+                        </div>
+                        <div class="case-metric">
+                            <div class="metric-value">67%</div>
+                            <div class="metric-label">Market Share</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="case-card">
+                <div class="case-image"></div>
+                <div class="case-content">
+                    <div class="case-client">B2B SAAS</div>
+                    <h3 class="case-title">10x ARR While Cutting CAC by 80%</h3>
+                    <div class="case-results">
+                        <div class="case-metric">
+                            <div class="metric-value">₹847M</div>
+                            <div class="metric-label">Annual Revenue</div>
+                        </div>
+                        <div class="case-metric">
+                            <div class="metric-value">92%</div>
+                            <div class="metric-label">Retention Rate</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials">
+        <div class="section-header">
+            <div class="section-badge">CLIENT VICTORIES</div>
+            <h2>Words from the Conquered Markets</h2>
+        </div>
+        <div class="testimonial-slider">
+            <div class="testimonial-card">
+                <p class="testimonial-text">
+                    "NEURALLEMPIRE didn't just transform our marketing—they transformed our entire business.
+                    We went from struggling startup to market leader in 4 months. Our competitors are still
+                    trying to figure out what hit them."
+                </p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">RK</div>
+                    <div class="author-info">
+                        <div class="author-name">Rajesh Kumar</div>
+                        <div class="author-role">CEO, TechFlow Solutions</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing" id="pricing">
+        <div class="section-header">
+            <div class="section-badge">INVESTMENT LEVELS</div>
+            <h2>Choose Your Path to Domination</h2>
+            <p class="section-subtitle">
+                Every package is designed for exponential growth. The only question is:
+                How fast do you want to conquer your market?
+            </p>
+        </div>
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <h3 class="plan-name">Conqueror</h3>
+                <p class="plan-description">For ambitious startups ready to disrupt</p>
+                <div class="plan-price">₹50,000 <span>/month</span></div>
+                <ul class="plan-features">
+                    <li>50 Specialized AI Agents</li>
+                    <li>Up to 100K leads/month</li>
+                    <li>5 Marketing Channels</li>
+                    <li>Real-time Analytics</li>
+                    <li>24/7 AI Support</li>
+                    <li>Monthly Strategy Calls</li>
+                </ul>
+                <a href="#contact" class="plan-cta">Start Conquering</a>
+            </div>
+            <div class="pricing-card featured">
+                <h3 class="plan-name">Emperor</h3>
+                <p class="plan-description">For businesses destined to dominate</p>
+                <div class="plan-price">₹2,00,000 <span>/month</span></div>
+                <ul class="plan-features">
+                    <li>500 Specialized AI Agents</li>
+                    <li>Unlimited leads generation</li>
+                    <li>All Marketing Channels</li>
+                    <li>Predictive Analytics</li>
+                    <li>Dedicated Success Team</li>
+                    <li>Weekly Strategy Sessions</li>
+                    <li>Custom AI Development</li>
+                    <li>Competitor Neutralization</li>
+                </ul>
+                <a href="#contact" class="plan-cta">Build Your Empire</a>
+            </div>
+            <div class="pricing-card">
+                <h3 class="plan-name">Overlord</h3>
+                <p class="plan-description">For enterprises demanding total market control</p>
+                <div class="plan-price">Custom</div>
+                <ul class="plan-features">
+                    <li>10,000+ AI Agents</li>
+                    <li>Global Market Domination</li>
+                    <li>White-label Solutions</li>
+                    <li>Quantum Computing Access</li>
+                    <li>C-Suite Advisory Board</li>
+                    <li>Daily Strategic Command</li>
+                    <li>Market Monopoly Systems</li>
+                </ul>
+                <a href="#contact" class="plan-cta">Request Consultation</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact" id="contact">
+        <div class="section-header">
+            <div class="section-badge">INITIATE CONTACT</div>
+            <h2>Your Empire Awaits</h2>
+            <p class="section-subtitle">
+                Every empire starts with a single decision. Make yours now.
+                Our AI is already analyzing your application as you type.
+            </p>
+        </div>
+        <div class="contact-container">
+            <div class="contact-info">
+                <h3 class="contact-title">Ready to Rule?</h3>
+                <p class="contact-text">
+                    Join the ranks of market leaders who've discovered the power of NEURALLEMPIRE.
+                    Your competitors won't know what hit them.
+                </p>
+                <div class="contact-item">
+                    <div class="contact-icon">📧</div>
+                    <div>
+                        <strong>Email Command Center</strong><br>
+                        dominate@neurallempire.com
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">📱</div>
+                    <div>
+                        <strong>Direct Line</strong><br>
+                        +91 98765 43210
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">🏢</div>
+                    <div>
+                        <strong>Global HQ</strong><br>
+                        Cyber Towers, HITEC City, Hyderabad
+                    </div>
+                </div>
+            </div>
+            <form class="contact-form" id="empireForm">
+                <div class="form-group">
+                    <label for="name">Your Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="company">Company Name</label>
+                    <input type="text" id="company" name="company" required>
+                </div>
+                <div class="form-group">
+                    <label for="budget">Monthly Marketing Budget</label>
+                    <input type="text" id="budget" name="budget" placeholder="₹50,000+">
+                </div>
+                <div class="form-group">
+                    <label for="message">Your Ambition</label>
+                    <textarea id="message" name="message" placeholder="Tell us about your vision for market domination..."></textarea>
+                </div>
+                <button type="submit" class="form-submit">Begin Your Empire</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo">NEURALLEMPIRE</div>
+                <p class="footer-description">
+                    Where algorithms build dynasties. We don't just think—we think ALL.
+                    Join the empire that's rewriting the rules of digital dominance.
+                </p>
+                <div class="social-links">
+                    <a href="#" class="social-link">𝕏</a>
+                    <a href="#" class="social-link">in</a>
+                    <a href="#" class="social-link">▶</a>
+                    <a href="#" class="social-link">📧</a>
+                </div>
+            </div>
+            <div class="footer-column">
+                <h4>Solutions</h4>
+                <ul class="footer-links">
+                    <li><a href="#">AI Agent Army</a></li>
+                    <li><a href="#">Lead Generation</a></li>
+                    <li><a href="#">Conversion Systems</a></li>
+                    <li><a href="#">Market Analysis</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Company</h4>
+                <ul class="footer-links">
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Case Studies</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Resources</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Documentation</a></li>
+                    <li><a href="#">API Access</a></li>
+                    <li><a href="#">Empire Academy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 NEURALLEMPIRE. All empires reserved. | Privacy Policy | Terms of Domination</p>
+        </div>
+    </footer>
+
+    <script>
+        // Loader
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('loader').classList.add('hidden');
+            }, 1500);
+        });
+
+        // Navbar Scroll Effect
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 100) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Smooth Scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Form Submission
+        document.getElementById('empireForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            // Get form data
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            // Simulate AI analysis
+            const button = e.target.querySelector('.form-submit');
+            button.textContent = 'AI Analyzing Your Empire Potential...';
+            button.disabled = true;
+
+            setTimeout(() => {
+                button.textContent = '✓ Empire Initiation Confirmed';
+                button.style.background = 'var(--success-green)';
+
+                // Show success message
+                setTimeout(() => {
+                    alert(`Welcome to NEURALLEMPIRE, ${data.name}! Your journey to market domination begins now. Our AI agents are already working on your custom strategy.`);
+                    e.target.reset();
+                    button.textContent = 'Begin Your Empire';
+                    button.style.background = '';
+                    button.disabled = false;
+                }, 1000);
+            }, 3000);
+        });
+
+        // Agent Category Filter
+        const categoryBtns = document.querySelectorAll('.category-btn');
+        categoryBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                categoryBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                // Here you would filter agents based on category
+            });
+        });
+
+        // Intersection Observer for Animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe elements
+        document.querySelectorAll('.feature-card, .agent-card, .case-card, .pricing-card').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'all 0.6s ease';
+            observer.observe(el);
+        });
+
+        // Dynamic Stats Counter
+        const animateValue = (element, start, end, duration) => {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                const value = Math.floor(progress * (end - start) + start);
+                element.textContent = value.toLocaleString();
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                } else {
+                    // Add the suffix back
+                    const suffix = element.getAttribute('data-suffix') || '';
+                    element.textContent = end.toLocaleString() + suffix;
+                }
+            };
+            window.requestAnimationFrame(step);
+        };
+
+        // Trigger counter animation when stats are in view
+        const statsObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !entry.target.classList.contains('animated')) {
+                    entry.target.classList.add('animated');
+                    const statNumbers = entry.target.querySelectorAll('.stat-number');
+                    statNumbers.forEach(stat => {
+                        const text = stat.textContent;
+                        let end = parseInt(text.replace(/[^0-9]/g, ''));
+                        let suffix = '';
+
+                        if (text.includes('+')) suffix = '+';
+                        if (text.includes('%')) suffix = '%';
+                        if (text.includes('₹')) {
+                            suffix = text.includes('M') ? 'M' : '';
+                            if (text.includes('M')) end = end;
+                        }
+                        if (text.includes('s')) suffix = 's';
+
+                        stat.setAttribute('data-suffix', suffix);
+
+                        if (!isNaN(end)) {
+                            animateValue(stat, 0, end, 2000);
+                        }
+                    });
+                }
+            });
+        }, { threshold: 0.5 });
+
+        document.querySelectorAll('.stats-container').forEach(container => {
+            statsObserver.observe(container);
+        });
+
+        // Mobile Menu Toggle
+        document.getElementById('mobileMenuToggle').addEventListener('click', function() {
+            // Mobile menu implementation
+            console.log('Mobile menu toggle');
+        });
+
+        // Parallax Effect for Hero
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const hero = document.querySelector('.hero-content');
+            const neuralBg = document.querySelector('.neural-network-bg');
+
+            if (hero && scrolled < window.innerHeight) {
+                hero.style.transform = `translateY(${scrolled * 0.5}px)`;
+                hero.style.opacity = 1 - (scrolled / window.innerHeight);
+            }
+
+            if (neuralBg) {
+                neuralBg.style.transform = `translateY(${scrolled * 0.3}px)`;
+            }
+        });
+    </script>
+</body>
+</html>
