@@ -48,9 +48,15 @@
 
 .hero__subtitle {
     font-size: clamp(20px, 3vw, 28px);
-    color: var(--text-grey);
+    background: linear-gradient(135deg, #E5E5E5 0%, var(--empire-gold) 30%, var(--neural-blue) 70%, #FFFFFF 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     margin-bottom: var(--spacing-xl);
-    font-weight: 300;
+    font-weight: 400;
+    line-height: 1.6;
+    background-size: 200% auto;
+    animation: subtle-gradient 8s ease-in-out infinite;
 }
 
 .hero__cta-container {
