@@ -905,6 +905,10 @@
             transition: all 0.3s ease;
             border: 2px solid var(--light-grey);
             color: var(--white);
+            background: transparent;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
         }
 
         .plan-cta:hover {
@@ -1214,6 +1218,9 @@
             -webkit-text-fill-color: transparent;
         }
     </style>
+
+    <!-- Razorpay Payment Gateway -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body>
     <!-- Loading Screen -->
@@ -1566,9 +1573,9 @@
                     trying to figure out what hit them."
                 </p>
                 <div class="testimonial-author">
-                    <div class="author-avatar">RK</div>
+                    <div class="author-avatar">SR</div>
                     <div class="author-info">
-                        <div class="author-name">Rajesh Kumar</div>
+                        <div class="author-name">Sandeep Ramdaz</div>
                         <div class="author-role">CEO, TechFlow Solutions</div>
                     </div>
                 </div>
@@ -1599,7 +1606,7 @@
                     <li>24/7 AI Support</li>
                     <li>Monthly Strategy Calls</li>
                 </ul>
-                <a href="#contact" class="plan-cta">Start Conquering</a>
+                <button class="plan-cta payment-btn" data-plan="conqueror" data-amount="5000000" data-description="Conqueror Plan - 50 AI Agents">Start Conquering</button>
             </div>
             <div class="pricing-card featured">
                 <h3 class="plan-name">Emperor</h3>
@@ -1615,7 +1622,7 @@
                     <li>Custom AI Development</li>
                     <li>Competitor Neutralization</li>
                 </ul>
-                <a href="#contact" class="plan-cta">Build Your Empire</a>
+                <button class="plan-cta payment-btn" data-plan="emperor" data-amount="20000000" data-description="Emperor Plan - 500 AI Agents">Build Your Empire</button>
             </div>
             <div class="pricing-card">
                 <h3 class="plan-name">Overlord</h3>
@@ -1663,7 +1670,7 @@
                     <div class="contact-icon">📱</div>
                     <div>
                         <strong>Direct Line</strong><br>
-                        +91 98765 43210
+                        +91-9700465200
                     </div>
                 </div>
                 <div class="contact-item">
@@ -1915,6 +1922,70 @@
                 neuralBg.style.transform = `translateY(${scrolled * 0.3}px)`;
             }
         });
+
+        // Razorpay Payment Integration
+        const initializePayment = () => {
+            const paymentButtons = document.querySelectorAll('.payment-btn');
+
+            paymentButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const plan = this.getAttribute('data-plan');
+                    const amount = parseInt(this.getAttribute('data-amount'));
+                    const description = this.getAttribute('data-description');
+
+                    const options = {
+                        key: 'rzp_test_9999999999', // Replace with your Razorpay Test Key
+                        amount: amount, // Amount in paise (₹50,000 = 5000000 paise)
+                        currency: 'INR',
+                        name: 'NEURALLEMPIRE',
+                        description: description,
+                        image: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="80" font-size="80">🧠</text></svg>',
+                        handler: function(response) {
+                            // Payment successful
+                            console.log('Payment successful:', response);
+                            alert(`Payment successful! Payment ID: ${response.razorpay_payment_id}\n\nWelcome to ${plan.toUpperCase()} plan! Our AI agents will contact you within 24 hours to begin your empire.`);
+
+                            // Send payment details to your backend
+                            fetch('/api/payment-success', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    payment_id: response.razorpay_payment_id,
+                                    plan: plan,
+                                    amount: amount,
+                                    description: description
+                                })
+                            }).catch(err => console.log('Backend not configured:', err));
+                        },
+                        prefill: {
+                            name: '',
+                            email: '',
+                            contact: ''
+                        },
+                        notes: {
+                            plan: plan,
+                            website: 'neurallempire.com'
+                        },
+                        theme: {
+                            color: '#FFD700'
+                        },
+                        modal: {
+                            ondismiss: function() {
+                                console.log('Payment cancelled');
+                            }
+                        }
+                    };
+
+                    const rzp = new Razorpay(options);
+                    rzp.open();
+                });
+            });
+        };
+
+        // Initialize payment when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initializePayment);
     </script>
 </body>
 </html>
