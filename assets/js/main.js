@@ -60,13 +60,13 @@ const NeurallEmpireApp = {
     async initializeModules() {
         const moduleInitPromises = [
             // Core modules that should load first
-            this.initializeModule('Navigation', NavigationModule),
-            this.initializeModule('Animations', AnimationsModule),
-            this.initializeModule('Authentication', NeurallAuth),
+            this.initializeModule('Navigation', typeof NavigationModule !== 'undefined' ? NavigationModule : null),
+            this.initializeModule('Animations', typeof AnimationsModule !== 'undefined' ? AnimationsModule : null),
+            this.initializeModule('Authentication', typeof NeurallAuth !== 'undefined' ? NeurallAuth : null),
 
             // Feature modules
-            this.initializeModule('Forms', FormsModule),
-            this.initializeModule('Payments', PaymentsModule),
+            this.initializeModule('Forms', typeof FormsModule !== 'undefined' ? FormsModule : null),
+            this.initializeModule('Payments', typeof NeurallPayments !== 'undefined' ? NeurallPayments : null),
         ];
 
         // Wait for all modules to initialize
@@ -218,7 +218,7 @@ const NeurallEmpireApp = {
         this.showConnectionStatus('online');
 
         // Retry any failed network requests
-        if (FormsModule && FormsModule.retryFailedSubmissions) {
+        if (typeof FormsModule !== 'undefined' && FormsModule && FormsModule.retryFailedSubmissions) {
             FormsModule.retryFailedSubmissions();
         }
     },
@@ -238,7 +238,12 @@ const NeurallEmpireApp = {
 
     broadcastToModules(event, data) {
         // Notify all modules of global events
-        const modules = [NavigationModule, AnimationsModule, FormsModule, PaymentsModule];
+        const modules = [
+            typeof NavigationModule !== 'undefined' ? NavigationModule : null,
+            typeof AnimationsModule !== 'undefined' ? AnimationsModule : null,
+            typeof FormsModule !== 'undefined' ? FormsModule : null,
+            typeof NeurallPayments !== 'undefined' ? NeurallPayments : null
+        ].filter(module => module !== null);
 
         modules.forEach(module => {
             if (module && typeof module.handleGlobalEvent === 'function') {
@@ -404,7 +409,13 @@ const NeurallEmpireApp = {
         console.log('🧠 NEURALLEMPIRE - Cleaning up...');
 
         // Cleanup modules
-        const modules = [NavigationModule, AnimationsModule, FormsModule, PaymentsModule];
+        const modules = [
+            typeof NavigationModule !== 'undefined' ? NavigationModule : null,
+            typeof AnimationsModule !== 'undefined' ? AnimationsModule : null,
+            typeof FormsModule !== 'undefined' ? FormsModule : null,
+            typeof NeurallPayments !== 'undefined' ? NeurallPayments : null
+        ].filter(module => module !== null);
+
         modules.forEach(module => {
             if (module && typeof module.destroy === 'function') {
                 try {
