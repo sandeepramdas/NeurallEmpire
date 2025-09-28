@@ -26,13 +26,15 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>🧠</text></svg>">
     <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
 
-    <!-- Fonts -->
+    <!-- Premium Fonts - Silicon Valley Grade Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
 
-    <!-- CSS Files -->
+    <!-- Premium Design System -->
     <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/premium-components.css">
     <link rel="stylesheet" href="assets/css/base.css">
     <link rel="stylesheet" href="assets/css/animations.css">
     <link rel="stylesheet" href="assets/css/components.css">
@@ -112,19 +114,37 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section class="hero" id="home">
-        <div class="hero__background"></div>
-        <div class="hero__content">
-            <div class="hero__badge badge badge--gold animate-pulse">🚀 10,000+ AI Agents Ready to Deploy</div>
-            <h1>We Don't Just Optimize Marketing<br>We Dominate Markets</h1>
-            <p class="hero__subtitle">
+    <!-- Hero Section - Premium Silicon Valley Design -->
+    <section class="hero-premium" id="home">
+        <div class="hero-content">
+            <div class="badge badge-primary float-element">
+                <span class="status-dot online"></span>
+                🚀 10,000+ AI Agents Ready to Deploy
+            </div>
+
+            <h1 class="hero-title">
+                We Don't Just Optimize Marketing<br>
+                <span class="gradient-text">We Dominate Markets</span>
+            </h1>
+
+            <p class="hero-subtitle">
                 Deploy an army of AI agents that work 24/7/365, converting browsers into buyers with
-                97% precision while you sleep. Welcome to the future of digital dominance.
+                <strong>97% precision</strong> while you sleep. Welcome to the future of digital dominance.
             </p>
-            <div class="hero__cta-container">
-                <a href="#contact" class="btn btn--primary">Claim Your AI Army</a>
-                <a href="#demo" class="btn btn--secondary">Watch Them Work</a>
+
+            <div style="display: flex; gap: var(--space-4); justify-content: center; flex-wrap: wrap; margin-top: var(--space-8);">
+                <a href="#contact" class="btn btn-primary btn-lg">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Claim Your AI Army
+                </a>
+                <a href="#demo" class="btn btn-ghost btn-lg">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <polygon points="5,3 19,12 5,21" fill="currentColor"/>
+                    </svg>
+                    Watch Them Work
+                </a>
             </div>
         </div>
     </section>
@@ -486,54 +506,194 @@
                 </p>
             </header>
 
-            <div class="pricing__grid">
-                <article class="pricing__card">
-                    <h3 class="plan__name">Conqueror</h3>
-                    <p class="plan__description">For ambitious startups ready to disrupt</p>
-                    <div class="plan__price">$600 <span>/month</span></div>
-                    <ul class="plan__features">
-                        <li>50 Specialized AI Agents</li>
-                        <li>Up to 100K leads/month</li>
-                        <li>5 Marketing Channels</li>
-                        <li>Real-time Analytics</li>
-                        <li>24/7 AI Support</li>
-                        <li>Monthly Strategy Calls</li>
+            <div class="pricing-grid">
+                <article class="pricing-card glass-card">
+                    <div style="margin-bottom: var(--space-6);">
+                        <h3 style="font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary); margin-bottom: var(--space-2);">Conqueror</h3>
+                        <p style="color: var(--text-secondary); font-size: var(--text-base);">For ambitious startups ready to disrupt</p>
+                    </div>
+
+                    <div style="margin-bottom: var(--space-8);">
+                        <div style="display: flex; align-items: baseline; gap: var(--space-2); margin-bottom: var(--space-2);">
+                            <span style="font-size: var(--text-5xl); font-weight: 800; color: var(--text-primary);">$600</span>
+                            <span style="color: var(--text-muted); font-size: var(--text-lg);">/month</span>
+                        </div>
+                        <div class="badge badge-success">Perfect for startups</div>
+                    </div>
+
+                    <ul style="list-style: none; padding: 0; margin-bottom: var(--space-8); space-y: var(--space-3);">
+                        <li style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; color: var(--text-secondary);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17l-5-5" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            50 Specialized AI Agents
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; color: var(--text-secondary);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17l-5-5" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Up to 100K leads/month
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; color: var(--text-secondary);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17l-5-5" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            5 Marketing Channels
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; color: var(--text-secondary);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17l-5-5" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Real-time Analytics
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; color: var(--text-secondary);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17l-5-5" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            24/7 AI Support
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; color: var(--text-secondary);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17l-5-5" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Monthly Strategy Calls
+                        </li>
                     </ul>
-                    <button class="btn btn--outline payment-btn" data-plan="conqueror" data-amount="60000" data-description="Conqueror Plan - 50 AI Agents">Start Conquering</button>
+
+                    <button class="btn btn-secondary payment-btn" data-plan="conqueror" data-amount="60000" data-description="Conqueror Plan - 50 AI Agents" style="width: 100%;">Start Conquering</button>
                 </article>
 
-                <article class="pricing__card featured">
-                    <div class="badge badge--featured">MOST POPULAR</div>
-                    <h3 class="plan__name">Emperor</h3>
-                    <p class="plan__description">For businesses destined to dominate</p>
-                    <div class="plan__price">$2,400 <span>/month</span></div>
-                    <ul class="plan__features">
-                        <li>500 Specialized AI Agents</li>
-                        <li>Unlimited leads generation</li>
-                        <li>All Marketing Channels</li>
-                        <li>Predictive Analytics</li>
-                        <li>Dedicated Success Team</li>
-                        <li>Weekly Strategy Sessions</li>
-                        <li>Custom AI Development</li>
-                        <li>Competitor Neutralization</li>
+                <article class="pricing-card featured glass-card">
+                    <div class="badge badge-primary" style="position: absolute; top: var(--space-6); right: var(--space-6);">MOST POPULAR</div>
+
+                    <div style="margin-bottom: var(--space-6);">
+                        <h3 style="font-size: var(--text-2xl); font-weight: 700; margin-bottom: var(--space-2);">
+                            <span class="gradient-text">Emperor</span>
+                        </h3>
+                        <p style="color: var(--text-secondary); font-size: var(--text-base);">For businesses destined to dominate</p>
+                    </div>
+
+                    <div style="margin-bottom: var(--space-8);">
+                        <div style="display: flex; align-items: baseline; gap: var(--space-2); margin-bottom: var(--space-2);">
+                            <span style="font-size: var(--text-5xl); font-weight: 800;" class="gradient-text">$2,400</span>
+                            <span style="color: var(--text-muted); font-size: var(--text-lg);">/month</span>
+                        </div>
+                        <div class="badge badge-primary">Best value</div>
+                    </div>
+
+                    <ul style="list-style: none; padding: 0; margin-bottom: var(--space-8);">
+                        <li style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; color: var(--text-secondary);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17l-5-5" stroke="var(--empire-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            500 Specialized AI Agents
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; color: var(--text-secondary);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17l-5-5" stroke="var(--empire-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Unlimited leads generation
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; color: var(--text-secondary);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17l-5-5" stroke="var(--empire-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            All Marketing Channels
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; color: var(--text-secondary);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17l-5-5" stroke="var(--empire-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Predictive Analytics
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; color: var(--text-secondary);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17l-5-5" stroke="var(--empire-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Dedicated Success Team
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; color: var(--text-secondary);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17l-5-5" stroke="var(--empire-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Weekly Strategy Sessions
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; color: var(--text-secondary);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17l-5-5" stroke="var(--empire-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Custom AI Development
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; color: var(--text-secondary);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17l-5-5" stroke="var(--empire-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Competitor Neutralization
+                        </li>
                     </ul>
-                    <button class="btn btn--primary payment-btn" data-plan="emperor" data-amount="240000" data-description="Emperor Plan - 500 AI Agents">Build Your Empire</button>
+
+                    <button class="btn btn-primary payment-btn" data-plan="emperor" data-amount="240000" data-description="Emperor Plan - 500 AI Agents" style="width: 100%;">Build Your Empire</button>
                 </article>
 
-                <article class="pricing__card">
-                    <h3 class="plan__name">Overlord</h3>
-                    <p class="plan__description">For enterprises demanding total market control</p>
-                    <div class="plan__price">Custom</div>
-                    <ul class="plan__features">
-                        <li>10,000+ AI Agents</li>
-                        <li>Global Market Domination</li>
-                        <li>White-label Solutions</li>
-                        <li>Quantum Computing Access</li>
-                        <li>C-Suite Advisory Board</li>
-                        <li>Daily Strategic Command</li>
-                        <li>Market Monopoly Systems</li>
+                <article class="pricing-card glass-card">
+                    <div style="margin-bottom: var(--space-6);">
+                        <h3 style="font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary); margin-bottom: var(--space-2);">Overlord</h3>
+                        <p style="color: var(--text-secondary); font-size: var(--text-base);">For enterprises demanding total market control</p>
+                    </div>
+
+                    <div style="margin-bottom: var(--space-8);">
+                        <div style="display: flex; align-items: baseline; gap: var(--space-2); margin-bottom: var(--space-2);">
+                            <span style="font-size: var(--text-5xl); font-weight: 800; color: var(--text-primary);">Custom</span>
+                        </div>
+                        <div class="badge" style="background: var(--warning); color: var(--neural-black);">Enterprise</div>
+                    </div>
+
+                    <ul style="list-style: none; padding: 0; margin-bottom: var(--space-8);">
+                        <li style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; color: var(--text-secondary);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17l-5-5" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            10,000+ AI Agents
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; color: var(--text-secondary);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17l-5-5" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Global Market Domination
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; color: var(--text-secondary);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17l-5-5" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            White-label Solutions
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; color: var(--text-secondary);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17l-5-5" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Quantum Computing Access
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; color: var(--text-secondary);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17l-5-5" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            C-Suite Advisory Board
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; color: var(--text-secondary);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17l-5-5" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Daily Strategic Command
+                        </li>
+                        <li style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; color: var(--text-secondary);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17l-5-5" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Market Monopoly Systems
+                        </li>
                     </ul>
-                    <a href="#contact" class="btn btn--outline">Request Consultation</a>
+
+                    <a href="#contact" class="btn btn-secondary" style="width: 100%;">Request Consultation</a>
                 </article>
             </div>
         </div>
