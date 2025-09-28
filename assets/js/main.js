@@ -62,6 +62,7 @@ const NeurallEmpireApp = {
             // Core modules that should load first
             this.initializeModule('Navigation', NavigationModule),
             this.initializeModule('Animations', AnimationsModule),
+            this.initializeModule('Authentication', NeurallAuth),
 
             // Feature modules
             this.initializeModule('Forms', FormsModule),
@@ -330,36 +331,59 @@ const NeurallEmpireApp = {
     handleInitializationError(error) {
         console.error('Failed to initialize NEURALLEMPIRE:', error);
 
-        // Show fallback UI
-        const fallback = document.createElement('div');
-        fallback.innerHTML = `
-            <div style="
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: var(--dark-grey);
-                color: var(--white);
-                padding: 30px;
-                border-radius: 10px;
-                text-align: center;
-                z-index: 10000;
-            ">
-                <h3>🧠 NEURALLEMPIRE</h3>
-                <p>Something went wrong. Please refresh the page.</p>
-                <button onclick="window.location.reload()" style="
-                    background: var(--empire-gold);
-                    color: var(--neural-black);
-                    border: none;
-                    padding: 10px 20px;
-                    border-radius: 5px;
-                    cursor: pointer;
-                    margin-top: 15px;
-                ">Refresh Page</button>
-            </div>
-        `;
+        // Check if this is a network/API error (not a critical JavaScript error)
+        const isNetworkError = error.message && (
+            error.message.includes('fetch') ||
+            error.message.includes('network') ||
+            error.message.includes('api') ||
+            error.message.includes('connection') ||
+            error.message.includes('404') ||
+            error.message.includes('500')
+        );
 
-        document.body.appendChild(fallback);
+        // Don't show popup for network errors - just log them
+        if (isNetworkError) {
+            console.warn('🌐 Network/API error detected - continuing without backend services:', error.message);
+            return;
+        }
+
+        // Only show popup for critical JavaScript errors
+        console.warn('⚠️ Non-critical initialization error - page will continue to work:', error.message);
+
+        // Optional: Show a subtle notification instead of blocking popup
+        this.showSubtleNotification('Some features may be limited due to network connectivity.');
+    },
+
+    showSubtleNotification(message) {
+        // Create a subtle notification that doesn't block the UI
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 193, 7, 0.9);
+            color: #000;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            z-index: 1000;
+            max-width: 300px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: opacity 0.3s ease;
+        `;
+        notification.textContent = message;
+
+        document.body.appendChild(notification);
+
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 5000);
     },
 
     // Public API methods

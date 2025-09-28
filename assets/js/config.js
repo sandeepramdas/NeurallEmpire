@@ -12,7 +12,7 @@ const NEURALL_CONFIG = {
     // Payment Configuration
     payment: {
         razorpayKey: 'rzp_test_9999999999', // Replace with your actual key
-        currency: 'INR',
+        currency: 'USD',
         companyName: 'NEURALLEMPIRE',
         theme: '#FFD700'
     },
@@ -21,8 +21,8 @@ const NEURALL_CONFIG = {
     plans: {
         conqueror: {
             name: 'Conqueror',
-            price: 50000,
-            amount: 5000000, // in paise
+            price: 600,
+            amount: 60000, // in cents
             description: 'Conqueror Plan - 50 AI Agents',
             features: [
                 '50 Specialized AI Agents',
@@ -35,8 +35,8 @@ const NEURALL_CONFIG = {
         },
         emperor: {
             name: 'Emperor',
-            price: 200000,
-            amount: 20000000, // in paise
+            price: 2400,
+            amount: 240000, // in cents
             description: 'Emperor Plan - 500 AI Agents',
             features: [
                 '500 Specialized AI Agents',
@@ -75,15 +75,23 @@ const NEURALL_CONFIG = {
 
     // Contact Information
     contact: {
-        email: 'dominate@neurallempire.com',
+        email: 'sandeepramdaz@neurallempire.com',
         phone: '+91-9700465200',
-        address: 'Cyber Towers, HITEC City, Hyderabad',
+        address: 'SDC Sree Nilayam, Opposite to Cyber Homes, Narsingi, 500075',
         social: {
             twitter: '#',
             linkedin: '#',
             youtube: '#',
             email: '#'
         }
+    },
+
+    // EmailJS Configuration
+    emailjs: {
+        publicKey: 'YOUR_EMAILJS_PUBLIC_KEY', // Replace with your EmailJS public key
+        serviceId: 'YOUR_EMAILJS_SERVICE_ID', // Replace with your EmailJS service ID
+        templateId: 'YOUR_EMAILJS_TEMPLATE_ID', // Replace with your EmailJS template ID
+        enabled: false // Set to true once you configure EmailJS
     },
 
     // SEO Configuration

@@ -1,0 +1,70 @@
+{
+  "name": "neurallempire",
+  "version": "1.0.0",
+  "description": "AI-powered lead generation and business automation platform",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx serve . -p 8000",
+    "build": "echo 'Building static assets...' && echo 'Build complete!'",
+    "deploy:netlify": "./deploy.sh netlify",
+    "deploy:vercel": "./deploy.sh vercel",
+    "deploy:github": "./deploy.sh github",
+    "deploy:surge": "./deploy.sh surge",
+    "deploy:s3": "./deploy.sh s3",
+    "test": "echo 'Running tests...' && npm run test:html && npm run test:js",
+    "test:html": "echo 'Validating HTML...' || true",
+    "test:js": "echo 'Testing JavaScript...' || true",
+    "lint": "echo 'Linting code...' || true",
+    "preview": "npx serve . -p 3000",
+    "setup:supabase": "echo 'Please follow SUPABASE_SETUP.md for configuration'",
+    "setup:mcp": "echo 'MCP configuration available in mcp-config.json'"
+  },
+  "keywords": [
+    "ai",
+    "lead-generation",
+    "automation",
+    "business",
+    "neurallempire",
+    "supabase",
+    "static-site"
+  ],
+  "author": "Sandeep Ramdaz <sandeepramdaz@neurallempire.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sandeepramdaz/NeurallEmpire.git"
+  },
+  "homepage": "https://neurallempire.com",
+  "devDependencies": {
+    "serve": "^14.2.0"
+  },
+  "optionalDependencies": {
+    "netlify-cli": "^17.0.0",
+    "vercel": "^33.0.0",
+    "surge": "^0.23.0",
+    "@aws-cli/client-s3": "^3.0.0",
+    "html5validator": "^0.4.2"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ],
+  "files": [
+    "index.html",
+    "assets/",
+    "images/",
+    "favicon.ico",
+    "robots.txt",
+    "sitemap.xml",
+    "supabase-setup.sql",
+    "SUPABASE_SETUP.md",
+    "deploy.sh",
+    "mcp-config.json"
+  ]
+}

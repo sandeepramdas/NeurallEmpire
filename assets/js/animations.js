@@ -115,7 +115,7 @@ const AnimationsModule = {
             // Determine suffix and adjust end value
             if (text.includes('+')) suffix = '+';
             if (text.includes('%')) suffix = '%';
-            if (text.includes('₹')) {
+            if (text.includes('$')) {
                 if (text.includes('M')) {
                     suffix = 'M';
                 } else {

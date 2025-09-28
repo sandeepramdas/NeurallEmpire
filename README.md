@@ -53,8 +53,8 @@ NeurallEmpire/
 
 The website includes Razorpay payment integration for:
 
-- **Conqueror Plan**: ₹50,000/month (50 AI Agents)
-- **Emperor Plan**: ₹2,00,000/month (500 AI Agents)
+- **Conqueror Plan**: $600/month (50 AI Agents)
+- **Emperor Plan**: $2,400/month (500 AI Agents)
 - **Overlord Plan**: Custom pricing (10,000+ AI Agents)
 
 ### Setup Razorpay:
@@ -154,9 +154,9 @@ Edit `index.html` to update:
 
 ## 📞 Contact
 
-- **Email**: dominate@neurallempire.com
+- **Email**: sandeepramdaz@neurallempire.com
 - **Phone**: +91-9700465200
-- **Address**: Cyber Towers, HITEC City, Hyderabad
+- **Address**: SDC Sree Nilayam, Opposite to Cyber Homes, Narsingi, 500075
 - **Website**: [www.neurallempire.com](https://www.neurallempire.com)
 
 ## 📄 License

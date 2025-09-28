@@ -122,6 +122,19 @@ const PaymentsModule = {
 
         this.setButtonLoading(button, false);
 
+        // Send payment notification email
+        if (typeof NeurallEmailService !== 'undefined') {
+            const paymentData = {
+                plan: plan,
+                amount: amount,
+                paymentId: response.razorpay_payment_id,
+                email: response.email || 'not provided',
+                name: response.name || 'not provided'
+            };
+
+            NeurallEmailService.sendPaymentNotification(paymentData);
+        }
+
         // Show success message
         const successMessage = `
             🎉 Payment Successful!
@@ -237,8 +250,8 @@ const PaymentsModule = {
         if (typeof gtag !== 'undefined') {
             gtag('event', 'purchase', {
                 transaction_id: `neurall_${Date.now()}`,
-                value: amount / 100, // Convert paise to rupees
-                currency: 'INR',
+                value: amount / 100, // Convert cents to dollars
+                currency: 'USD',
                 items: [{
                     item_id: plan,
                     item_name: `${plan} Plan`,
@@ -253,13 +266,13 @@ const PaymentsModule = {
         if (typeof fbq !== 'undefined') {
             fbq('track', 'Purchase', {
                 value: amount / 100,
-                currency: 'INR',
+                currency: 'USD',
                 content_name: `${plan} Plan`,
                 content_category: 'AI Marketing Plan'
             });
         }
 
-        console.log(`Conversion tracked: ${plan} plan, ₹${amount / 100}`);
+        console.log(`Conversion tracked: ${plan} plan, $${amount / 100}`);
     },
 
     // Optional: Create custom payment modal
