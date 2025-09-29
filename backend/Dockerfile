@@ -1,5 +1,5 @@
-# Use Node.js 18 LTS
-FROM node:18-alpine
+# Use Node.js 20 LTS
+FROM node:20-alpine
 
 # Set working directory
 WORKDIR /app
@@ -10,8 +10,14 @@ COPY package*.json ./
 # Install dependencies
 RUN npm ci --only=production
 
+# Install tsx for TypeScript execution
+RUN npm install -g tsx
+
 # Copy application code
 COPY . .
+
+# Build the application
+RUN npm run build
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs
@@ -26,7 +32,7 @@ EXPOSE 3001
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node healthcheck.js
+  CMD node -e "const http = require('http'); http.get('http://localhost:3001/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1));"
 
 # Start the application
 CMD ["npm", "start"]
