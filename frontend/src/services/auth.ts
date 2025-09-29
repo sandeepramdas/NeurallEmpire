@@ -1,11 +1,6 @@
 import { api } from './api';
 import { ApiResponse, AuthResponse, User } from '@/types';
 
-interface LoginData {
-  email: string;
-  password: string;
-}
-
 interface RegisterData {
   email: string;
   password: string;

@@ -10,6 +10,7 @@ export interface User {
   emailVerified: boolean;
   createdAt: string;
   lastLoginAt?: string;
+  organization?: Organization;
 }
 
 export interface Organization {

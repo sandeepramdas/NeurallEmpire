@@ -122,9 +122,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           const response = await authService.getProfile();
           if (response.success && response.data) {
-            set(state => ({
-              user: { ...state.user, ...response.data },
-            }));
+            set({ user: response.data });
           }
         } catch (error) {
           console.error('Failed to refresh profile:', error);
