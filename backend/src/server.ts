@@ -22,6 +22,7 @@ import campaignRoutes from '@/routes/campaigns';
 import analyticsRoutes from '@/routes/analytics';
 import subdomainRoutes from '@/routes/subdomains';
 import webhookRoutes from '@/routes/webhooks';
+import paymentRoutes from '@/routes/payments';
 
 dotenv.config();
 
@@ -121,6 +122,7 @@ app.use('/api/campaigns', campaignRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/subdomains', subdomainRoutes);
 app.use('/api/webhooks', webhookRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Error handling middleware (must be last)
 app.use(notFound);
