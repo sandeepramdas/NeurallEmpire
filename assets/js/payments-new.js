@@ -6,7 +6,7 @@
 const NeurallPayments = {
     // Configuration
     config: {
-        apiBaseUrl: 'http://localhost:3001/api',
+        apiBaseUrl: 'https://www.neurallempire.com/api',
         razorpayScript: 'https://checkout.razorpay.com/v1/checkout.js',
         stripeScript: 'https://js.stripe.com/v3/',
         defaultGateway: 'razorpay', // 'razorpay' or 'stripe'

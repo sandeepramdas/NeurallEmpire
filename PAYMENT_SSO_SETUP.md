@@ -40,14 +40,14 @@ Configure the following in `.env`:
 #### Payment Gateway Settings
 ```env
 # Razorpay
-RAZORPAY_KEY_ID=rzp_live_your_key_id
+RAZORPAY_KEY_ID=your_razorpay_key_id
 RAZORPAY_KEY_SECRET=your_razorpay_secret
 RAZORPAY_WEBHOOK_SECRET=your_webhook_secret
 
 # Stripe
 STRIPE_PUBLISHABLE_KEY=pk_live_your_stripe_key
 STRIPE_SECRET_KEY=sk_live_your_stripe_secret
-STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+STRIPE_WEBHOOK_SECRET=whsec_your_webhoo
 ```
 
 #### OAuth Configuration

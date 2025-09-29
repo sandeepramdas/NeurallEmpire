@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Razorpay Integration - NeurallEmpire</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f0f2f5;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .test-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .plan-card {
+            border: 2px solid #e1e5e9;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        .plan-card.selected {
+            border-color: #6366f1;
+            background: #f0f0ff;
+        }
+        .payment-btn {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .payment-btn:hover {
+            background: #5855eb;
+        }
+        .payment-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #3b82f6;
+        }
+        .auth-section {
+            background: #fffbeb;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid #f59e0b;
+        }
+        .user-info {
+            background: #f0fdf4;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 6px;
+            border: 1px solid #22c55e;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🧠 NeurallEmpire Payment Test</h1>
+            <p>Test Razorpay integration with live credentials</p>
+        </div>
+
+        <!-- Status Display -->
+        <div id="status" class="status info" style="display: none;">
+            Status updates will appear here
+        </div>
+
+        <!-- Authentication Section -->
+        <div class="auth-section">
+            <h3>Step 1: Authentication (Test Mode)</h3>
+            <p>For testing purposes, we'll simulate an authenticated user</p>
+            <button id="simulateAuth" class="payment-btn">Simulate User Login</button>
+            <div id="userInfo" class="user-info" style="display: none;">
+                <strong>Authenticated as:</strong> test@neurallempire.com
+            </div>
+        </div>
+
+        <!-- Plan Selection -->
+        <div class="plans-section">
+            <h3>Step 2: Select a Plan</h3>
+
+            <div class="plan-card" data-plan="conqueror">
+                <h4>Conqueror Plan - $29.99/month</h4>
+                <ul>
+                    <li>5 AI Agents</li>
+                    <li>Lead Generation</li>
+                    <li>Email Automation</li>
+                    <li>Basic Analytics</li>
+                </ul>
+                <button class="payment-btn" data-plan="conqueror" data-gateway="razorpay">
+                    Test Conqueror Payment
+                </button>
+            </div>
+
+            <div class="plan-card" data-plan="emperor">
+                <h4>Emperor Plan - $79.99/month</h4>
+                <ul>
+                    <li>15 AI Agents</li>
+                    <li>Advanced Lead Generation</li>
+                    <li>Multi-channel Automation</li>
+                    <li>Advanced Analytics</li>
+                    <li>Priority Support</li>
+                </ul>
+                <button class="payment-btn" data-plan="emperor" data-gateway="razorpay">
+                    Test Emperor Payment
+                </button>
+            </div>
+
+            <div class="plan-card" data-plan="overlord">
+                <h4>Overlord Plan - $199.99/month</h4>
+                <ul>
+                    <li>50 AI Agents</li>
+                    <li>Enterprise Lead Generation</li>
+                    <li>Custom Integrations</li>
+                    <li>White-label Solutions</li>
+                    <li>Dedicated Account Manager</li>
+                </ul>
+                <button class="payment-btn" data-plan="overlord" data-gateway="razorpay">
+                    Test Overlord Payment
+                </button>
+            </div>
+        </div>
+
+        <!-- Test Results -->
+        <div class="test-results">
+            <h3>Test Results</h3>
+            <div id="testResults">
+                <p>No tests run yet. Click a payment button to start testing.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include Razorpay -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <script>
+        // Test configuration
+        const config = {
+            apiBaseUrl: 'http://localhost:3001/api',
+            testMode: true
+        };
+
+        // Test state
+        let isAuthenticated = false;
+        let testUser = null;
+        let testResults = [];
+
+        // Simulate authentication
+        document.getElementById('simulateAuth').addEventListener('click', function() {
+            // Simulate user authentication
+            testUser = {
+                _id: 'test_user_id',
+                firstName: 'Test',
+                lastName: 'User',
+                email: 'test@neurallempire.com',
+                phone: '+1234567890',
+                token: 'test_jwt_token'
+            };
+
+            isAuthenticated = true;
+
+            // Update UI
+            document.getElementById('userInfo').style.display = 'block';
+            this.textContent = '✓ User Authenticated';
+            this.disabled = true;
+
+            updateStatus('User authenticated successfully', 'success');
+        });
+
+        // Handle payment button clicks
+        document.addEventListener('click', async function(e) {
+            if (e.target.matches('.payment-btn[data-plan]')) {
+                e.preventDefault();
+
+                if (!isAuthenticated) {
+                    updateStatus('Please authenticate first', 'error');
+                    return;
+                }
+
+                const button = e.target;
+                const plan = button.dataset.plan;
+
+                await testPaymentFlow(plan, button);
+            }
+        });
+
+        async function testPaymentFlow(plan, button) {
+            updateStatus(`Starting payment test for ${plan} plan...`, 'info');
+
+            try {
+                // Set button loading state
+                const originalText = button.textContent;
+                button.textContent = 'Testing...';
+                button.disabled = true;
+
+                // Step 1: Test API connectivity
+                updateStatus('Testing API connectivity...', 'info');
+
+                const plansResponse = await fetch(`${config.apiBaseUrl}/payments/plans`);
+                if (!plansResponse.ok) {
+                    throw new Error('API not accessible');
+                }
+
+                const plansData = await plansResponse.json();
+                updateStatus('✓ API connectivity successful', 'success');
+
+                // Step 2: Create payment order
+                updateStatus('Creating payment order...', 'info');
+
+                const orderResponse = await fetch(`${config.apiBaseUrl}/payments/create-order`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${testUser.token}`
+                    },
+                    body: JSON.stringify({
+                        plan: plan,
+                        currency: 'USD',
+                        gateway: 'razorpay'
+                    })
+                });
+
+                if (!orderResponse.ok) {
+                    const errorData = await orderResponse.json();
+                    throw new Error(errorData.error || 'Failed to create order');
+                }
+
+                const orderData = await orderResponse.json();
+                updateStatus('✓ Payment order created successfully', 'success');
+
+                // Step 3: Initialize Razorpay (but don't actually process)
+                updateStatus('Initializing Razorpay...', 'info');
+
+                if (!window.Razorpay) {
+                    throw new Error('Razorpay not loaded');
+                }
+
+                const razorpayOptions = {
+                    key: orderData.data.key,
+                    amount: orderData.data.amount,
+                    currency: orderData.data.currency,
+                    name: 'NeurallEmpire',
+                    description: orderData.data.planDetails.description,
+                    order_id: orderData.data.orderId,
+                    prefill: {
+                        name: `${testUser.firstName} ${testUser.lastName}`,
+                        email: testUser.email,
+                        contact: testUser.phone
+                    },
+                    theme: {
+                        color: '#6366f1'
+                    },
+                    handler: function(response) {
+                        updateStatus('✓ Payment successful (Test Mode)', 'success');
+                        logTestResult(plan, 'success', orderData.data);
+                    },
+                    modal: {
+                        ondismiss: function() {
+                            updateStatus('Payment cancelled', 'info');
+                            logTestResult(plan, 'cancelled', null);
+                        }
+                    }
+                };
+
+                updateStatus('✓ Razorpay configured successfully', 'success');
+                updateStatus(`Opening Razorpay checkout for ${plan} plan (₹${Math.round(orderData.data.amount/100)})...`, 'info');
+
+                // Open Razorpay checkout
+                const razorpay = new Razorpay(razorpayOptions);
+                razorpay.open();
+
+                logTestResult(plan, 'initiated', orderData.data);
+
+            } catch (error) {
+                updateStatus(`❌ Test failed: ${error.message}`, 'error');
+                logTestResult(plan, 'failed', { error: error.message });
+            } finally {
+                // Reset button
+                button.textContent = originalText;
+                button.disabled = false;
+            }
+        }
+
+        function updateStatus(message, type) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            statusEl.style.display = 'block';
+
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        function logTestResult(plan, status, data) {
+            const result = {
+                timestamp: new Date().toISOString(),
+                plan: plan,
+                status: status,
+                data: data
+            };
+
+            testResults.push(result);
+
+            // Update results display
+            const resultsEl = document.getElementById('testResults');
+            resultsEl.innerHTML = `
+                <h4>Latest Test Results:</h4>
+                ${testResults.map(r => `
+                    <div style="margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 4px;">
+                        <strong>${r.plan}</strong> - ${r.status}
+                        <small>(${new Date(r.timestamp).toLocaleTimeString()})</small>
+                        ${r.data ? `<br><small>Order ID: ${r.data.orderId || r.data.error || 'N/A'}</small>` : ''}
+                    </div>
+                `).reverse().slice(0, 5).join('')}
+            `;
+        }
+
+        // Initialize
+        updateStatus('Test page loaded. Please authenticate to begin testing.', 'info');
+    </script>
+</body>
+</html>
