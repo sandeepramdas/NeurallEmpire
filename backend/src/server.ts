@@ -32,7 +32,7 @@ const NODE_ENV = process.env.NODE_ENV || 'development';
 
 // Initialize Prisma Client
 export const prisma = new PrismaClient({
-  log: NODE_ENV === 'development' ? ['query', 'info', 'warn', 'error'] : ['error'],
+  log: NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
 });
 
 // Security middleware
