@@ -4,7 +4,8 @@
   "description": "Modern SaaS Backend API for NeurallEmpire",
   "main": "dist/server.js",
   "scripts": {
-    "start": "node dist/server.js",
+    "start": "tsx src/server.ts",
+    "start:prod": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
     "build": "tsc && tsc-alias",
     "test": "jest",
@@ -69,6 +70,7 @@
   },
   "devDependencies": {
     "@types/jest": "^29.5.8",
+    "@types/morgan": "^1.9.10",
     "@types/supertest": "^2.0.16",
     "@typescript-eslint/eslint-plugin": "^6.13.1",
     "@typescript-eslint/parser": "^6.13.1",

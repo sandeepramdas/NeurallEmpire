@@ -1,168 +1,294 @@
-# NEURALLEMPIRE - AI Marketing Empire
+# 🧠👑 NeurallEmpire - AI Agent Development Platform
 
-🧠 **Where AI Meets ALL** - Transform your business with 10,000+ AI agents that dominate markets with 97% precision.
+> **Transform your business with intelligent AI agents that work 24/7**
 
-## 🚀 Website Features
+A comprehensive, multi-tenant SaaS platform for building, deploying, and managing AI agents with advanced swarm intelligence capabilities.
 
-- **Modern Architecture**: Modular CSS/JS structure for scalability
-- **Payment Integration**: Razorpay payment gateway for seamless transactions
-- **Responsive Design**: Mobile-first approach with comprehensive device support
-- **Performance Optimized**: Lazy loading, code splitting, and optimized assets
-- **SEO Ready**: Structured data, meta tags, and social media optimization
-- **Accessibility**: ARIA labels, keyboard navigation, and screen reader support
+## 🚀 Features
 
-## 📁 Project Structure
+### **Elite Eight AI Agents**
+- 🎯 **Lead Generator** - Advanced prospect discovery with scoring
+- 📧 **Email Marketer** - Personalized campaigns with segmentation
+- 📱 **Social Media** - Multi-platform content creation & engagement
+- ✍️ **Content Creator** - High-quality content at scale
+- 📊 **Analytics** - Data-driven insights and reporting
+- 🎧 **Customer Service** - 24/7 automated customer support
+- 💼 **Sales** - Automated pipeline management & deal closing
+- 🔍 **SEO Optimizer** - Search ranking domination
+
+### **Swarm Intelligence**
+- **Sequential Execution** - Step-by-step agent workflows
+- **Parallel Processing** - Multiple agents working simultaneously
+- **Collaborative Networks** - Agents sharing data and insights
+- **Hierarchical Coordination** - Manager-worker agent relationships
+
+### **Platform Features**
+- 🏢 **Multi-Tenant Architecture** - Organization-based isolation
+- 🔐 **Authentication** - JWT + OAuth (Google, Facebook, GitHub)
+- 💳 **Payment Integration** - Stripe & Razorpay support
+- 📈 **Real-time Analytics** - Performance monitoring & metrics
+- 🎨 **Low-Code Builder** - Visual agent configuration
+- 🌐 **API-First Design** - RESTful APIs for everything
+
+## 🏗️ Architecture
 
 ```
 NeurallEmpire/
-├── index.html                 # Main HTML file
-├── CNAME                      # Custom domain configuration
-├── README.md                  # Project documentation
-├── assets/
-│   ├── css/
-│   │   ├── variables.css      # CSS custom properties and themes
-│   │   ├── base.css          # Reset, typography, and base styles
-│   │   ├── animations.css    # Keyframes and animation utilities
-│   │   ├── components.css    # Reusable UI components
-│   │   ├── sections.css      # Page section specific styles
-│   │   └── responsive.css    # Media queries and responsive design
-│   ├── js/
-│   │   ├── config.js         # Application configuration
-│   │   ├── utils.js          # Utility functions and helpers
-│   │   ├── navigation.js     # Navigation and scroll functionality
-│   │   ├── animations.js     # Animation and intersection observers
-│   │   ├── forms.js          # Form handling and validation
-│   │   ├── payments.js       # Razorpay payment integration
-│   │   └── main.js           # Application entry point
-│   ├── images/               # Image assets (to be added)
-│   └── fonts/                # Custom fonts (if needed)
-├── components/               # Reusable HTML components (future)
-├── data/                     # JSON data files (future)
-└── config/                   # Configuration files (future)
+├── backend/           # TypeScript/Express API server
+│   ├── src/
+│   │   ├── agents/    # Elite Eight agent implementations
+│   │   ├── controllers/  # API route handlers
+│   │   ├── middleware/   # Auth, validation, tenant resolution
+│   │   ├── routes/       # Express route definitions
+│   │   ├── services/     # Business logic & agent orchestration
+│   │   ├── schemas/      # Zod validation schemas
+│   │   └── types/        # TypeScript type definitions
+│   ├── prisma/        # Database schema & migrations
+│   └── package.json   # Backend dependencies
+├── frontend/          # React + TypeScript SPA
+│   ├── src/
+│   │   ├── components/   # Reusable UI components
+│   │   ├── pages/        # Application pages
+│   │   ├── services/     # API client & auth
+│   │   ├── store/        # Zustand state management
+│   │   └── types/        # TypeScript interfaces
+│   └── package.json   # Frontend dependencies
+└── README.md         # This file
 ```
-
-## 🛠️ Technologies Used
-
-- **Frontend**: HTML5, CSS3 (Custom Properties), Vanilla JavaScript (ES6+)
-- **Fonts**: Google Fonts (Inter, Space Grotesk)
-- **Payments**: Razorpay Payment Gateway
-- **Deployment**: GitHub Pages
-- **Domain**: www.neurallempire.com
-
-## 💳 Payment Integration
-
-The website includes Razorpay payment integration for:
-
-- **Conqueror Plan**: $600/month (50 AI Agents)
-- **Emperor Plan**: $2,400/month (500 AI Agents)
-- **Overlord Plan**: Custom pricing (10,000+ AI Agents)
-
-### Setup Razorpay:
-1. Sign up at [razorpay.com](https://razorpay.com)
-2. Get your API keys
-3. Replace `rzp_test_9999999999` in `assets/js/config.js`
 
 ## 🚀 Quick Start
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/sandeepramdas/NeurallEmpire.git
-   cd NeurallEmpire
-   ```
+### Prerequisites
+- **Node.js 20+**
+- **PostgreSQL** (Supabase recommended)
+- **npm/yarn**
 
-2. **Serve locally**:
-   ```bash
-   # Using Python
-   python -m http.server 8000
+### 1. **Clone & Install**
+```bash
+git clone https://github.com/sandeepramdas/NeurallEmpire.git
+cd NeurallEmpire
 
-   # Using Node.js
-   npx serve .
+# Install backend dependencies
+cd backend && npm install
 
-   # Using PHP
-   php -S localhost:8000
-   ```
+# Install frontend dependencies
+cd ../frontend && npm install
+```
 
-3. **Open in browser**: `http://localhost:8000`
+### 2. **Database Setup**
+```bash
+cd backend
 
-## 🎨 Customization
+# Copy environment variables
+cp .env.example .env
 
-### CSS Variables
-Modify `assets/css/variables.css` to change:
-- Brand colors
-- Fonts
-- Spacing
-- Animation durations
+# Update DATABASE_URL in .env with your PostgreSQL connection string
+# DATABASE_URL="postgresql://user:pass@host:5432/db"
 
-### Configuration
-Update `assets/js/config.js` for:
-- Payment settings
-- Contact information
-- API endpoints
-- Plan pricing
+# Run database migrations
+npx prisma migrate dev
+npx prisma generate
+```
 
-### Content
-Edit `index.html` to update:
-- Text content
-- Plan features
-- Contact details
-- Social links
+### 3. **Start Development Servers**
 
-## 📱 Responsive Breakpoints
+**Terminal 1 - Backend:**
+```bash
+cd backend
+npm run dev
+# 🚀 Backend running on http://localhost:3001
+```
 
-- **Mobile**: < 480px
-- **Tablet**: 481px - 768px
-- **Small Desktop**: 769px - 1024px
-- **Large Desktop**: 1025px+
-- **Ultra Wide**: 1440px+
+**Terminal 2 - Frontend:**
+```bash
+cd frontend
+npm run dev
+# 🚀 Frontend running on http://localhost:3002
+```
 
-## 🔧 Browser Support
+### 4. **Access the Platform**
+- **Frontend**: http://localhost:3002
+- **Backend API**: http://localhost:3001
+- **API Docs**: http://localhost:3001/api
+- **Health Check**: http://localhost:3001/health
 
-- **Modern Browsers**: Chrome, Firefox, Safari, Edge (latest versions)
-- **IE**: Not supported (uses modern JavaScript features)
-- **Mobile**: iOS Safari, Chrome Mobile, Samsung Internet
+## 🔧 Configuration
 
-## 📊 Performance Features
+### **Environment Variables**
 
-- **Lazy Loading**: Images and non-critical resources
-- **Code Splitting**: Modular JavaScript architecture
-- **Optimized Assets**: Minified CSS/JS (in production)
-- **Caching**: Service worker ready structure
-- **CDN Ready**: Assets can be served from CDN
+**Backend (.env):**
+```env
+NODE_ENV=development
+PORT=3001
+DATABASE_URL="postgresql://..."
+JWT_SECRET="your-secret-key"
+SESSION_SECRET="session-secret"
+FRONTEND_URL="http://localhost:3002"
+```
+
+**Frontend (.env):**
+```env
+VITE_API_URL="http://localhost:3001"
+VITE_APP_NAME="NeurallEmpire"
+```
+
+## 🧪 API Endpoints
+
+### **Authentication**
+```
+POST   /api/auth/register    # User registration
+POST   /api/auth/login       # User login
+GET    /api/auth/profile     # Get user profile
+POST   /api/auth/logout      # User logout
+```
+
+### **Agents**
+```
+GET    /api/agents           # List all agents
+POST   /api/agents           # Create new agent
+GET    /api/agents/:id       # Get agent details
+PUT    /api/agents/:id       # Update agent
+DELETE /api/agents/:id       # Delete agent
+POST   /api/agents/:id/start # Start agent
+POST   /api/agents/:id/stop  # Stop agent
+```
+
+### **Swarms**
+```
+GET    /api/swarms           # List swarms
+POST   /api/swarms           # Create swarm
+POST   /api/swarms/:id/execute # Execute swarm
+```
+
+### **Analytics**
+```
+GET    /api/analytics        # Platform analytics
+GET    /api/analytics/:id    # Agent performance
+```
+
+## 🧠 Agent Types
+
+### **Lead Generator Agent**
+```typescript
+const leadConfig = {
+  type: 'LEAD_GENERATOR',
+  configuration: {
+    sources: ['linkedin', 'apollo', 'zoominfo'],
+    filters: {
+      industry: 'Technology',
+      companySize: '50-200',
+      jobTitles: ['CEO', 'CTO', 'VP']
+    },
+    dailyLimit: 100
+  }
+}
+```
+
+### **Email Marketer Agent**
+```typescript
+const emailConfig = {
+  type: 'EMAIL_MARKETER',
+  configuration: {
+    emailProvider: 'sendgrid',
+    templates: [/* ... */],
+    segmentation: { enabled: true },
+    tracking: { opens: true, clicks: true }
+  }
+}
+```
+
+## 🌐 Deployment
+
+### **Railway (Recommended)**
+1. Connect GitHub repository to Railway
+2. Set environment variables
+3. Deploy automatically
+
+### **Vercel**
+1. Import project to Vercel
+2. Configure environment variables
+3. Deploy
+
+### **Docker**
+```bash
+cd backend
+docker build -t neurallempire-backend .
+docker run -p 3001:3001 neurallempire-backend
+```
+
+## 📊 Tech Stack
+
+### **Backend**
+- **Runtime**: Node.js 20 + TypeScript
+- **Framework**: Express.js
+- **Database**: PostgreSQL + Prisma ORM
+- **Authentication**: JWT + Passport.js
+- **Validation**: Zod schemas
+- **Security**: Helmet, CORS, Rate limiting
+
+### **Frontend**
+- **Framework**: React 18 + TypeScript
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS
+- **State**: Zustand
+- **HTTP**: Fetch API
+
+### **Infrastructure**
+- **Database**: Supabase PostgreSQL
+- **Hosting**: Railway/Vercel
+- **CDN**: Cloudflare
+- **Monitoring**: Built-in analytics
 
 ## 🔒 Security Features
 
-- **Content Security Policy**: Implemented in headers
-- **HTTPS Enforcement**: GitHub Pages automatic HTTPS
-- **Input Validation**: Client and server-side validation
-- **XSS Protection**: Sanitized inputs and outputs
+- **Multi-tenant data isolation**
+- **JWT token authentication**
+- **OAuth social login**
+- **Rate limiting & DDoS protection**
+- **Input validation & sanitization**
+- **CORS & security headers**
+- **Encrypted environment variables**
 
-## 📈 SEO & Marketing
+## 📈 Performance
 
-- **Structured Data**: Schema.org markup for search engines
-- **Open Graph**: Facebook and social media optimization
-- **Twitter Cards**: Enhanced Twitter sharing
-- **Sitemap Ready**: Structure prepared for sitemap generation
-- **Analytics Ready**: Google Analytics integration ready
+- **Real-time agent execution**
+- **Efficient database queries**
+- **Caching strategies**
+- **Optimized API responses**
+- **Lazy loading & code splitting**
+
+## 🧪 Testing
+
+```bash
+# Backend tests
+cd backend
+npm test
+
+# Frontend tests
+cd frontend
+npm test
+```
+
+## 📝 License
+
+MIT License - see [LICENSE](LICENSE) file for details.
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit changes: `git commit -m 'Add amazing feature'`
-4. Push to branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open Pull Request
 
-## 📞 Contact
+## 📞 Support
 
-- **Email**: sandeepramdaz@neurallempire.com
-- **Phone**: +91-9700465200
-- **Address**: SDC Sree Nilayam, Opposite to Cyber Homes, Narsingi, 500075
-- **Website**: [www.neurallempire.com](https://www.neurallempire.com)
-
-## 📄 License
-
-Copyright © 2025 NEURALLEMPIRE. All empires reserved.
+- **GitHub Issues**: [Report bugs](https://github.com/sandeepramdas/NeurallEmpire/issues)
+- **Email**: support@neurallempire.com
+- **Documentation**: [Full API Docs](https://docs.neurallempire.com)
 
 ---
 
-**Built with 🧠 by NEURALLEMPIRE - Where AI Meets ALL**
+**Built with ❤️ by the NeurallEmpire Team**
+
+*Transform your business with AI agents that never sleep* 🧠👑
