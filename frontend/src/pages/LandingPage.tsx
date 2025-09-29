@@ -9,7 +9,7 @@ const LandingPage: React.FC = () => {
         <div className="container mx-auto px-4 py-20 text-center">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-6xl font-display font-bold text-white mb-6 animate-fade-in">
-              🧠 <span className="gradient-text">NEURALLEMPIRE</span>
+              🧠 <span className="gradient-text">NeurallEmpire</span> 👑
             </h1>
             <p className="text-2xl font-display text-neural-100 mb-4 animate-fade-in animation-delay-150">
               Where AI Meets ALL
