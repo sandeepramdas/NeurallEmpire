@@ -54,12 +54,17 @@ const App: React.FC = () => {
           await refreshProfile();
         } catch (error) {
           console.error('Failed to refresh profile on app init:', error);
-          // Auth store will handle logout if refresh fails
+          // Clear invalid token and continue with app load
+          localStorage.removeItem('authToken');
+          // Don't throw error - allow app to continue loading
         }
       }
     };
 
-    initAuth();
+    // Only run auth refresh if we're not on the landing page
+    if (window.location.pathname !== '/') {
+      initAuth();
+    }
   }, [token, refreshProfile]);
 
   // Handle subdomain routing
