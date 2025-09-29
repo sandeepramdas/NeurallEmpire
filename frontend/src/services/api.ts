@@ -10,7 +10,34 @@ export const api: AxiosInstance = axios.create({
   },
 });
 
-// Request interceptor to add auth token
+// Function to get current tenant
+const getCurrentTenant = (): string | null => {
+  // 1. Check URL query parameter first
+  const urlParams = new URLSearchParams(window.location.search);
+  const tenantFromQuery = urlParams.get('tenant');
+  if (tenantFromQuery) {
+    return tenantFromQuery;
+  }
+
+  // 2. Check localStorage for selected tenant
+  const tenantFromStorage = localStorage.getItem('selectedTenant');
+  if (tenantFromStorage) {
+    return tenantFromStorage;
+  }
+
+  // 3. Check hostname for subdomain (production)
+  const hostname = window.location.hostname;
+  if (hostname && hostname !== 'localhost' && !hostname.includes('127.0.0.1')) {
+    const parts = hostname.split('.');
+    if (parts.length >= 3 && !['www', 'api', 'app', 'admin', 'mail'].includes(parts[0])) {
+      return parts[0];
+    }
+  }
+
+  return null;
+};
+
+// Request interceptor to add auth token and tenant header
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('authToken');
@@ -19,12 +46,9 @@ api.interceptors.request.use(
     }
 
     // Add tenant header for multi-tenant support
-    const hostname = window.location.hostname;
-    if (hostname && hostname !== 'localhost' && !hostname.includes('127.0.0.1')) {
-      const parts = hostname.split('.');
-      if (parts.length >= 3 && !['www', 'api', 'app', 'admin'].includes(parts[0])) {
-        config.headers['X-Tenant'] = parts[0];
-      }
+    const tenant = getCurrentTenant();
+    if (tenant) {
+      config.headers['x-tenant'] = tenant;
     }
 
     return config;
@@ -101,6 +125,21 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// Export tenant utilities
+export const tenantUtils = {
+  getCurrentTenant,
+  setTenant: (tenant: string | null) => {
+    if (tenant) {
+      localStorage.setItem('selectedTenant', tenant);
+    } else {
+      localStorage.removeItem('selectedTenant');
+    }
+  },
+  clearTenant: () => {
+    localStorage.removeItem('selectedTenant');
+  },
+};
 
 // Helper functions for common API patterns
 export const apiHelpers = {

@@ -29,6 +29,11 @@ export const authService = {
     return response.data;
   },
 
+  async joinOrganization(data: RegisterData & { organizationSlug: string }): Promise<ApiResponse<AuthResponse>> {
+    const response = await api.post<ApiResponse<AuthResponse>>('/auth/join', data);
+    return response.data;
+  },
+
   async getProfile(): Promise<ApiResponse<User>> {
     const response = await api.get<ApiResponse<User>>('/auth/profile');
     return response.data;

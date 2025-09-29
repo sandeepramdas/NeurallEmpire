@@ -1,7 +1,11 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
+import { useAuthStore } from '@/store/authStore';
+import OrganizationSwitcher from '@/components/OrganizationSwitcher';
 
 const DashboardLayout: React.FC = () => {
+  const { user, logout } = useAuthStore();
+
   return (
     <div className="min-h-screen bg-neural-50">
       <div className="flex">
@@ -31,10 +35,71 @@ const DashboardLayout: React.FC = () => {
               </a>
             </div>
           </nav>
+
+          {/* User Profile & Organization Switcher */}
+          <div className="absolute bottom-0 w-64 p-4 border-t border-neutral-200">
+            <div className="space-y-3">
+              {/* Organization Switcher */}
+              <OrganizationSwitcher
+                currentOrganization={user?.organization ? {
+                  id: user.organization.id,
+                  name: user.organization.name,
+                  slug: user.organization.slug
+                } : undefined}
+              />
+
+              {/* User Profile */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-medium text-white">
+                      {user?.firstName?.charAt(0) || user?.email?.charAt(0) || 'U'}
+                    </span>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium text-gray-900 truncate">
+                      {user?.firstName || user?.email}
+                    </div>
+                    <div className="text-xs text-gray-500 truncate">
+                      {user?.role}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={logout}
+                  className="text-xs text-gray-500 hover:text-gray-700"
+                  title="Logout"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Main content */}
         <div className="flex-1">
+          {/* Top header with tenant info */}
+          <header className="bg-white shadow-sm border-b border-neutral-200 px-8 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-lg font-semibold text-gray-900">
+                  {user?.organization?.name || 'NeurallEmpire Platform'}
+                </h1>
+                {user?.organization && (
+                  <p className="text-sm text-gray-500">
+                    Organization: {user.organization.slug} • Plan: {user.organization.planType}
+                  </p>
+                )}
+              </div>
+              <div className="text-sm text-gray-500">
+                Welcome back, {user?.firstName || 'User'}
+              </div>
+            </div>
+          </header>
+
           <main className="p-8">
             <Outlet />
           </main>
