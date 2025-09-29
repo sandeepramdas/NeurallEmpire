@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeurallEmpire Payment - Choose Your Plan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .payment-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            max-width: 1200px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .payment-tabs {
+            display: flex;
+            border-bottom: 2px solid #f1f5f9;
+            margin-bottom: 40px;
+            gap: 0;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 15px 20px;
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-button.active {
+            color: #6366f1;
+            border-bottom-color: #6366f1;
+            background: #f8fafc;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .plan-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            background: #fafafa;
+        }
+
+        .plan-card:hover {
+            border-color: #6366f1;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.15);
+        }
+
+        .plan-card.selected {
+            border-color: #6366f1;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.2);
+        }
+
+        .plan-card.popular::before {
+            content: "MOST POPULAR";
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #f59e0b;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .plan-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+
+        .plan-price {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #6366f1;
+            margin-bottom: 5px;
+        }
+
+        .plan-period {
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+
+        .plan-description {
+            color: #64748b;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        .plan-features {
+            list-style: none;
+            text-align: left;
+            margin-bottom: 25px;
+        }
+
+        .plan-features li {
+            padding: 8px 0;
+            color: #475569;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .plan-features li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        .custom-amount-section {
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .amount-input-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .currency-symbol {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #6366f1;
+        }
+
+        .amount-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-align: center;
+            transition: border-color 0.3s ease;
+        }
+
+        .amount-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .quick-amounts {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .quick-amount-btn {
+            padding: 10px 20px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .quick-amount-btn:hover,
+        .quick-amount-btn.active {
+            border-color: #6366f1;
+            background: #6366f1;
+            color: white;
+        }
+
+        .payment-button {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .payment-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
+        }
+
+        .payment-button:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff40;
+            border-top: 2px solid #ffffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .selected-plan-summary {
+            background: #f0f9ff;
+            border: 2px solid #0ea5e9;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .selected-plan-summary.show {
+            display: block;
+        }
+
+        .summary-title {
+            font-weight: 600;
+            color: #0c4a6e;
+            margin-bottom: 10px;
+        }
+
+        .summary-details {
+            color: #075985;
+        }
+
+        .contribute-section {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .contribute-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 15px;
+        }
+
+        .contribute-description {
+            color: #64748b;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .secure-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 15px;
+            color: #10b981;
+            font-size: 0.9rem;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .success-message {
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .plans-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .payment-tabs {
+                flex-direction: column;
+            }
+
+            .quick-amounts {
+                justify-content: space-between;
+            }
+
+            .quick-amount-btn {
+                flex: 1;
+                min-width: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-container">
+        <div class="header">
+            <h1>🧠 NeurallEmpire</h1>
+            <p>Choose your path to AI marketing domination</p>
+        </div>
+
+        <div class="content">
+            <!-- Error/Success Messages -->
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+
+            <!-- Payment Tabs -->
+            <div class="payment-tabs">
+                <button class="tab-button active" data-tab="plans">Subscription Plans</button>
+                <button class="tab-button" data-tab="contribute">Contribute</button>
+            </div>
+
+            <!-- Plans Tab -->
+            <div id="plans" class="tab-content active">
+                <div class="plans-grid">
+                    <div class="plan-card" data-plan="conqueror">
+                        <div class="plan-name">Conqueror</div>
+                        <div class="plan-price">$29.99</div>
+                        <div class="plan-period">per month</div>
+                        <div class="plan-description">Perfect for small businesses starting their AI journey</div>
+                        <ul class="plan-features">
+                            <li>5 AI Agents</li>
+                            <li>Lead Generation</li>
+                            <li>Email Automation</li>
+                            <li>Basic Analytics</li>
+                            <li>24/7 Support</li>
+                        </ul>
+                    </div>
+
+                    <div class="plan-card popular" data-plan="emperor">
+                        <div class="plan-name">Emperor</div>
+                        <div class="plan-price">$79.99</div>
+                        <div class="plan-period">per month</div>
+                        <div class="plan-description">Ideal for growing companies ready to scale</div>
+                        <ul class="plan-features">
+                            <li>15 AI Agents</li>
+                            <li>Advanced Lead Generation</li>
+                            <li>Multi-channel Automation</li>
+                            <li>Advanced Analytics</li>
+                            <li>Priority Support</li>
+                            <li>Custom Integrations</li>
+                        </ul>
+                    </div>
+
+                    <div class="plan-card" data-plan="overlord">
+                        <div class="plan-name">Overlord</div>
+                        <div class="plan-price">$199.99</div>
+                        <div class="plan-period">per month</div>
+                        <div class="plan-description">For enterprises ready to dominate their market</div>
+                        <ul class="plan-features">
+                            <li>50 AI Agents</li>
+                            <li>Enterprise Lead Generation</li>
+                            <li>White-label Solutions</li>
+                            <li>Dedicated Account Manager</li>
+                            <li>Custom AI Training</li>
+                            <li>API Access</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Contribute Tab -->
+            <div id="contribute" class="tab-content">
+                <div class="contribute-section">
+                    <div class="contribute-title">Support NeurallEmpire</div>
+                    <div class="contribute-description">
+                        Your contribution helps us build better AI tools and expand our platform.
+                        Every dollar counts toward making AI marketing accessible to everyone.
+                    </div>
+                    <div class="custom-amount-section">
+                        <div class="amount-input-group">
+                            <span class="currency-symbol">$</span>
+                            <input type="number" id="contributeAmount" class="amount-input" placeholder="Enter contribution" min="1" max="10000" step="0.01">
+                        </div>
+                        <div class="quick-amounts">
+                            <button class="quick-amount-btn" data-amount="5" data-target="contribute">$5</button>
+                            <button class="quick-amount-btn" data-amount="15" data-target="contribute">$15</button>
+                            <button class="quick-amount-btn" data-amount="30" data-target="contribute">$30</button>
+                            <button class="quick-amount-btn" data-amount="75" data-target="contribute">$75</button>
+                            <button class="quick-amount-btn" data-amount="150" data-target="contribute">$150</button>
+                            <button class="quick-amount-btn" data-amount="300" data-target="contribute">$300</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Selected Plan Summary -->
+            <div id="selectedPlanSummary" class="selected-plan-summary">
+                <div class="summary-title">Selected:</div>
+                <div id="summaryDetails" class="summary-details"></div>
+            </div>
+
+            <!-- Payment Button -->
+            <button id="payButton" class="payment-button" disabled>
+                <span class="loading-spinner"></span>
+                <span id="payButtonText">Select a plan or amount to continue</span>
+            </button>
+
+            <!-- Security Badge -->
+            <div class="secure-badge">
+                🔒 Secured by Razorpay SSL Encryption
+            </div>
+        </div>
+    </div>
+
+    <!-- Razorpay Script -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <script>
+        // Payment System Configuration
+        const PaymentSystem = {
+            config: {
+                apiBaseUrl: 'http://localhost:3001/api', // Update this for production
+                currency: 'USD'
+            },
+            state: {
+                selectedPlan: null,
+                selectedAmount: null,
+                currentTab: 'plans',
+                isAuthenticated: false,
+                user: null
+            },
+
+            // Initialize the payment system
+            init() {
+                this.bindEvents();
+                this.simulateAuth(); // For demo purposes
+            },
+
+            // Simulate user authentication (replace with real auth)
+            simulateAuth() {
+                this.state.user = {
+                    _id: 'demo_user',
+                    firstName: 'Demo',
+                    lastName: 'User',
+                    email: 'demo@neurallempire.com',
+                    phone: '+1234567890',
+                    token: 'demo_token'
+                };
+                this.state.isAuthenticated = true;
+            },
+
+            // Bind all event listeners
+            bindEvents() {
+                // Tab switching
+                document.querySelectorAll('.tab-button').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        this.switchTab(e.target.dataset.tab);
+                    });
+                });
+
+                // Plan selection
+                document.querySelectorAll('.plan-card').forEach(card => {
+                    card.addEventListener('click', (e) => {
+                        this.selectPlan(e.currentTarget.dataset.plan);
+                    });
+                });
+
+                // Quick amount buttons
+                document.querySelectorAll('.quick-amount-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const amount = e.target.dataset.amount;
+                        const target = e.target.dataset.target || 'custom';
+                        this.selectQuickAmount(amount, target);
+                    });
+                });
+
+                // Contribute amount input
+                document.getElementById('contributeAmount').addEventListener('input', (e) => {
+                    this.handleContributeAmount(e.target.value);
+                });
+
+                // Payment button
+                document.getElementById('payButton').addEventListener('click', () => {
+                    this.processPayment();
+                });
+            },
+
+            // Switch between tabs
+            switchTab(tabName) {
+                // Update tab buttons
+                document.querySelectorAll('.tab-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+                // Update tab content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(tabName).classList.add('active');
+
+                this.state.currentTab = tabName;
+                this.resetSelection();
+            },
+
+            // Select a subscription plan
+            selectPlan(planName) {
+                // Remove previous selections
+                document.querySelectorAll('.plan-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+
+                // Select current plan
+                document.querySelector(`[data-plan="${planName}"]`).classList.add('selected');
+
+                this.state.selectedPlan = planName;
+                this.state.selectedAmount = this.getPlanPrice(planName);
+                this.updateSummary();
+                this.updatePayButton();
+            },
+
+            // Select quick amount
+            selectQuickAmount(amount, target) {
+                // Remove previous quick amount selections
+                document.querySelectorAll('.quick-amount-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+
+                // Select current amount
+                event.target.classList.add('active');
+
+                if (target === 'contribute') {
+                    document.getElementById('contributeAmount').value = amount;
+                    this.handleContributeAmount(amount);
+                }
+            },
+
+
+            // Handle contribute amount input
+            handleContributeAmount(amount) {
+                if (amount && amount >= 1) {
+                    this.state.selectedPlan = 'contribute';
+                    this.state.selectedAmount = parseFloat(amount);
+                    this.updateSummary();
+                    this.updatePayButton();
+                } else {
+                    this.resetSelection();
+                }
+            },
+
+            // Get plan price by name
+            getPlanPrice(planName) {
+                const prices = {
+                    'conqueror': 29.99,
+                    'emperor': 79.99,
+                    'overlord': 199.99
+                };
+                return prices[planName] || 0;
+            },
+
+            // Update payment summary
+            updateSummary() {
+                const summary = document.getElementById('selectedPlanSummary');
+                const details = document.getElementById('summaryDetails');
+
+                if (this.state.selectedPlan && this.state.selectedAmount) {
+                    let planName = '';
+                    switch(this.state.selectedPlan) {
+                        case 'conqueror':
+                            planName = 'Conqueror Plan';
+                            break;
+                        case 'emperor':
+                            planName = 'Emperor Plan';
+                            break;
+                        case 'overlord':
+                            planName = 'Overlord Plan';
+                            break;
+                        case 'contribute':
+                            planName = 'Contribution';
+                            break;
+                    }
+
+                    details.textContent = `${planName} - $${this.state.selectedAmount.toFixed(2)}`;
+                    summary.classList.add('show');
+                } else {
+                    summary.classList.remove('show');
+                }
+            },
+
+            // Update pay button state
+            updatePayButton() {
+                const button = document.getElementById('payButton');
+                const buttonText = document.getElementById('payButtonText');
+
+                if (this.state.selectedPlan && this.state.selectedAmount) {
+                    button.disabled = false;
+
+                    if (this.state.selectedPlan === 'contribute') {
+                        buttonText.textContent = `Contribute $${this.state.selectedAmount.toFixed(2)}`;
+                    } else {
+                        buttonText.textContent = `Subscribe for $${this.state.selectedAmount.toFixed(2)}/month`;
+                    }
+                } else {
+                    button.disabled = true;
+                    buttonText.textContent = 'Select a plan or amount to continue';
+                }
+            },
+
+            // Reset selection
+            resetSelection() {
+                this.state.selectedPlan = null;
+                this.state.selectedAmount = null;
+
+                // Clear form inputs
+                document.getElementById('contributeAmount').value = '';
+
+                // Remove selections
+                document.querySelectorAll('.plan-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                document.querySelectorAll('.quick-amount-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+
+                this.updateSummary();
+                this.updatePayButton();
+            },
+
+            // Process payment
+            async processPayment() {
+                if (!this.state.selectedPlan || !this.state.selectedAmount) {
+                    this.showError('Please select a plan or enter an amount');
+                    return;
+                }
+
+                try {
+                    this.setLoading(true);
+                    this.hideMessages();
+
+                    // Create payment order
+                    const orderData = await this.createPaymentOrder();
+
+                    if (orderData.success) {
+                        // Initialize Razorpay
+                        await this.initializeRazorpay(orderData.data);
+                    } else {
+                        throw new Error(orderData.error || 'Failed to create payment order');
+                    }
+
+                } catch (error) {
+                    console.error('Payment error:', error);
+                    this.showError(error.message || 'Payment failed. Please try again.');
+                } finally {
+                    this.setLoading(false);
+                }
+            },
+
+            // Create payment order via API
+            async createPaymentOrder() {
+                const payload = {
+                    plan: this.state.selectedPlan,
+                    currency: this.config.currency,
+                    gateway: 'razorpay'
+                };
+
+                // Add custom amount for contribute plans
+                if (this.state.selectedPlan === 'contribute') {
+                    payload.customAmount = this.state.selectedAmount;
+                }
+
+                const response = await fetch(`${this.config.apiBaseUrl}/payments/create-order`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${this.state.user.token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                return await response.json();
+            },
+
+            // Initialize Razorpay checkout
+            async initializeRazorpay(orderData) {
+                const options = {
+                    key: orderData.key,
+                    amount: orderData.amount,
+                    currency: orderData.currency,
+                    name: 'NeurallEmpire',
+                    description: orderData.planDetails.description,
+                    order_id: orderData.orderId,
+                    image: 'https://neurallempire.com/assets/images/logo.png',
+
+                    prefill: {
+                        name: `${this.state.user.firstName} ${this.state.user.lastName}`,
+                        email: this.state.user.email,
+                        contact: this.state.user.phone
+                    },
+
+                    theme: {
+                        color: '#6366f1'
+                    },
+
+                    handler: (response) => {
+                        this.handlePaymentSuccess(response, orderData);
+                    },
+
+                    modal: {
+                        ondismiss: () => {
+                            this.showError('Payment was cancelled');
+                        }
+                    }
+                };
+
+                const razorpay = new Razorpay(options);
+                razorpay.open();
+            },
+
+            // Handle successful payment
+            async handlePaymentSuccess(response, orderData) {
+                try {
+                    // Verify payment with backend
+                    const verification = await this.verifyPayment(response, orderData);
+
+                    if (verification.success) {
+                        this.showSuccess('Payment successful! Thank you for your purchase.');
+                        // Optionally redirect or update UI
+                        setTimeout(() => {
+                            window.location.reload(); // or redirect to dashboard
+                        }, 3000);
+                    } else {
+                        throw new Error('Payment verification failed');
+                    }
+
+                } catch (error) {
+                    console.error('Payment verification error:', error);
+                    this.showError('Payment verification failed. Please contact support.');
+                }
+            },
+
+            // Verify payment with backend
+            async verifyPayment(paymentResponse, orderData) {
+                const verificationData = {
+                    paymentId: paymentResponse.razorpay_payment_id,
+                    orderId: paymentResponse.razorpay_order_id,
+                    signature: paymentResponse.razorpay_signature,
+                    gateway: 'razorpay'
+                };
+
+                const response = await fetch(`${this.config.apiBaseUrl}/payments/verify`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${this.state.user.token}`
+                    },
+                    body: JSON.stringify(verificationData)
+                });
+
+                return await response.json();
+            },
+
+            // UI Helper functions
+            setLoading(isLoading) {
+                const button = document.getElementById('payButton');
+                const spinner = button.querySelector('.loading-spinner');
+                const buttonText = document.getElementById('payButtonText');
+
+                if (isLoading) {
+                    button.disabled = true;
+                    spinner.style.display = 'inline-block';
+                    buttonText.textContent = 'Processing...';
+                } else {
+                    button.disabled = false;
+                    spinner.style.display = 'none';
+                    this.updatePayButton();
+                }
+            },
+
+            showError(message) {
+                const errorDiv = document.getElementById('errorMessage');
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+                this.hideSuccess();
+            },
+
+            showSuccess(message) {
+                const successDiv = document.getElementById('successMessage');
+                successDiv.textContent = message;
+                successDiv.style.display = 'block';
+                this.hideError();
+            },
+
+            hideError() {
+                document.getElementById('errorMessage').style.display = 'none';
+            },
+
+            hideSuccess() {
+                document.getElementById('successMessage').style.display = 'none';
+            },
+
+            hideMessages() {
+                this.hideError();
+                this.hideSuccess();
+            }
+        };
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            PaymentSystem.init();
+        });
+    </script>
+</body>
+</html>

@@ -40,14 +40,25 @@ const PLANS = {
         price: 199.99,
         agentCount: 50,
         features: ['50 AI Agents', 'Enterprise Lead Generation', 'Custom Integrations', 'White-label Solutions', 'Dedicated Account Manager']
+    },
+    contribute: {
+        name: 'Contribution',
+        description: 'Support NeurallEmpire development',
+        price: 0, // Will be set dynamically
+        agentCount: 0,
+        features: ['Support the platform', 'Help us grow', 'Community contribution']
     }
 };
 
 // Validation middleware
 const createOrderValidation = [
     body('plan')
-        .isIn(['conqueror', 'emperor', 'overlord'])
+        .isIn(['conqueror', 'emperor', 'overlord', 'contribute'])
         .withMessage('Invalid plan selected'),
+    body('customAmount')
+        .optional()
+        .isFloat({ min: 1, max: 10000 })
+        .withMessage('Custom amount must be between $1 and $10,000'),
     body('currency')
         .optional()
         .isIn(['USD', 'INR', 'EUR', 'GBP'])
@@ -71,7 +82,7 @@ router.post('/create-order', protect, createOrderValidation, async (req, res) =>
             });
         }
 
-        const { plan, currency = 'USD', gateway = 'razorpay' } = req.body;
+        const { plan, currency = 'USD', gateway = 'razorpay', customAmount } = req.body;
         const user = req.user;
 
         // Get plan details
@@ -83,10 +94,23 @@ router.post('/create-order', protect, createOrderValidation, async (req, res) =>
             });
         }
 
+        // Handle custom amount for 'contribute' plan
+        let finalPrice = planDetails.price;
+        if (plan === 'contribute' && customAmount) {
+            if (!customAmount || customAmount < 1) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Contribution amount is required and must be at least $1'
+                });
+            }
+            finalPrice = parseFloat(customAmount);
+            planDetails.price = finalPrice; // Update plan details for this request
+        }
+
         // Calculate amount (convert to smallest currency unit)
         const amount = gateway === 'razorpay' && currency === 'INR'
-            ? Math.round(planDetails.price * 82 * 100) // USD to INR conversion * 100 for paise
-            : Math.round(planDetails.price * 100); // USD cents or other currency
+            ? Math.round(finalPrice * 82 * 100) // USD to INR conversion * 100 for paise
+            : Math.round(finalPrice * 100); // USD cents or other currency
 
         let order;
         let orderId;
