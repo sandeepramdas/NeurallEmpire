@@ -1,0 +1,478 @@
+// Multi-Tenant SaaS Database Schema for NeurallEmpire
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== CORE TENANT ARCHITECTURE ====================
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique // for subdomain: {slug}.neurallempire.com
+  domain      String?  @unique // custom domain
+  logo        String?
+  description String?
+
+  // Subscription & Billing
+  planType    PlanType @default(FREE)
+  status      OrgStatus @default(ACTIVE)
+  billingEmail String?
+  stripeCustomerId String? @unique
+  subscriptionId String? @unique
+
+  // Limits based on plan
+  maxUsers    Int @default(1)
+  maxAgents   Int @default(5)
+  maxCampaigns Int @default(10)
+  storageLimit Int @default(1048576) // 1GB in KB
+
+  // Metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  users       User[]
+  agents      AIAgent[]
+  campaigns   Campaign[]
+  subdomains  Subdomain[]
+  analytics   Analytics[]
+  swarms      AgentSwarm[]
+
+  @@map("organizations")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String?  // null for social auth users
+  firstName     String?
+  lastName      String?
+  avatar        String?
+  role          UserRole @default(USER)
+
+  // Organization relation
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Authentication
+  emailVerified Boolean @default(false)
+  isActive      Boolean @default(true)
+  lastLoginAt   DateTime?
+
+  // Social Auth
+  googleId      String? @unique
+  facebookId    String? @unique
+  linkedinId    String? @unique
+  githubId      String? @unique
+
+  // Metadata
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  campaigns     Campaign[]
+  sessions      Session[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// ==================== SUBDOMAIN MANAGEMENT ====================
+
+model Subdomain {
+  id             String  @id @default(cuid())
+  subdomain      String  @unique
+  customDomain   String? @unique
+  sslEnabled     Boolean @default(false)
+  sslCertificate String?
+  status         SubdomainStatus @default(PENDING)
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("subdomains")
+}
+
+// ==================== AI AGENTS & CAMPAIGNS ====================
+
+model AIAgent {
+  id             String      @id @default(cuid())
+  name           String
+  type           AgentType
+  description    String?
+  version        String      @default("1.0.0")
+
+  // Agent Configuration & Behavior
+  configuration  Json        // Agent-specific config
+  triggers       Json?       // Event triggers and conditions
+  actions        Json?       // Available actions and workflows
+  capabilities   Json?       // Agent capabilities and skills
+
+  // Agent State & Status
+  status         AgentStatus @default(DRAFT)
+  isActive       Boolean     @default(false)
+  lastExecution  DateTime?
+  errorCount     Int         @default(0)
+
+  // Swarm & Coordination
+  swarmId        String?     // For agent swarm coordination
+  parentAgentId  String?     // For hierarchical agents
+  parentAgent    AIAgent?    @relation("AgentHierarchy", fields: [parentAgentId], references: [id])
+  childAgents    AIAgent[]   @relation("AgentHierarchy")
+
+  // Marketplace & Sharing
+  isPublic       Boolean     @default(false)
+  isTemplate     Boolean     @default(false)
+  templateSource String?     // Template marketplace ID
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Performance Metrics
+  totalExecutions Int    @default(0)
+  successRate     Float  @default(0.0)
+  totalLeads      Int    @default(0)
+  conversionRate  Float  @default(0.0)
+  avgResponseTime Int    @default(0) // in milliseconds
+
+  // Resource Usage
+  cpuUsage        Float  @default(0.0)
+  memoryUsage     Float  @default(0.0)
+  apiCallsCount   Int    @default(0)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  campaigns      CampaignAgent[]
+  executions     AgentExecution[]
+  swarmMembers   SwarmMember[]
+  marketplace    MarketplaceAgent?
+
+  @@map("ai_agents")
+}
+
+model Campaign {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  status      CampaignStatus @default(DRAFT)
+  startDate   DateTime?
+  endDate     DateTime?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  createdById String
+  createdBy   User @relation(fields: [createdById], references: [id])
+
+  // Campaign Configuration
+  targetAudience Json?
+  budget         Float?
+  goals          Json?
+
+  // Performance Metrics
+  impressions    Int @default(0)
+  clicks         Int @default(0)
+  conversions    Int @default(0)
+  revenue        Float @default(0.0)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  agents         CampaignAgent[]
+  leads          Lead[]
+
+  @@map("campaigns")
+}
+
+model CampaignAgent {
+  id         String @id @default(cuid())
+  campaignId String
+  agentId    String
+
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  agent      AIAgent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime @default(now())
+
+  @@unique([campaignId, agentId])
+  @@map("campaign_agents")
+}
+
+// ==================== AGENT EXECUTION & COORDINATION ====================
+
+model AgentExecution {
+  id          String           @id @default(cuid())
+  agentId     String
+  agent       AIAgent          @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  // Execution Details
+  status      ExecutionStatus  @default(RUNNING)
+  startedAt   DateTime         @default(now())
+  completedAt DateTime?
+  duration    Int?             // in milliseconds
+
+  // Input/Output
+  input       Json?            // Execution input data
+  output      Json?            // Execution output/results
+  error       String?          // Error message if failed
+
+  // Context
+  trigger     String?          // What triggered this execution
+  context     Json?            // Additional context data
+
+  // Metrics
+  resourceUsage Json?          // CPU, memory, API calls etc.
+
+  @@map("agent_executions")
+}
+
+model AgentSwarm {
+  id              String        @id @default(cuid())
+  name            String
+  description     String?
+  coordinatorType SwarmType     @default(SEQUENTIAL)
+
+  organizationId  String
+  organization    Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Swarm Configuration
+  configuration   Json?         // Swarm coordination rules
+  isActive        Boolean       @default(false)
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  members         SwarmMember[]
+
+  @@map("agent_swarms")
+}
+
+model SwarmMember {
+  id       String    @id @default(cuid())
+  swarmId  String
+  agentId  String
+  priority Int       @default(0)
+  role     SwarmRole @default(WORKER)
+
+  swarm    AgentSwarm @relation(fields: [swarmId], references: [id], onDelete: Cascade)
+  agent    AIAgent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([swarmId, agentId])
+  @@map("swarm_members")
+}
+
+// ==================== AGENT MARKETPLACE ====================
+
+model MarketplaceAgent {
+  id          String  @id @default(cuid())
+  agentId     String  @unique
+  agent       AIAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  // Marketplace Info
+  title       String
+  description String
+  category    String
+  tags        String[]
+  price       Float   @default(0.0) // 0 for free agents
+
+  // Stats
+  downloads   Int     @default(0)
+  rating      Float   @default(0.0)
+  reviews     Int     @default(0)
+
+  // Publishing
+  isApproved  Boolean @default(false)
+  isFeatured  Boolean @default(false)
+
+  publishedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("marketplace_agents")
+}
+
+// ==================== LEADS & ANALYTICS ====================
+
+model Lead {
+  id         String     @id @default(cuid())
+  email      String
+  firstName  String?
+  lastName   String?
+  phone      String?
+  company    String?
+  source     LeadSource
+  status     LeadStatus @default(NEW)
+  score      Int        @default(0) // Lead scoring 0-100
+
+  campaignId String?
+  campaign   Campaign? @relation(fields: [campaignId], references: [id])
+
+  // Lead Data
+  metadata   Json? // Additional lead information
+  notes      String?
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("leads")
+}
+
+model Analytics {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Metrics
+  date           DateTime @db.Date
+  visitors       Int @default(0)
+  pageViews      Int @default(0)
+  leads          Int @default(0)
+  conversions    Int @default(0)
+  revenue        Float @default(0.0)
+
+  // Agent Performance
+  agentMetrics   Json? // Per-agent performance data
+
+  createdAt      DateTime @default(now())
+
+  @@unique([organizationId, date])
+  @@map("analytics")
+}
+
+// ==================== ENUMS ====================
+
+enum PlanType {
+  FREE
+  CONQUEROR    // $600/month - 50 agents
+  EMPEROR      // $2400/month - 500 agents
+  OVERLORD     // Custom pricing - 10000+ agents
+}
+
+enum OrgStatus {
+  ACTIVE
+  SUSPENDED
+  CANCELLED
+  TRIAL
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  USER
+  VIEWER
+}
+
+enum SubdomainStatus {
+  PENDING
+  ACTIVE
+  FAILED
+  SUSPENDED
+}
+
+enum AgentType {
+  // Elite Eight Core Agent Types
+  LEAD_GENERATOR     // Lead Gen Agent
+  EMAIL_MARKETER     // Email Marketing Agent
+  SOCIAL_MEDIA       // Social Media Agent
+  CONTENT_CREATOR    // Content Creation Agent
+  ANALYTICS          // Analytics Agent
+  CUSTOMER_SERVICE   // Customer Service Agent
+  SALES              // Sales Agent
+  SEO_OPTIMIZER      // SEO Optimization Agent
+
+  // Advanced Agent Types
+  WORKFLOW_AUTOMATION
+  DATA_PROCESSING
+  INTEGRATION_AGENT
+  MONITORING_AGENT
+  RESEARCH_AGENT
+  CUSTOM             // For user-defined agents
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum LeadSource {
+  WEBSITE
+  SOCIAL_MEDIA
+  EMAIL
+  REFERRAL
+  PAID_ADS
+  ORGANIC
+  DIRECT
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  PROPOSAL
+  NEGOTIATION
+  CLOSED_WON
+  CLOSED_LOST
+}
+
+// ==================== NEW AGENT FRAMEWORK ENUMS ====================
+
+enum AgentStatus {
+  DRAFT          // Agent is being configured
+  READY          // Agent is configured and ready to run
+  RUNNING        // Agent is actively executing
+  PAUSED         // Agent is temporarily stopped
+  ERROR          // Agent encountered an error
+  MAINTENANCE    // Agent is under maintenance
+  ARCHIVED       // Agent is archived
+}
+
+enum ExecutionStatus {
+  QUEUED         // Execution is queued
+  RUNNING        // Execution is in progress
+  COMPLETED      // Execution completed successfully
+  FAILED         // Execution failed
+  CANCELLED      // Execution was cancelled
+  TIMEOUT        // Execution timed out
+}
+
+enum SwarmType {
+  SEQUENTIAL     // Agents run one after another
+  PARALLEL       // Agents run simultaneously
+  CONDITIONAL    // Agents run based on conditions
+  COLLABORATIVE  // Agents work together and share data
+  HIERARCHICAL   // Agents in parent-child relationships
+}
+
+enum SwarmRole {
+  COORDINATOR    // Controls swarm execution
+  WORKER         // Performs tasks
+  OBSERVER       // Monitors and reports
+  VALIDATOR      // Validates results
+}

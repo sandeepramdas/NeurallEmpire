@@ -1,0 +1,266 @@
+import { Response } from 'express';
+import { swarmService } from '@/services/swarm.service';
+import { AuthenticatedRequest } from '@/types';
+import { SwarmType, SwarmRole } from '@prisma/client';
+
+export class SwarmController {
+  async createSwarm(req: AuthenticatedRequest, res: Response) {
+    try {
+      const { organizationId } = req.user!;
+      const { name, description, coordinatorType, configuration } = req.body;
+
+      if (!name || !coordinatorType) {
+        return res.status(400).json({
+          success: false,
+          message: 'Name and coordinator type are required',
+        });
+      }
+
+      if (!Object.values(SwarmType).includes(coordinatorType)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid coordinator type',
+        });
+      }
+
+      const swarm = await swarmService.createSwarm(organizationId, {
+        name,
+        description,
+        coordinatorType,
+        configuration,
+      });
+
+      res.status(201).json({
+        success: true,
+        data: swarm,
+        message: 'Swarm created successfully',
+      });
+    } catch (error) {
+      console.error('Error creating swarm:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to create swarm',
+      });
+    }
+  }
+
+  async listSwarms(req: AuthenticatedRequest, res: Response) {
+    try {
+      const { organizationId } = req.user!;
+      const swarms = await swarmService.listSwarms(organizationId);
+
+      res.json({
+        success: true,
+        data: swarms,
+      });
+    } catch (error) {
+      console.error('Error listing swarms:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to list swarms',
+      });
+    }
+  }
+
+  async getSwarm(req: AuthenticatedRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const swarm = await swarmService.getSwarmStatus(id);
+
+      res.json({
+        success: true,
+        data: swarm,
+      });
+    } catch (error) {
+      console.error('Error getting swarm:', error);
+
+      if (error instanceof Error && error.message === 'Swarm not found') {
+        return res.status(404).json({
+          success: false,
+          message: 'Swarm not found',
+        });
+      }
+
+      res.status(500).json({
+        success: false,
+        message: 'Failed to get swarm',
+      });
+    }
+  }
+
+  async addAgentToSwarm(req: AuthenticatedRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const { agentId, role, priority } = req.body;
+
+      if (!agentId || !role) {
+        return res.status(400).json({
+          success: false,
+          message: 'Agent ID and role are required',
+        });
+      }
+
+      if (!Object.values(SwarmRole).includes(role)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid role',
+        });
+      }
+
+      const member = await swarmService.addAgentToSwarm(id, {
+        agentId,
+        role,
+        priority: priority || 0,
+      });
+
+      res.json({
+        success: true,
+        data: member,
+        message: 'Agent added to swarm successfully',
+      });
+    } catch (error) {
+      console.error('Error adding agent to swarm:', error);
+
+      if (error instanceof Error) {
+        if (error.message.includes('not found')) {
+          return res.status(404).json({
+            success: false,
+            message: error.message,
+          });
+        }
+        if (error.message.includes('already exists')) {
+          return res.status(409).json({
+            success: false,
+            message: 'Agent is already a member of this swarm',
+          });
+        }
+      }
+
+      res.status(500).json({
+        success: false,
+        message: 'Failed to add agent to swarm',
+      });
+    }
+  }
+
+  async removeAgentFromSwarm(req: AuthenticatedRequest, res: Response) {
+    try {
+      const { id, agentId } = req.params;
+
+      await swarmService.removeAgentFromSwarm(id, agentId);
+
+      res.json({
+        success: true,
+        message: 'Agent removed from swarm successfully',
+      });
+    } catch (error) {
+      console.error('Error removing agent from swarm:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to remove agent from swarm',
+      });
+    }
+  }
+
+  async executeSwarm(req: AuthenticatedRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const { input } = req.body;
+
+      const result = await swarmService.executeSwarm(id, input);
+
+      res.json({
+        success: true,
+        data: result,
+        message: 'Swarm executed successfully',
+      });
+    } catch (error) {
+      console.error('Error executing swarm:', error);
+
+      if (error instanceof Error) {
+        if (error.message.includes('not found')) {
+          return res.status(404).json({
+            success: false,
+            message: error.message,
+          });
+        }
+        if (error.message.includes('no members')) {
+          return res.status(400).json({
+            success: false,
+            message: error.message,
+          });
+        }
+      }
+
+      res.status(500).json({
+        success: false,
+        message: 'Failed to execute swarm',
+      });
+    }
+  }
+
+  async getSwarmTypes(req: AuthenticatedRequest, res: Response) {
+    try {
+      const swarmTypes = Object.values(SwarmType).map(type => ({
+        value: type,
+        label: type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()),
+        description: this.getSwarmTypeDescription(type),
+      }));
+
+      res.json({
+        success: true,
+        data: swarmTypes,
+      });
+    } catch (error) {
+      console.error('Error getting swarm types:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to get swarm types',
+      });
+    }
+  }
+
+  async getSwarmRoles(req: AuthenticatedRequest, res: Response) {
+    try {
+      const swarmRoles = Object.values(SwarmRole).map(role => ({
+        value: role,
+        label: role.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()),
+        description: this.getSwarmRoleDescription(role),
+      }));
+
+      res.json({
+        success: true,
+        data: swarmRoles,
+      });
+    } catch (error) {
+      console.error('Error getting swarm roles:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to get swarm roles',
+      });
+    }
+  }
+
+  private getSwarmTypeDescription(type: SwarmType): string {
+    const descriptions: Record<SwarmType, string> = {
+      [SwarmType.SEQUENTIAL]: 'Agents execute one after another, each using the output of the previous agent',
+      [SwarmType.PARALLEL]: 'All agents execute simultaneously with the same input',
+      [SwarmType.CONDITIONAL]: 'Agents execute based on conditions and previous results',
+      [SwarmType.COLLABORATIVE]: 'Agents work together, sharing data and coordinating tasks',
+      [SwarmType.HIERARCHICAL]: 'Agents execute in a parent-child hierarchy structure',
+    };
+
+    return descriptions[type] || 'Custom coordination pattern';
+  }
+
+  private getSwarmRoleDescription(role: SwarmRole): string {
+    const descriptions: Record<SwarmRole, string> = {
+      [SwarmRole.COORDINATOR]: 'Plans and coordinates the execution of other agents',
+      [SwarmRole.WORKER]: 'Performs the main tasks and processing work',
+      [SwarmRole.OBSERVER]: 'Monitors execution and provides feedback or validation',
+      [SwarmRole.VALIDATOR]: 'Validates results and ensures quality standards',
+    };
+
+    return descriptions[role] || 'Custom agent role';
+  }
+}
