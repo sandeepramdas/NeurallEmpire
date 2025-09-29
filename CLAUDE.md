@@ -15,7 +15,7 @@ Run this whenever you start Claude Code to check all system connections:
 - **Frontend**: React SPA configured
 - **MCP**: Browser automation via Puppeteer configured
 - **GitHub**: Repository connected
-- **Railway**: CLI installed, needs linking
+- **Deployment**: Local development ready
 
 ### Common Commands
 ```bash
@@ -36,10 +36,8 @@ git status                         # Check changes
 git add . && git commit -m "msg"   # Commit changes
 git push origin main               # Push to GitHub
 
-# Railway deployment
-railway login                      # Login to Railway
-railway link                       # Link project
-railway status                     # Check deployment status
+# Deployment (Coming Soon)
+# Using Vercel/AWS/GCP for production
 ```
 
 ### Environment Setup
@@ -49,8 +47,8 @@ railway status                     # Check deployment status
 
 ### URLs
 - **Local Backend**: http://localhost:3001
-- **Local Frontend**: http://localhost:3000 or :8000
-- **GitHub Pages**: https://sandeepramdas.github.io/NeurallEmpire
+- **Local Frontend**: http://localhost:3000
+- **Production**: https://www.neurallempire.com
 - **API Docs**: http://localhost:3001/api
 - **Health Check**: http://localhost:3001/health
 
