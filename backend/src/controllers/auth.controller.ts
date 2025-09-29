@@ -257,6 +257,9 @@ export const login = async (
       });
     }
 
+    // Generate JWT token
+    const token = generateToken(user.id, user.organizationId, user.role);
+
     // Update last login and create session
     await prisma.$transaction(async (tx) => {
       await tx.user.update({
@@ -292,9 +295,6 @@ export const login = async (
         }
       });
     });
-
-    // Generate JWT token
-    const token = generateToken(user.id, user.organizationId, user.role);
 
     const response: ApiResponse<{
       user: AuthUser;
