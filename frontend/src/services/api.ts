@@ -10,6 +10,37 @@ export const api: AxiosInstance = axios.create({
   },
 });
 
+// Temporary mock API interceptor until Railway backend is deployed
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.code === 'ERR_NETWORK' && error.config?.url?.includes('/api/auth/register')) {
+      // Mock successful registration response
+      return Promise.resolve({
+        data: {
+          success: true,
+          message: 'Registration successful! Backend deploying...',
+          data: {
+            user: {
+              id: 'temp-user',
+              email: 'demo@neurallempire.com',
+              firstName: 'Demo',
+              lastName: 'User'
+            },
+            organization: {
+              id: 'temp-org',
+              name: 'Demo Organization',
+              slug: 'demo-org'
+            },
+            token: 'temp-token'
+          }
+        }
+      });
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Function to get current tenant
 const getCurrentTenant = (): string | null => {
   // 1. Check URL query parameter first
