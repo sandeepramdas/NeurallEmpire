@@ -4,6 +4,14 @@
 
 A comprehensive, multi-tenant SaaS platform for building, deploying, and managing AI agents with advanced swarm intelligence capabilities.
 
+## 🚀 Quick Deploy
+
+### Frontend (GitHub Pages)
+[![Deploy Frontend](https://img.shields.io/badge/Deploy%20Frontend-GitHub%20Pages-blue?logo=github)](https://github.com/sandeepramdas/NeurallEmpire/actions)
+
+### Backend (Railway)
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/Abo1zu?referralCode=alphasec)
+
 ## 🚀 Features
 
 ### **Elite Eight AI Agents**
@@ -137,6 +145,7 @@ VITE_APP_NAME="NeurallEmpire"
 ### **Authentication**
 ```
 POST   /api/auth/register    # User registration
+POST   /api/auth/join        # Join existing organization
 POST   /api/auth/login       # User login
 GET    /api/auth/profile     # Get user profile
 POST   /api/auth/logout      # User logout
@@ -195,6 +204,24 @@ const emailConfig = {
     tracking: { opens: true, clicks: true }
   }
 }
+```
+
+## 🌐 Multi-Tenant Access
+
+### **Organization Switching**
+```bash
+# Local development
+http://localhost:3002?tenant=test-empire
+
+# Production subdomains
+https://test-empire.neurallempire.com
+```
+
+### **Test Credentials**
+```
+Email: testuser@testempire.com
+Password: TestUser123!
+Organization: test-empire
 ```
 
 ## 🌐 Deployment
