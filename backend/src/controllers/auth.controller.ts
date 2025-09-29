@@ -335,6 +335,126 @@ export const getProfile = async (
   }
 };
 
+export const joinOrganization = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const joinSchema = z.object({
+      email: z.string().email('Invalid email format'),
+      password: z.string().min(8, 'Password must be at least 8 characters'),
+      firstName: z.string().optional(),
+      lastName: z.string().optional(),
+      organizationSlug: z.string().min(1, 'Organization slug is required'),
+    });
+
+    const validationResult = joinSchema.safeParse(req.body);
+
+    if (!validationResult.success) {
+      return res.status(400).json({
+        success: false,
+        error: 'Validation failed',
+        details: validationResult.error.errors,
+      });
+    }
+
+    const { email, password, firstName, lastName, organizationSlug } = validationResult.data;
+
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUser) {
+      return res.status(409).json({
+        success: false,
+        error: 'User with this email already exists',
+      });
+    }
+
+    // Find the organization
+    const organization = await prisma.organization.findUnique({
+      where: { slug: organizationSlug },
+    });
+
+    if (!organization) {
+      return res.status(404).json({
+        success: false,
+        error: 'Organization not found',
+      });
+    }
+
+    if (organization.status !== 'ACTIVE') {
+      return res.status(403).json({
+        success: false,
+        error: 'Organization is not active',
+      });
+    }
+
+    // Hash password
+    const saltRounds = 12;
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+
+    // Create user as regular user (not owner)
+    const user = await prisma.user.create({
+      data: {
+        email,
+        passwordHash,
+        firstName,
+        lastName,
+        role: 'USER',
+        organizationId: organization.id,
+        emailVerified: false,
+        isActive: true,
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        organizationId: true,
+      },
+    });
+
+    // Generate JWT token
+    const token = generateToken(user.id, user.organizationId, user.role);
+
+    const response: ApiResponse<{
+      user: AuthUser;
+      organization: { id: string; name: string; slug: string };
+      token: string;
+    }> = {
+      success: true,
+      message: 'Successfully joined organization',
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          organizationId: user.organizationId,
+          firstName: user.firstName || undefined,
+          lastName: user.lastName || undefined,
+        },
+        organization: {
+          id: organization.id,
+          name: organization.name,
+          slug: organization.slug,
+        },
+        token,
+      },
+    };
+
+    res.status(201).json(response);
+  } catch (error) {
+    console.error('Join organization error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to join organization',
+    });
+  }
+};
+
 export const logout = async (
   req: AuthenticatedRequest,
   res: Response

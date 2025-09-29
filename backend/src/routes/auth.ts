@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { register, login, getProfile, logout } from '@/controllers/auth.controller';
+import { register, login, getProfile, logout, joinOrganization } from '@/controllers/auth.controller';
 import { authenticate, optionalAuth } from '@/middleware/auth';
 
 const router = Router();
@@ -10,6 +10,13 @@ const router = Router();
  * @access  Public
  */
 router.post('/register', register);
+
+/**
+ * @route   POST /api/auth/join
+ * @desc    Join an existing organization
+ * @access  Public
+ */
+router.post('/join', joinOrganization);
 
 /**
  * @route   POST /api/auth/login
