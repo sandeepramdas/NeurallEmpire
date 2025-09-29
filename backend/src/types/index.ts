@@ -3,9 +3,7 @@ import { Organization, User, PlanType, UserRole } from '@prisma/client';
 
 // Extended Request with authenticated user and tenant
 export interface AuthenticatedRequest extends Request {
-  user?: AuthUser;
-  organization?: Organization;
-  tenant?: string; // subdomain
+  user: AuthUser;
 }
 
 export interface AuthUser {

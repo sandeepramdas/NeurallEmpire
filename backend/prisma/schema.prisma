@@ -1,4 +1,7 @@
-// Multi-Tenant SaaS Database Schema for NeurallEmpire
+// ==================== NEURALLEMPIRE SAAS MARKETPLACE ====================
+// Advanced Multi-Tenant AI Agent Platform with Inter-Agent Communication
+// Version 2.0 - Enterprise Grade Architecture
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,471 +11,1024 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ==================== CORE TENANT ARCHITECTURE ====================
+// ==================== PLATFORM ADMINISTRATION ====================
 
-model Organization {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique // for subdomain: {slug}.neurallempire.com
-  domain      String?  @unique // custom domain
-  logo        String?
-  description String?
+model PlatformAdmin {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  role         AdminRole @default(SUPPORT)
+  permissions  Json      // Granular permissions
 
-  // Subscription & Billing
-  planType    PlanType @default(FREE)
-  status      OrgStatus @default(ACTIVE)
-  billingEmail String?
-  stripeCustomerId String? @unique
-  subscriptionId String? @unique
+  // Security
+  mfaEnabled   Boolean   @default(true)
+  mfaSecret    String?
+  lastLoginAt  DateTime?
+  lastLoginIp  String?
 
-  // Limits based on plan
-  maxUsers    Int @default(1)
-  maxAgents   Int @default(5)
-  maxCampaigns Int @default(10)
-  storageLimit Int @default(1048576) // 1GB in KB
-
-  // Metadata
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   // Relations
-  users       User[]
-  agents      AIAgent[]
-  campaigns   Campaign[]
-  subdomains  Subdomain[]
-  analytics   Analytics[]
-  swarms      AgentSwarm[]
+  auditLogs    AuditLog[]
+  adminActions AdminAction[]
 
+  @@map("platform_admins")
+}
+
+model AdminAction {
+  id          String    @id @default(cuid())
+  adminId     String
+  action      String    // e.g., "DEACTIVATE_ORG", "MODIFY_SUBSCRIPTION"
+  targetType  String    // "ORGANIZATION", "USER", "AGENT"
+  targetId    String
+  reason      String?
+  metadata    Json?     // Additional action details
+
+  admin       PlatformAdmin @relation(fields: [adminId], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@index([targetType, targetId])
+  @@map("admin_actions")
+}
+
+// ==================== ENHANCED ORGANIZATION MANAGEMENT ====================
+
+model Organization {
+  id               String       @id @default(cuid())
+  name             String
+  slug             String       @unique
+  domain           String?      @unique
+  logo             String?
+  description      String?
+  industry         String?      // Industry vertical
+  size             String?      // Company size
+
+  // Enhanced Status Management
+  status           OrgStatus    @default(TRIAL)
+  statusReason     String?      // Why status changed
+  statusChangedAt  DateTime     @default(now())
+  statusChangedBy  String?      // Admin who changed it
+
+  // Subscription & Billing
+  planType         PlanType     @default(TRIAL)
+  billingCycle     BillingCycle @default(MONTHLY)
+  subscriptionId   String?      @unique
+  stripeCustomerId String?      @unique
+  billingEmail     String?
+
+  // Trial Management
+  trialEndsAt      DateTime?
+  trialExtended    Boolean      @default(false)
+
+  // Resource Limits (Plan-based)
+  maxUsers         Int          @default(5)
+  maxAgents        Int          @default(10)
+  maxWorkflows     Int          @default(20)
+  maxApiCalls      Int          @default(10000)
+  storageLimit     BigInt       @default(5368709120) // 5GB in bytes
+
+  // Usage Tracking
+  currentUsers     Int          @default(0)
+  currentAgents    Int          @default(0)
+  currentWorkflows Int          @default(0)
+  apiCallsThisMonth Int         @default(0)
+  storageUsed      BigInt       @default(0)
+
+  // Compliance & Security
+  dataRetention    Int          @default(90) // days
+  ipWhitelist      String[]     @default([])
+  ssoEnabled       Boolean      @default(false)
+  ssoProvider      String?
+  ssoConfig        Json?
+
+  // Metadata
+  onboardingCompleted Boolean   @default(false)
+  verifiedAt       DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  deletedAt        DateTime?    // Soft delete
+
+  // Relations
+  users            User[]
+  agents           Agent[]
+  workflows        AgentWorkflow[]
+  workflowTemplates WorkflowTemplate[]
+  interactions     AgentInteraction[]
+  subscriptions    Subscription[]
+  invoices         Invoice[]
+  apiKeys          ApiKey[]
+  webhooks         Webhook[]
+  auditLogs        AuditLog[]
+  agentTemplates   AgentTemplate[]
+  usageMetrics     UsageMetric[]
+  notifications    Notification[]
+
+  @@index([status])
+  @@index([planType])
   @@map("organizations")
 }
 
+// ==================== USER & AUTHENTICATION ====================
+
 model User {
-  id            String   @id @default(cuid())
-  email         String   @unique
-  passwordHash  String?  // null for social auth users
-  firstName     String?
-  lastName      String?
-  avatar        String?
-  role          UserRole @default(USER)
+  id             String   @id @default(cuid())
+  email          String   @unique
+  passwordHash   String?
+  firstName      String?
+  lastName       String?
+  avatar         String?
+  phone          String?
+  timezone       String   @default("UTC")
 
-  // Organization relation
+  // Organization & Role
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  role           UserRole @default(MEMBER)
+  department     String?
+  title          String?
 
-  // Authentication
-  emailVerified Boolean @default(false)
-  isActive      Boolean @default(true)
-  lastLoginAt   DateTime?
+  // Permissions
+  permissions    Json?    // Override permissions
+  canCreateAgents Boolean @default(true)
+  canManageWorkflows Boolean @default(true)
+  canViewAnalytics Boolean @default(true)
+
+  // Status & Security
+  status         UserStatus @default(PENDING)
+  statusReason   String?
+  emailVerified  Boolean    @default(false)
+  phoneVerified  Boolean    @default(false)
+  mfaEnabled     Boolean    @default(false)
+  mfaSecret      String?
+
+  // Activity
+  lastLoginAt    DateTime?
+  lastLoginIp    String?
+  loginCount     Int       @default(0)
 
   // Social Auth
-  googleId      String? @unique
-  facebookId    String? @unique
-  linkedinId    String? @unique
-  githubId      String? @unique
+  googleId       String?   @unique
+  microsoftId    String?   @unique
+  githubId       String?   @unique
 
   // Metadata
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  onboardingStep Int       @default(0)
+  preferences    Json?     // UI preferences, settings
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime? // Soft delete
 
   // Relations
-  campaigns     Campaign[]
-  sessions      Session[]
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  sessions       Session[]
+  createdAgents  Agent[]      @relation("AgentCreator")
+  ownedAgents    Agent[]      @relation("AgentOwner")
+  workflows      AgentWorkflow[] @relation("WorkflowCreator")
+  auditLogs      AuditLog[]
+  notifications  Notification[]
 
+  @@index([organizationId, status])
+  @@index([email])
   @@map("users")
 }
 
 model Session {
   id        String   @id @default(cuid())
   userId    String
-  token     String   @unique
+  token     String   @unique @default(cuid())
+
+  // Session Details
+  userAgent String?
+  ipAddress String?
+
   expiresAt DateTime
   createdAt DateTime @default(now())
 
   user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([token])
+  @@index([userId])
   @@map("sessions")
 }
 
-// ==================== SUBDOMAIN MANAGEMENT ====================
+// ==================== ADVANCED AGENT SYSTEM ====================
 
-model Subdomain {
-  id             String  @id @default(cuid())
-  subdomain      String  @unique
-  customDomain   String? @unique
-  sslEnabled     Boolean @default(false)
-  sslCertificate String?
-  status         SubdomainStatus @default(PENDING)
+model Agent {
+  id              String   @id @default(cuid())
+  name            String
+  slug            String   // URL-friendly name
+  type            AgentType
+  category        String   // Business category
+  icon            String?
+  description     String?
+  version         String   @default("1.0.0")
 
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  // Ownership
+  organizationId  String
+  createdById     String
+  ownerId         String   // Can transfer ownership
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  // Configuration
+  config          Json     // Core configuration
+  prompts         Json?    // System prompts
+  capabilities    Json     // What the agent can do
+  requirements    Json?    // Required inputs/env vars
 
-  @@map("subdomains")
-}
+  // LLM Settings
+  model           String   @default("gpt-4")
+  temperature     Float    @default(0.7)
+  maxTokens       Int      @default(2000)
 
-// ==================== AI AGENTS & CAMPAIGNS ====================
+  // Behavior & Rules
+  triggers        Json?    // When to activate
+  actions         Json?    // Available actions
+  constraints     Json?    // Limitations/rules
+  errorHandling   Json?    // Error strategies
 
-model AIAgent {
-  id             String      @id @default(cuid())
-  name           String
-  type           AgentType
-  description    String?
-  version        String      @default("1.0.0")
+  // Inter-Agent Communication
+  canReceiveMessages Boolean @default(true)
+  canSendMessages    Boolean @default(true)
+  messageProtocols   String[] @default(["webhook", "internal"])
+  allowedSenders     String[] @default([]) // Agent IDs that can message
 
-  // Agent Configuration & Behavior
-  configuration  Json        // Agent-specific config
-  triggers       Json?       // Event triggers and conditions
-  actions        Json?       // Available actions and workflows
-  capabilities   Json?       // Agent capabilities and skills
+  // Performance Settings
+  timeout         Int      @default(30000) // ms
+  retryPolicy     Json?    // Retry configuration
+  rateLimits      Json?    // Rate limiting rules
 
-  // Agent State & Status
-  status         AgentStatus @default(DRAFT)
-  isActive       Boolean     @default(false)
-  lastExecution  DateTime?
-  errorCount     Int         @default(0)
+  // Status & Health
+  status          AgentStatus @default(DRAFT)
+  health          AgentHealth @default(UNKNOWN)
+  lastHealthCheck DateTime?
+  errorCount      Int         @default(0)
+  consecutiveErrors Int       @default(0)
 
-  // Swarm & Coordination
-  swarmId        String?     // For agent swarm coordination
-  parentAgentId  String?     // For hierarchical agents
-  parentAgent    AIAgent?    @relation("AgentHierarchy", fields: [parentAgentId], references: [id])
-  childAgents    AIAgent[]   @relation("AgentHierarchy")
+  // Marketplace
+  isPublic        Boolean  @default(false)
+  isTemplate      Boolean  @default(false)
+  isCertified     Boolean  @default(false) // Platform verified
+  marketplacePrice Float?  // null = free
 
-  // Marketplace & Sharing
-  isPublic       Boolean     @default(false)
-  isTemplate     Boolean     @default(false)
-  templateSource String?     // Template marketplace ID
+  // Analytics
+  totalExecutions BigInt   @default(0)
+  successRate     Float    @default(0)
+  avgResponseTime Int      @default(0) // ms
+  totalTokensUsed BigInt   @default(0)
 
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-
-  // Performance Metrics
-  totalExecutions Int    @default(0)
-  successRate     Float  @default(0.0)
-  totalLeads      Int    @default(0)
-  conversionRate  Float  @default(0.0)
-  avgResponseTime Int    @default(0) // in milliseconds
-
-  // Resource Usage
-  cpuUsage        Float  @default(0.0)
-  memoryUsage     Float  @default(0.0)
-  apiCallsCount   Int    @default(0)
-
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  // Relations
-  campaigns      CampaignAgent[]
-  executions     AgentExecution[]
-  swarmMembers   SwarmMember[]
-  marketplace    MarketplaceAgent?
-
-  @@map("ai_agents")
-}
-
-model Campaign {
-  id          String        @id @default(cuid())
-  name        String
-  description String?
-  status      CampaignStatus @default(DRAFT)
-  startDate   DateTime?
-  endDate     DateTime?
-
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-
-  createdById String
-  createdBy   User @relation(fields: [createdById], references: [id])
-
-  // Campaign Configuration
-  targetAudience Json?
-  budget         Float?
-  goals          Json?
-
-  // Performance Metrics
-  impressions    Int @default(0)
-  clicks         Int @default(0)
-  conversions    Int @default(0)
-  revenue        Float @default(0.0)
-
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  // Metadata
+  tags            String[] @default([])
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  publishedAt     DateTime?
+  deletedAt       DateTime? // Soft delete
 
   // Relations
-  agents         CampaignAgent[]
-  leads          Lead[]
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  creator         User @relation("AgentCreator", fields: [createdById], references: [id])
+  owner           User @relation("AgentOwner", fields: [ownerId], references: [id])
 
-  @@map("campaigns")
+  // Workflows & Interactions
+  sourceWorkflows AgentWorkflowNode[] @relation("SourceAgent")
+  targetWorkflows AgentWorkflowNode[] @relation("TargetAgent")
+  sentInteractions AgentInteraction[] @relation("SenderAgent")
+  receivedInteractions AgentInteraction[] @relation("ReceiverAgent")
+
+  // Execution & Monitoring
+  executions      AgentExecution[]
+  metrics         AgentMetric[]
+  templates       AgentTemplate[]
+
+  @@unique([organizationId, slug])
+  @@index([status])
+  @@index([organizationId])
+  @@map("agents")
 }
 
-model CampaignAgent {
-  id         String @id @default(cuid())
-  campaignId String
-  agentId    String
+// ==================== AGENT WORKFLOWS & ORCHESTRATION ====================
 
-  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  agent      AIAgent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+model AgentWorkflow {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  type            WorkflowType @default(SEQUENTIAL)
 
-  createdAt  DateTime @default(now())
+  // Ownership
+  organizationId  String
+  createdById     String
 
-  @@unique([campaignId, agentId])
-  @@map("campaign_agents")
+  // Configuration
+  trigger         Json     // What starts the workflow
+  schedule        String?  // Cron expression
+  config          Json     // Workflow configuration
+  variables       Json?    // Workflow variables
+
+  // Status
+  status          WorkflowStatus @default(DRAFT)
+  isActive        Boolean @default(false)
+  isPaused        Boolean @default(false)
+
+  // Execution Settings
+  maxExecutionTime Int    @default(300000) // 5 min in ms
+  maxRetries      Int     @default(3)
+  errorStrategy   String  @default("STOP") // STOP, CONTINUE, ROLLBACK
+
+  // Analytics
+  totalRuns       BigInt  @default(0)
+  successfulRuns  BigInt  @default(0)
+  failedRuns      BigInt  @default(0)
+  avgDuration     Int     @default(0) // ms
+  lastRunAt       DateTime?
+
+  // Metadata
+  version         Int      @default(1)
+  tags            String[] @default([])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  creator         User @relation("WorkflowCreator", fields: [createdById], references: [id])
+  nodes           AgentWorkflowNode[]
+  executions      WorkflowExecution[]
+  templates       WorkflowTemplate[]
+
+  @@index([organizationId, status])
+  @@map("agent_workflows")
 }
 
-// ==================== AGENT EXECUTION & COORDINATION ====================
+model AgentWorkflowNode {
+  id            String   @id @default(cuid())
+  workflowId    String
+  agentId       String
 
-model AgentExecution {
-  id          String           @id @default(cuid())
-  agentId     String
-  agent       AIAgent          @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  // Node Configuration
+  nodeType      String   // START, AGENT, CONDITION, PARALLEL, END
+  position      Json     // x, y coordinates for UI
+  config        Json     // Node-specific configuration
 
-  // Execution Details
-  status      ExecutionStatus  @default(RUNNING)
-  startedAt   DateTime         @default(now())
-  completedAt DateTime?
-  duration    Int?             // in milliseconds
+  // Execution Rules
+  order         Int      // Execution order
+  condition     Json?    // Conditional execution
+  timeout       Int      @default(30000)
+  retryOnError  Boolean  @default(true)
 
-  // Input/Output
-  input       Json?            // Execution input data
-  output      Json?            // Execution output/results
-  error       String?          // Error message if failed
+  // Input/Output Mapping
+  inputMapping  Json?    // Map previous outputs to inputs
+  outputMapping Json?    // Map outputs for next nodes
+
+  // Relations
+  workflow      AgentWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  agent         Agent @relation("SourceAgent", fields: [agentId], references: [id])
+
+  // Connections
+  nextNodeId    String?
+  nextNode      Agent? @relation("TargetAgent", fields: [nextNodeId], references: [id])
+
+  @@index([workflowId])
+  @@map("agent_workflow_nodes")
+}
+
+// ==================== AGENT INTERACTIONS & COMMUNICATION ====================
+
+model AgentInteraction {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Participants
+  senderAgentId   String
+  receiverAgentId String
+
+  // Message
+  messageType     String   // REQUEST, RESPONSE, EVENT, NOTIFICATION
+  protocol        String   // INTERNAL, WEBHOOK, GRPC, REST
+  payload         Json     // Message content
 
   // Context
-  trigger     String?          // What triggered this execution
-  context     Json?            // Additional context data
+  workflowId      String?
+  executionId     String?
+  correlationId   String?  // Track related messages
 
-  // Metrics
-  resourceUsage Json?          // CPU, memory, API calls etc.
+  // Status
+  status          InteractionStatus @default(PENDING)
+  deliveredAt     DateTime?
+  acknowledgedAt  DateTime?
+  processedAt     DateTime?
 
+  // Response
+  responsePayload Json?
+  responseCode    Int?
+  errorMessage    String?
+
+  // Metadata
+  priority        Int      @default(0)
+  ttl             Int?     // Time to live in seconds
+  retryCount      Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  senderAgent     Agent @relation("SenderAgent", fields: [senderAgentId], references: [id])
+  receiverAgent   Agent @relation("ReceiverAgent", fields: [receiverAgentId], references: [id])
+
+  @@index([senderAgentId])
+  @@index([receiverAgentId])
+  @@index([status])
+  @@map("agent_interactions")
+}
+
+// ==================== EXECUTION & MONITORING ====================
+
+model AgentExecution {
+  id            String   @id @default(cuid())
+  agentId       String
+
+  // Trigger
+  triggeredBy   String   // USER, WORKFLOW, SCHEDULE, API, AGENT
+  triggerId     String?  // ID of triggering entity
+
+  // Execution
+  status        ExecutionStatus @default(QUEUED)
+  startedAt     DateTime?
+  completedAt   DateTime?
+  duration      Int?     // ms
+
+  // Input/Output
+  input         Json?
+  output        Json?
+  logs          Json[]   @default([])
+
+  // Error Handling
+  error         String?
+  errorCode     String?
+  errorStack    Json?
+  retryCount    Int      @default(0)
+
+  // Resources
+  tokensUsed    Int      @default(0)
+  apiCalls      Int      @default(0)
+  cpuTime       Int?     // ms
+  memoryUsed    Int?     // MB
+
+  // Context
+  environment   Json?    // Env vars, context
+  metadata      Json?
+
+  createdAt     DateTime @default(now())
+
+  // Relations
+  agent         Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([agentId, status])
+  @@index([createdAt])
   @@map("agent_executions")
 }
 
-model AgentSwarm {
-  id              String        @id @default(cuid())
-  name            String
-  description     String?
-  coordinatorType SwarmType     @default(SEQUENTIAL)
+model WorkflowExecution {
+  id            String   @id @default(cuid())
+  workflowId    String
 
-  organizationId  String
-  organization    Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  // Execution
+  status        ExecutionStatus @default(RUNNING)
+  startedAt     DateTime @default(now())
+  completedAt   DateTime?
+  duration      Int?     // ms
 
-  // Swarm Configuration
-  configuration   Json?         // Swarm coordination rules
-  isActive        Boolean       @default(false)
+  // Progress
+  currentNode   String?  // Current node ID
+  completedNodes String[] @default([])
 
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  // Input/Output
+  input         Json?
+  output        Json?
+  variables     Json?    // Runtime variables
+
+  // Error
+  error         String?
+  failedNode    String?
 
   // Relations
-  members         SwarmMember[]
+  workflow      AgentWorkflow @relation(fields: [workflowId], references: [id])
 
-  @@map("agent_swarms")
+  @@index([workflowId, status])
+  @@map("workflow_executions")
 }
 
-model SwarmMember {
-  id       String    @id @default(cuid())
-  swarmId  String
-  agentId  String
-  priority Int       @default(0)
-  role     SwarmRole @default(WORKER)
+// ==================== TEMPLATES & MARKETPLACE ====================
 
-  swarm    AgentSwarm @relation(fields: [swarmId], references: [id], onDelete: Cascade)
-  agent    AIAgent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+model AgentTemplate {
+  id              String   @id @default(cuid())
+  agentId         String?
+  organizationId  String
 
-  createdAt DateTime @default(now())
+  // Template Info
+  name            String
+  category        String
+  description     String
+  icon            String?
 
-  @@unique([swarmId, agentId])
-  @@map("swarm_members")
+  // Configuration Template
+  configTemplate  Json     // Template configuration
+  requirements    Json?    // Required fields
+
+  // Marketplace
+  isPublic        Boolean  @default(false)
+  isCertified     Boolean  @default(false)
+  price           Float    @default(0)
+
+  // Usage
+  installCount    Int      @default(0)
+  rating          Float    @default(0)
+  reviewCount     Int      @default(0)
+
+  // Metadata
+  tags            String[] @default([])
+  version         String   @default("1.0.0")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  agent           Agent? @relation(fields: [agentId], references: [id])
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([isPublic, category])
+  @@map("agent_templates")
 }
 
-// ==================== AGENT MARKETPLACE ====================
+model WorkflowTemplate {
+  id              String   @id @default(cuid())
+  organizationId  String
+  workflowId      String?
 
-model MarketplaceAgent {
-  id          String  @id @default(cuid())
-  agentId     String  @unique
-  agent       AIAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  // Template Info
+  name            String
+  category        String
+  description     String
 
-  // Marketplace Info
-  title       String
-  description String
-  category    String
-  tags        String[]
-  price       Float   @default(0.0) // 0 for free agents
+  // Template Data
+  template        Json     // Workflow template
+
+  // Marketplace
+  isPublic        Boolean  @default(false)
+  price           Float    @default(0)
+
+  // Usage
+  useCount        Int      @default(0)
+  rating          Float    @default(0)
+
+  // Metadata
+  tags            String[] @default([])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  workflow        AgentWorkflow? @relation(fields: [workflowId], references: [id])
+
+  @@map("workflow_templates")
+}
+
+// ==================== SUBSCRIPTION & BILLING ====================
+
+model Subscription {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Stripe
+  stripeSubscriptionId String @unique
+  stripePriceId   String
+  stripeCustomerId String
+
+  // Plan
+  planType        PlanType
+  billingCycle    BillingCycle
+
+  // Status
+  status          SubscriptionStatus
+  currentPeriodStart DateTime
+  currentPeriodEnd DateTime
+  cancelAt        DateTime?
+  canceledAt      DateTime?
+
+  // Trial
+  trialStart      DateTime?
+  trialEnd        DateTime?
+
+  // Metadata
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+model Invoice {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Invoice Details
+  invoiceNumber   String   @unique
+  stripeInvoiceId String?  @unique
+
+  // Amounts
+  subtotal        Float
+  tax             Float    @default(0)
+  total           Float
+  currency        String   @default("USD")
+
+  // Status
+  status          InvoiceStatus @default(DRAFT)
+  dueDate         DateTime
+  paidAt          DateTime?
+
+  // Line Items
+  lineItems       Json     // Array of items
+
+  // Metadata
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@map("invoices")
+}
+
+// ==================== API & WEBHOOKS ====================
+
+model ApiKey {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Key Details
+  name            String
+  key             String   @unique @default(cuid())
+  hashedKey       String   // Store hash for verification
+  prefix          String   // First few chars for identification
+
+  // Permissions
+  scopes          String[] @default(["read"])
+  rateLimitPerMin Int      @default(60)
+
+  // Usage
+  lastUsedAt      DateTime?
+  usageCount      BigInt   @default(0)
+
+  // Status
+  isActive        Boolean  @default(true)
+  expiresAt       DateTime?
+
+  createdAt       DateTime @default(now())
+  revokedAt       DateTime?
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([key])
+  @@index([organizationId])
+  @@map("api_keys")
+}
+
+model Webhook {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Webhook Config
+  name            String
+  url             String
+  secret          String   // For signing payloads
+
+  // Events
+  events          String[] // Events to listen for
+
+  // Status
+  isActive        Boolean  @default(true)
+
+  // Delivery
+  retryPolicy     Json?
+  headers         Json?    // Custom headers
 
   // Stats
-  downloads   Int     @default(0)
-  rating      Float   @default(0.0)
-  reviews     Int     @default(0)
+  totalDeliveries Int      @default(0)
+  failedDeliveries Int     @default(0)
+  lastDeliveredAt DateTime?
 
-  // Publishing
-  isApproved  Boolean @default(false)
-  isFeatured  Boolean @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  publishedAt DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id])
 
-  @@map("marketplace_agents")
+  @@index([organizationId])
+  @@map("webhooks")
 }
 
-// ==================== LEADS & ANALYTICS ====================
+// ==================== MONITORING & ANALYTICS ====================
 
-model Lead {
-  id         String     @id @default(cuid())
-  email      String
-  firstName  String?
-  lastName   String?
-  phone      String?
-  company    String?
-  source     LeadSource
-  status     LeadStatus @default(NEW)
-  score      Int        @default(0) // Lead scoring 0-100
+model AgentMetric {
+  id            String   @id @default(cuid())
+  agentId       String
 
-  campaignId String?
-  campaign   Campaign? @relation(fields: [campaignId], references: [id])
+  // Time Window
+  timestamp     DateTime @default(now())
+  period        String   // MINUTE, HOUR, DAY
 
-  // Lead Data
-  metadata   Json? // Additional lead information
-  notes      String?
+  // Performance Metrics
+  executions    Int      @default(0)
+  successes     Int      @default(0)
+  failures      Int      @default(0)
+  avgDuration   Float    @default(0) // ms
+  p95Duration   Float    @default(0) // 95th percentile
 
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  // Resource Metrics
+  tokensUsed    Int      @default(0)
+  apiCalls      Int      @default(0)
+  cost          Float    @default(0)
 
-  @@map("leads")
+  // Error Metrics
+  errors        Json[]   @default([])
+  errorRate     Float    @default(0)
+
+  // Relations
+  agent         Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@unique([agentId, timestamp, period])
+  @@index([agentId, timestamp])
+  @@map("agent_metrics")
 }
 
-model Analytics {
-  id             String   @id @default(cuid())
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+model UsageMetric {
+  id              String   @id @default(cuid())
+  organizationId  String
 
-  // Metrics
-  date           DateTime @db.Date
-  visitors       Int @default(0)
-  pageViews      Int @default(0)
-  leads          Int @default(0)
-  conversions    Int @default(0)
-  revenue        Float @default(0.0)
+  // Time
+  date            DateTime @db.Date
 
-  // Agent Performance
-  agentMetrics   Json? // Per-agent performance data
+  // Usage
+  activeUsers     Int      @default(0)
+  activeAgents    Int      @default(0)
+  totalExecutions BigInt   @default(0)
+  totalApiCalls   BigInt   @default(0)
+  totalTokens     BigInt   @default(0)
+  storageUsed     BigInt   @default(0) // bytes
 
-  createdAt      DateTime @default(now())
+  // Cost
+  computeCost     Float    @default(0)
+  storageCost     Float    @default(0)
+  apiCost         Float    @default(0)
+  totalCost       Float    @default(0)
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id])
 
   @@unique([organizationId, date])
-  @@map("analytics")
+  @@index([organizationId, date])
+  @@map("usage_metrics")
+}
+
+// ==================== AUDIT & COMPLIANCE ====================
+
+model AuditLog {
+  id              String   @id @default(cuid())
+  organizationId  String?
+  userId          String?
+  adminId         String?
+
+  // Action
+  action          String   // CREATE, UPDATE, DELETE, LOGIN, etc.
+  resource        String   // AGENT, WORKFLOW, USER, etc.
+  resourceId      String?
+
+  // Details
+  changes         Json?    // What changed
+  metadata        Json?    // Additional context
+
+  // Request Info
+  ipAddress       String?
+  userAgent       String?
+
+  createdAt       DateTime @default(now())
+
+  // Relations
+  organization    Organization? @relation(fields: [organizationId], references: [id])
+  user            User? @relation(fields: [userId], references: [id])
+  admin           PlatformAdmin? @relation(fields: [adminId], references: [id])
+
+  @@index([organizationId, createdAt])
+  @@index([userId])
+  @@index([action])
+  @@map("audit_logs")
+}
+
+// ==================== NOTIFICATIONS ====================
+
+model Notification {
+  id              String   @id @default(cuid())
+  organizationId  String
+  userId          String?
+
+  // Notification
+  type            NotificationType
+  title           String
+  message         String
+
+  // Status
+  isRead          Boolean  @default(false)
+  readAt          DateTime?
+
+  // Action
+  actionUrl       String?
+  actionLabel     String?
+
+  // Priority
+  priority        NotificationPriority @default(MEDIUM)
+
+  createdAt       DateTime @default(now())
+  expiresAt       DateTime?
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  user            User? @relation(fields: [userId], references: [id])
+
+  @@index([organizationId, userId, isRead])
+  @@map("notifications")
 }
 
 // ==================== ENUMS ====================
 
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+  SUPPORT
+  VIEWER
+}
+
 enum PlanType {
-  FREE
-  CONQUEROR    // $600/month - 50 agents
-  EMPEROR      // $2400/month - 500 agents
-  OVERLORD     // Custom pricing - 10000+ agents
+  TRIAL       // 14-day trial
+  FREE        // Limited free tier
+  STARTER     // $99/month
+  GROWTH      // $299/month
+  SCALE       // $999/month
+  ENTERPRISE  // Custom pricing
+}
+
+enum BillingCycle {
+  MONTHLY
+  QUARTERLY
+  YEARLY
 }
 
 enum OrgStatus {
-  ACTIVE
-  SUSPENDED
-  CANCELLED
   TRIAL
+  ACTIVE
+  SUSPENDED   // Admin suspended
+  DELINQUENT  // Payment issues
+  CANCELLED
+  BANNED      // Policy violation
+}
+
+enum UserStatus {
+  PENDING     // Awaiting email verification
+  ACTIVE
+  SUSPENDED   // By admin or org owner
+  INACTIVE    // Self-deactivated
+  LOCKED      // Too many failed logins
 }
 
 enum UserRole {
   OWNER
   ADMIN
-  USER
+  DEVELOPER
+  ANALYST
+  MEMBER
   VIEWER
 }
 
-enum SubdomainStatus {
-  PENDING
-  ACTIVE
-  FAILED
-  SUSPENDED
-}
-
 enum AgentType {
-  // Elite Eight Core Agent Types
-  LEAD_GENERATOR     // Lead Gen Agent
-  EMAIL_MARKETER     // Email Marketing Agent
-  SOCIAL_MEDIA       // Social Media Agent
-  CONTENT_CREATOR    // Content Creation Agent
-  ANALYTICS          // Analytics Agent
-  CUSTOMER_SERVICE   // Customer Service Agent
-  SALES              // Sales Agent
-  SEO_OPTIMIZER      // SEO Optimization Agent
+  // Core AI Agents
+  CONVERSATIONAL
+  TASK_AUTOMATION
+  DATA_PROCESSOR
+  INTEGRATION
+  ANALYTICS
 
-  // Advanced Agent Types
-  WORKFLOW_AUTOMATION
-  DATA_PROCESSING
-  INTEGRATION_AGENT
-  MONITORING_AGENT
-  RESEARCH_AGENT
-  CUSTOM             // For user-defined agents
-}
-
-enum CampaignStatus {
-  DRAFT
-  ACTIVE
-  PAUSED
-  COMPLETED
-  CANCELLED
-}
-
-enum LeadSource {
-  WEBSITE
+  // Specialized Agents
+  EMAIL_MARKETING
   SOCIAL_MEDIA
-  EMAIL
-  REFERRAL
-  PAID_ADS
-  ORGANIC
-  DIRECT
-}
+  CONTENT_CREATOR
+  CUSTOMER_SERVICE
+  SALES_ASSISTANT
+  LEAD_GENERATOR
+  SEO_OPTIMIZER
 
-enum LeadStatus {
-  NEW
-  CONTACTED
-  QUALIFIED
-  PROPOSAL
-  NEGOTIATION
-  CLOSED_WON
-  CLOSED_LOST
+  // Advanced Types
+  ORCHESTRATOR    // Controls other agents
+  MONITOR         // Monitors and alerts
+  SCHEDULER       // Time-based tasks
+  CUSTOM          // User-defined
 }
-
-// ==================== NEW AGENT FRAMEWORK ENUMS ====================
 
 enum AgentStatus {
-  DRAFT          // Agent is being configured
-  READY          // Agent is configured and ready to run
-  RUNNING        // Agent is actively executing
-  PAUSED         // Agent is temporarily stopped
-  ERROR          // Agent encountered an error
-  MAINTENANCE    // Agent is under maintenance
-  ARCHIVED       // Agent is archived
+  DRAFT
+  TESTING
+  READY
+  ACTIVE
+  PAUSED
+  ERROR
+  MAINTENANCE
+  DEPRECATED
+  ARCHIVED
+}
+
+enum AgentHealth {
+  HEALTHY
+  DEGRADED
+  UNHEALTHY
+  UNKNOWN
+}
+
+enum WorkflowType {
+  SEQUENTIAL      // One after another
+  PARALLEL        // Simultaneous execution
+  CONDITIONAL     // Based on conditions
+  LOOP           // Iterative execution
+  EVENT_DRIVEN   // Triggered by events
+  SCHEDULED      // Time-based
+}
+
+enum WorkflowStatus {
+  DRAFT
+  TESTING
+  PUBLISHED
+  ACTIVE
+  PAUSED
+  ERROR
+  ARCHIVED
 }
 
 enum ExecutionStatus {
-  QUEUED         // Execution is queued
-  RUNNING        // Execution is in progress
-  COMPLETED      // Execution completed successfully
-  FAILED         // Execution failed
-  CANCELLED      // Execution was cancelled
-  TIMEOUT        // Execution timed out
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+  TIMEOUT
+  RETRYING
 }
 
-enum SwarmType {
-  SEQUENTIAL     // Agents run one after another
-  PARALLEL       // Agents run simultaneously
-  CONDITIONAL    // Agents run based on conditions
-  COLLABORATIVE  // Agents work together and share data
-  HIERARCHICAL   // Agents in parent-child relationships
+enum InteractionStatus {
+  PENDING
+  DELIVERED
+  ACKNOWLEDGED
+  PROCESSING
+  COMPLETED
+  FAILED
+  EXPIRED
 }
 
-enum SwarmRole {
-  COORDINATOR    // Controls swarm execution
-  WORKER         // Performs tasks
-  OBSERVER       // Monitors and reports
-  VALIDATOR      // Validates results
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  UNPAID
+  INCOMPLETE
+}
+
+enum InvoiceStatus {
+  DRAFT
+  OPEN
+  PAID
+  VOID
+  UNCOLLECTIBLE
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  AGENT_UPDATE
+  WORKFLOW_UPDATE
+  BILLING
+  SECURITY
+  SYSTEM
+}
+
+enum NotificationPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
 }

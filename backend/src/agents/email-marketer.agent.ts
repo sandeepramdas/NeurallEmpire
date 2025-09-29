@@ -215,7 +215,7 @@ export class EmailMarketerAgent extends BaseAgent {
     const unsubscribes = Math.floor(totalEmails * (unsubscribeRate / 100));
     const bounces = Math.floor(totalEmails * (bounceRate / 100));
 
-    const results = {
+    const results: any = {
       delivered: totalEmails - bounces,
       opens: tracking.opens ? opens : null,
       clicks: tracking.clicks ? clicks : null,

@@ -4,9 +4,9 @@ import { AuthenticatedRequest } from '@/types';
 import { AgentType, AgentStatus } from '@prisma/client';
 
 export class AgentController {
-  async createAgent(req: AuthenticatedRequest, res: Response) {
+  async createAgent(req: AuthenticatedRequest, res: Response): Promise<Response | void> {
     try {
-      const { organizationId } = req.user!;
+      const { organizationId } = req.user;
       const { name, type, description, configuration, triggers, actions, capabilities } = req.body;
 
       if (!name || !type) {
@@ -33,23 +33,23 @@ export class AgentController {
         capabilities,
       });
 
-      res.status(201).json({
+      return res.status(201).json({
         success: true,
         data: agent,
         message: 'Agent created successfully',
       });
     } catch (error) {
       console.error('Error creating agent:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to create agent',
       });
     }
   }
 
-  async listAgents(req: AuthenticatedRequest, res: Response) {
+  async listAgents(req: AuthenticatedRequest, res: Response): Promise<Response | void> {
     try {
-      const { organizationId } = req.user!;
+      const { organizationId } = req.user;
       const { type, status, isActive } = req.query;
 
       const filters: any = {};
@@ -59,25 +59,25 @@ export class AgentController {
 
       const agents = await agentService.listAgents(organizationId, filters);
 
-      res.json({
+      return res.json({
         success: true,
         data: agents,
       });
     } catch (error) {
       console.error('Error listing agents:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to list agents',
       });
     }
   }
 
-  async getAgent(req: AuthenticatedRequest, res: Response) {
+  async getAgent(req: AuthenticatedRequest, res: Response): Promise<Response | void> {
     try {
       const { id } = req.params;
-      const agent = await agentService.getAgentStatus(id);
+      const agent = await agentService.getAgentStatus(id!);
 
-      res.json({
+      return res.json({
         success: true,
         data: agent,
       });
@@ -91,94 +91,94 @@ export class AgentController {
         });
       }
 
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to get agent',
       });
     }
   }
 
-  async updateAgent(req: AuthenticatedRequest, res: Response) {
+  async updateAgent(req: AuthenticatedRequest, res: Response): Promise<Response | void> {
     try {
       const { id } = req.params;
       const updates = req.body;
 
-      const agent = await agentService.updateAgent(id, updates);
+      const agent = await agentService.updateAgent(id!, updates);
 
-      res.json({
+      return res.json({
         success: true,
         data: agent,
         message: 'Agent updated successfully',
       });
     } catch (error) {
       console.error('Error updating agent:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to update agent',
       });
     }
   }
 
-  async startAgent(req: AuthenticatedRequest, res: Response) {
+  async startAgent(req: AuthenticatedRequest, res: Response): Promise<Response | void> {
     try {
       const { id } = req.params;
-      const result = await agentService.startAgent(id);
+      const result = await agentService.startAgent(id!);
 
-      res.json({
+      return res.json({
         success: true,
         data: { started: result },
         message: 'Agent started successfully',
       });
     } catch (error) {
       console.error('Error starting agent:', error);
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         message: error instanceof Error ? error.message : 'Failed to start agent',
       });
     }
   }
 
-  async stopAgent(req: AuthenticatedRequest, res: Response) {
+  async stopAgent(req: AuthenticatedRequest, res: Response): Promise<Response | void> {
     try {
       const { id } = req.params;
-      const result = await agentService.stopAgent(id);
+      const result = await agentService.stopAgent(id!);
 
-      res.json({
+      return res.json({
         success: true,
         data: { stopped: result },
         message: 'Agent stopped successfully',
       });
     } catch (error) {
       console.error('Error stopping agent:', error);
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         message: error instanceof Error ? error.message : 'Failed to stop agent',
       });
     }
   }
 
-  async executeAgent(req: AuthenticatedRequest, res: Response) {
+  async executeAgent(req: AuthenticatedRequest, res: Response): Promise<Response | void> {
     try {
       const { id } = req.params;
       const { input } = req.body;
 
-      const result = await agentService.executeAgent(id, input);
+      const result = await agentService.executeAgent(id!, input);
 
-      res.json({
+      return res.json({
         success: true,
         data: result,
         message: 'Agent executed successfully',
       });
     } catch (error) {
       console.error('Error executing agent:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to execute agent',
       });
     }
   }
 
-  async getAgentExecutions(req: AuthenticatedRequest, res: Response) {
+  async getAgentExecutions(req: AuthenticatedRequest, res: Response): Promise<Response | void> {
     try {
       const { id } = req.params;
       const { page = 1, limit = 20 } = req.query;
@@ -187,17 +187,17 @@ export class AgentController {
       const { prisma } = await import('@/server');
 
       const executions = await prisma.agentExecution.findMany({
-        where: { agentId: id },
+        where: { agentId: id! },
         orderBy: { startedAt: 'desc' },
         skip: (Number(page) - 1) * Number(limit),
         take: Number(limit),
       });
 
       const total = await prisma.agentExecution.count({
-        where: { agentId: id },
+        where: { agentId: id! },
       });
 
-      res.json({
+      return res.json({
         success: true,
         data: {
           executions,
@@ -211,14 +211,14 @@ export class AgentController {
       });
     } catch (error) {
       console.error('Error getting agent executions:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to get agent executions',
       });
     }
   }
 
-  async getAgentTypes(req: Request, res: Response) {
+  async getAgentTypes(req: Request, res: Response): Promise<Response | void> {
     try {
       const agentTypes = Object.values(AgentType).map(type => ({
         value: type,
@@ -226,13 +226,13 @@ export class AgentController {
         description: this.getAgentTypeDescription(type),
       }));
 
-      res.json({
+      return res.json({
         success: true,
         data: agentTypes,
       });
     } catch (error) {
       console.error('Error getting agent types:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to get agent types',
       });

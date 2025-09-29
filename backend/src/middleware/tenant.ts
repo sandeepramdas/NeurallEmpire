@@ -6,7 +6,7 @@ export const tenantResolver = async (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
-): Promise<void> => {
+): Promise<Response | void> => {
   try {
     const hostname = req.hostname;
     let subdomain: string | null = null;
@@ -24,7 +24,7 @@ export const tenantResolver = async (
         const potentialSubdomain = parts[0];
 
         // Skip system subdomains
-        if (!['www', 'api', 'app', 'admin', 'mail'].includes(potentialSubdomain)) {
+        if (potentialSubdomain && !['www', 'api', 'app', 'admin', 'mail'].includes(potentialSubdomain)) {
           subdomain = potentialSubdomain;
         }
       }
@@ -49,27 +49,29 @@ export const tenantResolver = async (
 
       if (organization) {
         if (organization.status !== 'ACTIVE') {
-          return res.status(403).json({
+          res.status(403).json({
             success: false,
             error: 'Organization is not active',
           });
+          return;
         }
 
-        req.organization = organization;
+        req.organization = organization as any;
         req.tenant = subdomain;
       } else if (subdomain) {
         // Subdomain exists but organization not found
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           error: 'Organization not found',
         });
+        return;
       }
     }
 
     next();
   } catch (error) {
     console.error('Tenant resolution error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Internal server error during tenant resolution',
     });
@@ -80,12 +82,13 @@ export const requireTenant = (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
-): void => {
+): Response | void => {
   if (!req.organization) {
-    return res.status(400).json({
+    res.status(400).json({
       success: false,
       error: 'Organization context required',
     });
+    return;
   }
   next();
 };

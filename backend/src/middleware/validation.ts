@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 
 export const validateSchema = (schema: z.ZodSchema<any>) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction): Response | void => {
     try {
       const validatedData = schema.parse(req.body);
       req.body = validatedData; // Replace body with validated data
@@ -30,7 +30,7 @@ export const validateSchema = (schema: z.ZodSchema<any>) => {
 };
 
 export const validateQuery = (schema: z.ZodSchema<any>) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction): Response | void => {
     try {
       const validatedData = schema.parse(req.query);
       req.query = validatedData;
@@ -58,7 +58,7 @@ export const validateQuery = (schema: z.ZodSchema<any>) => {
 };
 
 export const validateParams = (schema: z.ZodSchema<any>) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction): Response | void => {
     try {
       const validatedData = schema.parse(req.params);
       req.params = validatedData;

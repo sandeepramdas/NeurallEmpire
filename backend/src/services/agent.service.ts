@@ -229,7 +229,7 @@ class AgentService extends EventEmitter {
       where: { id: agentId },
       include: {
         executions: {
-          orderBy: { createdAt: 'desc' },
+          orderBy: { startedAt: 'desc' },
           take: 10,
         },
       },
@@ -256,7 +256,7 @@ class AgentService extends EventEmitter {
       },
       include: {
         executions: {
-          orderBy: { createdAt: 'desc' },
+          orderBy: { startedAt: 'desc' },
           take: 1,
         },
       },

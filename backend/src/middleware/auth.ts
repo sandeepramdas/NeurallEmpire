@@ -1,4 +1,4 @@
-import { Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { prisma } from '@/server';
 import { AuthenticatedRequest, JwtPayload, AuthUser } from '@/types';
@@ -9,7 +9,7 @@ export const authenticate = async (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
-): Promise<void> => {
+): Promise<Response | void> => {
   try {
     let token: string | undefined;
 
@@ -25,10 +25,11 @@ export const authenticate = async (
     }
 
     if (!token) {
-      return res.status(401).json({
+      res.status(401).json({
         success: false,
         error: 'Access token required',
       });
+      return;
     }
 
     // Verify and decode token
@@ -59,25 +60,28 @@ export const authenticate = async (
     });
 
     if (!user || !user.isActive) {
-      return res.status(401).json({
+      res.status(401).json({
         success: false,
         error: 'User not found or inactive',
       });
+      return;
     }
 
     if (user.organization.status !== 'ACTIVE') {
-      return res.status(403).json({
+      res.status(403).json({
         success: false,
         error: 'Organization is not active',
       });
+      return;
     }
 
     // If tenant-specific request, verify user belongs to that tenant
     if (req.organization && user.organizationId !== req.organization.id) {
-      return res.status(403).json({
+      res.status(403).json({
         success: false,
         error: 'Access denied to this organization',
       });
+      return;
     }
 
     // Attach user to request
@@ -93,16 +97,17 @@ export const authenticate = async (
 
     // If no tenant context yet, set from user's organization
     if (!req.organization) {
-      req.organization = user.organization;
+      req.organization = user.organization as any;
     }
 
     next();
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {
-      return res.status(401).json({
+      res.status(401).json({
         success: false,
         error: 'Invalid access token',
       });
+      return;
     }
 
     console.error('Authentication error:', error);
@@ -114,19 +119,21 @@ export const authenticate = async (
 };
 
 export const authorize = (...roles: string[]) => {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction): Response | void => {
     if (!req.user) {
-      return res.status(401).json({
+      res.status(401).json({
         success: false,
         error: 'Authentication required',
       });
+      return;
     }
 
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({
+      res.status(403).json({
         success: false,
         error: 'Insufficient permissions',
       });
+      return;
     }
 
     next();
@@ -134,7 +141,7 @@ export const authorize = (...roles: string[]) => {
 };
 
 export const optionalAuth = async (
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
@@ -168,7 +175,7 @@ export const optionalAuth = async (
       });
 
       if (user && user.isActive) {
-        req.user = {
+        (req as AuthenticatedRequest).user = {
           id: user.id,
           email: user.email,
           role: user.role,

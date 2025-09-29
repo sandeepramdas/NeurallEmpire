@@ -138,12 +138,12 @@ export class LeadGeneratorAgent extends BaseAgent {
 
   private getRandomName(): string {
     const names = ['John', 'Jane', 'Michael', 'Sarah', 'David', 'Emily', 'Robert', 'Lisa', 'James', 'Maria'];
-    return names[Math.floor(Math.random() * names.length)];
+    return names[Math.floor(Math.random() * names.length)]!;
   }
 
   private getRandomSurname(): string {
     const surnames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez'];
-    return surnames[Math.floor(Math.random() * surnames.length)];
+    return surnames[Math.floor(Math.random() * surnames.length)]!;
   }
 
   private getRandomCompany(): string {
@@ -152,7 +152,7 @@ export class LeadGeneratorAgent extends BaseAgent {
       'Alpha Industries', 'Beta Technologies', 'Gamma Enterprises', 'Delta Innovations',
       'Quantum Labs', 'Synergy Group', 'Nexus Corporation', 'Apex Ventures'
     ];
-    return companies[Math.floor(Math.random() * companies.length)];
+    return companies[Math.floor(Math.random() * companies.length)]!;
   }
 
   private getRandomLocation(): string {
@@ -160,11 +160,11 @@ export class LeadGeneratorAgent extends BaseAgent {
       'New York, NY', 'San Francisco, CA', 'Chicago, IL', 'Austin, TX',
       'Seattle, WA', 'Boston, MA', 'Denver, CO', 'Atlanta, GA'
     ];
-    return locations[Math.floor(Math.random() * locations.length)];
+    return locations[Math.floor(Math.random() * locations.length)]!;
   }
 
   private getRandomCompanySize(): string {
     const sizes = ['startup', 'small', 'medium', 'large', 'enterprise'];
-    return sizes[Math.floor(Math.random() * sizes.length)];
+    return sizes[Math.floor(Math.random() * sizes.length)]!;
   }
 }

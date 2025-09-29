@@ -4,9 +4,9 @@ import { AuthenticatedRequest } from '@/types';
 import { SwarmType, SwarmRole } from '@prisma/client';
 
 export class SwarmController {
-  async createSwarm(req: AuthenticatedRequest, res: Response) {
+  async createSwarm(req: AuthenticatedRequest, res: Response): Promise<Response | void> {
     try {
-      const { organizationId } = req.user!;
+      const { organizationId } = req.user;
       const { name, description, coordinatorType, configuration } = req.body;
 
       if (!name || !coordinatorType) {
@@ -30,44 +30,44 @@ export class SwarmController {
         configuration,
       });
 
-      res.status(201).json({
+      return res.status(201).json({
         success: true,
         data: swarm,
         message: 'Swarm created successfully',
       });
     } catch (error) {
       console.error('Error creating swarm:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to create swarm',
       });
     }
   }
 
-  async listSwarms(req: AuthenticatedRequest, res: Response) {
+  async listSwarms(req: AuthenticatedRequest, res: Response): Promise<Response | void> {
     try {
-      const { organizationId } = req.user!;
+      const { organizationId } = req.user;
       const swarms = await swarmService.listSwarms(organizationId);
 
-      res.json({
+      return res.json({
         success: true,
         data: swarms,
       });
     } catch (error) {
       console.error('Error listing swarms:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to list swarms',
       });
     }
   }
 
-  async getSwarm(req: AuthenticatedRequest, res: Response) {
+  async getSwarm(req: AuthenticatedRequest, res: Response): Promise<Response | void> {
     try {
       const { id } = req.params;
-      const swarm = await swarmService.getSwarmStatus(id);
+      const swarm = await swarmService.getSwarmStatus(id!);
 
-      res.json({
+      return res.json({
         success: true,
         data: swarm,
       });
@@ -81,14 +81,14 @@ export class SwarmController {
         });
       }
 
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to get swarm',
       });
     }
   }
 
-  async addAgentToSwarm(req: AuthenticatedRequest, res: Response) {
+  async addAgentToSwarm(req: AuthenticatedRequest, res: Response): Promise<Response | void> {
     try {
       const { id } = req.params;
       const { agentId, role, priority } = req.body;
@@ -107,13 +107,13 @@ export class SwarmController {
         });
       }
 
-      const member = await swarmService.addAgentToSwarm(id, {
+      const member = await swarmService.addAgentToSwarm(id!, {
         agentId,
         role,
         priority: priority || 0,
       });
 
-      res.json({
+      return res.json({
         success: true,
         data: member,
         message: 'Agent added to swarm successfully',
@@ -136,40 +136,40 @@ export class SwarmController {
         }
       }
 
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to add agent to swarm',
       });
     }
   }
 
-  async removeAgentFromSwarm(req: AuthenticatedRequest, res: Response) {
+  async removeAgentFromSwarm(req: AuthenticatedRequest, res: Response): Promise<Response | void> {
     try {
       const { id, agentId } = req.params;
 
-      await swarmService.removeAgentFromSwarm(id, agentId);
+      await swarmService.removeAgentFromSwarm(id!, agentId!);
 
-      res.json({
+      return res.json({
         success: true,
         message: 'Agent removed from swarm successfully',
       });
     } catch (error) {
       console.error('Error removing agent from swarm:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to remove agent from swarm',
       });
     }
   }
 
-  async executeSwarm(req: AuthenticatedRequest, res: Response) {
+  async executeSwarm(req: AuthenticatedRequest, res: Response): Promise<Response | void> {
     try {
       const { id } = req.params;
       const { input } = req.body;
 
-      const result = await swarmService.executeSwarm(id, input);
+      const result = await swarmService.executeSwarm(id!, input);
 
-      res.json({
+      return res.json({
         success: true,
         data: result,
         message: 'Swarm executed successfully',
@@ -192,14 +192,14 @@ export class SwarmController {
         }
       }
 
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to execute swarm',
       });
     }
   }
 
-  async getSwarmTypes(req: AuthenticatedRequest, res: Response) {
+  async getSwarmTypes(req: AuthenticatedRequest, res: Response): Promise<Response | void> {
     try {
       const swarmTypes = Object.values(SwarmType).map(type => ({
         value: type,
@@ -207,20 +207,20 @@ export class SwarmController {
         description: this.getSwarmTypeDescription(type),
       }));
 
-      res.json({
+      return res.json({
         success: true,
         data: swarmTypes,
       });
     } catch (error) {
       console.error('Error getting swarm types:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to get swarm types',
       });
     }
   }
 
-  async getSwarmRoles(req: AuthenticatedRequest, res: Response) {
+  async getSwarmRoles(req: AuthenticatedRequest, res: Response): Promise<Response | void> {
     try {
       const swarmRoles = Object.values(SwarmRole).map(role => ({
         value: role,
@@ -228,13 +228,13 @@ export class SwarmController {
         description: this.getSwarmRoleDescription(role),
       }));
 
-      res.json({
+      return res.json({
         success: true,
         data: swarmRoles,
       });
     } catch (error) {
       console.error('Error getting swarm roles:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to get swarm roles',
       });

@@ -85,7 +85,7 @@ export class SocialMediaAgent extends BaseAgent {
   }
 
   private generatePosts(tone: string, topics: string[], contextData: any) {
-    const posts = [];
+    const posts: any[] = [];
     const toneStyles: any = {
       professional: {
         starters: ['Excited to share', 'Thrilled to announce', 'Pleased to present'],
@@ -180,7 +180,7 @@ export class SocialMediaAgent extends BaseAgent {
   }
 
   private createPosts(content: any, platforms: string[], postTypes: string[]) {
-    const posts = [];
+    const posts: any[] = [];
 
     content.posts.forEach((post: any) => {
       platforms.forEach(platform => {

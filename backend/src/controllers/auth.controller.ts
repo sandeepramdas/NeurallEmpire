@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { z } from 'zod';
 import { prisma } from '@/server';
 import { AuthenticatedRequest, RegisterData, LoginData, ApiResponse, AuthUser } from '@/types';
@@ -12,10 +12,11 @@ const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 const registerSchema = z.object({
   email: z.string().email('Invalid email format'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
-  organizationName: z.string().optional(),
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  organizationName: z.string().min(1, 'Organization name is required'),
   organizationSlug: z.string().optional(),
+  phone: z.string().optional(),
 });
 
 const loginSchema = z.object({
@@ -25,11 +26,10 @@ const loginSchema = z.object({
 
 // Helper function to generate JWT
 const generateToken = (userId: string, organizationId: string, role: string): string => {
-  return jwt.sign(
-    { userId, organizationId, role },
-    JWT_SECRET,
-    { expiresIn: JWT_EXPIRES_IN }
-  );
+  const payload = { userId, organizationId, role };
+  const secret = JWT_SECRET as string;
+  const options = { expiresIn: JWT_EXPIRES_IN } as SignOptions;
+  return jwt.sign(payload, secret, options);
 };
 
 // Helper function to create organization slug
@@ -43,7 +43,7 @@ const createSlug = (name: string): string => {
 export const register = async (
   req: AuthenticatedRequest,
   res: Response
-): Promise<void> => {
+): Promise<Response | void> => {
   try {
     const validationResult = registerSchema.safeParse(req.body);
 
@@ -74,7 +74,7 @@ export const register = async (
     if (!slug && organizationName) {
       slug = createSlug(organizationName);
     } else if (!slug) {
-      slug = createSlug(email.split('@')[0]);
+      slug = createSlug(email.split('@')[0]!);
     }
 
     // Check if organization slug is available
@@ -95,27 +95,37 @@ export const register = async (
 
     // Create organization and user in transaction
     const result = await prisma.$transaction(async (tx) => {
-      // Create organization
+      // Create organization with trial period
       const organization = await tx.organization.create({
         data: {
           name: organizationName || `${firstName || email.split('@')[0]}'s Organization`,
           slug,
-          status: 'ACTIVE',
-          planType: 'FREE',
+          status: 'TRIAL',
+          planType: 'TRIAL',
+          billingEmail: email,
+          trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14-day trial
+          maxUsers: 5,
+          maxAgents: 10,
+          maxWorkflows: 20,
+          maxApiCalls: 10000,
         },
       });
 
-      // Create user as owner
+      // Create user as owner with enhanced fields
       const user = await tx.user.create({
         data: {
           email,
           passwordHash,
-          firstName,
-          lastName,
+          firstName: firstName || null,
+          lastName: lastName || null,
+          phone: req.body.phone || null,
           role: 'OWNER',
+          status: 'ACTIVE',
           organizationId: organization.id,
           emailVerified: false,
-          isActive: true,
+          canCreateAgents: true,
+          canManageWorkflows: true,
+          canViewAnalytics: true,
         },
         select: {
           id: true,
@@ -158,10 +168,10 @@ export const register = async (
       },
     };
 
-    res.status(201).json(response);
+    return res.status(201).json(response);
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Registration failed',
     });
@@ -171,7 +181,7 @@ export const register = async (
 export const login = async (
   req: AuthenticatedRequest,
   res: Response
-): Promise<void> => {
+): Promise<Response | void> => {
   try {
     const validationResult = loginSchema.safeParse(req.body);
 
@@ -207,20 +217,34 @@ export const login = async (
       });
     }
 
-    // Check if user is active
-    if (!user.isActive) {
+    // Check user status
+    if (user.status !== 'ACTIVE') {
       return res.status(401).json({
         success: false,
-        error: 'Account is deactivated',
+        error: `Account is ${user.status.toLowerCase()}`,
       });
     }
 
-    // Check if organization is active
-    if (user.organization.status !== 'ACTIVE') {
+    // Check organization status
+    if (['SUSPENDED', 'BANNED', 'CANCELLED'].includes(user.organization.status)) {
       return res.status(403).json({
         success: false,
-        error: 'Organization is not active',
+        error: `Organization access restricted: ${user.organization.status.toLowerCase()}`,
       });
+    }
+
+    // Check trial expiry
+    if (user.organization.status === 'TRIAL' && user.organization.trialEndsAt) {
+      if (new Date() > new Date(user.organization.trialEndsAt)) {
+        await prisma.organization.update({
+          where: { id: user.organization.id },
+          data: { status: 'SUSPENDED', statusReason: 'Trial expired' }
+        });
+        return res.status(403).json({
+          success: false,
+          error: 'Trial period has expired. Please upgrade your plan.',
+        });
+      }
     }
 
     // Verify password
@@ -233,10 +257,40 @@ export const login = async (
       });
     }
 
-    // Update last login
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { lastLoginAt: new Date() },
+    // Update last login and create session
+    await prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: user.id },
+        data: {
+          lastLoginAt: new Date(),
+          lastLoginIp: req.ip || null,
+          loginCount: { increment: 1 }
+        },
+      });
+
+      // Create session record
+      await tx.session.create({
+        data: {
+          userId: user.id,
+          token,
+          userAgent: req.headers['user-agent'] || null,
+          ipAddress: req.ip || null,
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        }
+      });
+
+      // Log audit event
+      await tx.auditLog.create({
+        data: {
+          action: 'LOGIN',
+          resource: 'USER',
+          resourceId: user.id,
+          userId: user.id,
+          organizationId: user.organizationId,
+          ipAddress: req.ip || null,
+          userAgent: req.headers['user-agent'] || null,
+        }
+      });
     });
 
     // Generate JWT token
@@ -268,10 +322,10 @@ export const login = async (
       },
     };
 
-    res.json(response);
+    return res.json(response);
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Login failed',
     });
@@ -281,7 +335,7 @@ export const login = async (
 export const getProfile = async (
   req: AuthenticatedRequest,
   res: Response
-): Promise<void> => {
+): Promise<Response | void> => {
   try {
     if (!req.user) {
       return res.status(401).json({
@@ -322,13 +376,13 @@ export const getProfile = async (
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       data: user,
     });
   } catch (error) {
     console.error('Get profile error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to fetch profile',
     });
@@ -338,7 +392,7 @@ export const getProfile = async (
 export const joinOrganization = async (
   req: AuthenticatedRequest,
   res: Response
-): Promise<void> => {
+): Promise<Response | void> => {
   try {
     const joinSchema = z.object({
       email: z.string().email('Invalid email format'),
@@ -400,12 +454,12 @@ export const joinOrganization = async (
       data: {
         email,
         passwordHash,
-        firstName,
-        lastName,
-        role: 'USER',
+        firstName: firstName || null,
+        lastName: lastName || null,
+        role: 'MEMBER',
         organizationId: organization.id,
         emailVerified: false,
-        isActive: true,
+        status: 'PENDING',
       },
       select: {
         id: true,
@@ -445,10 +499,10 @@ export const joinOrganization = async (
       },
     };
 
-    res.status(201).json(response);
+    return res.status(201).json(response);
   } catch (error) {
     console.error('Join organization error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to join organization',
     });
@@ -458,20 +512,20 @@ export const joinOrganization = async (
 export const logout = async (
   req: AuthenticatedRequest,
   res: Response
-): Promise<void> => {
+): Promise<Response | void> => {
   try {
     // In a more advanced implementation, you might want to:
     // 1. Blacklist the token
     // 2. Remove session from database
     // 3. Clear cookies
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Logged out successfully',
     });
   } catch (error) {
     console.error('Logout error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Logout failed',
     });
