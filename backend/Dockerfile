@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --only=production
+RUN npm ci
 
 # Install tsx for TypeScript execution
 RUN npm install -g tsx
@@ -16,8 +16,8 @@ RUN npm install -g tsx
 # Copy application code
 COPY . .
 
-# Build the application
-RUN npm run build
+# Generate Prisma client
+RUN npx prisma generate
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs
