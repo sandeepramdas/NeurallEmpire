@@ -1,0 +1,255 @@
+# 🚀 NeurallEmpire Deployment Configuration
+# Production-ready configuration for subdomain-based SaaS platform
+
+# ==================== INFRASTRUCTURE ====================
+infrastructure:
+  provider: "vercel" # or "aws", "gcp", "railway"
+  regions:
+    primary: "us-east-1"
+    secondary: "eu-west-1"
+
+  # Domain Configuration
+  domains:
+    main: "neurallempire.com"
+    api: "api.neurallempire.com"
+    app: "app.neurallempire.com"
+    subdomain_pattern: "*.neurallempire.com"
+
+  # SSL/TLS
+  ssl:
+    provider: "cloudflare"
+    auto_renewal: true
+    wildcard_cert: true
+
+# ==================== APPLICATION SERVICES ====================
+services:
+  frontend:
+    name: "neurallempire-frontend"
+    type: "static"
+    framework: "react"
+    build_command: "npm run build"
+    output_directory: "dist"
+
+    environment_variables:
+      VITE_API_URL: "https://api.neurallempire.com/api"
+      VITE_APP_URL: "https://www.neurallempire.com"
+      VITE_MAIN_DOMAIN: "neurallempire.com"
+      VITE_ENABLE_SUBDOMAIN_ROUTING: "true"
+      VITE_ENABLE_OAUTH: "true"
+      VITE_NODE_ENV: "production"
+
+    custom_headers:
+      - path: "/*"
+        headers:
+          - key: "X-Frame-Options"
+            value: "DENY"
+          - key: "X-Content-Type-Options"
+            value: "nosniff"
+          - key: "Referrer-Policy"
+            value: "strict-origin-when-cross-origin"
+          - key: "Permissions-Policy"
+            value: "geolocation=(), microphone=(), camera=()"
+
+    redirects:
+      - source: "/app/:path*"
+        destination: "https://app.neurallempire.com/:path*"
+        statusCode: 301
+
+  backend:
+    name: "neurallempire-api"
+    type: "serverless"
+    runtime: "nodejs18.x"
+    build_command: "npm run build"
+    start_command: "npm start"
+
+    environment_variables:
+      NODE_ENV: "production"
+      PORT: "3001"
+
+      # Database (Use production PostgreSQL)
+      DATABASE_URL: "${PRODUCTION_DATABASE_URL}"
+
+      # JWT & Security
+      JWT_SECRET: "${PRODUCTION_JWT_SECRET}"
+      ENCRYPTION_KEY: "${PRODUCTION_ENCRYPTION_KEY}"
+      SESSION_SECRET: "${PRODUCTION_SESSION_SECRET}"
+
+      # OAuth (Production OAuth Apps)
+      GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID_PROD}"
+      GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET_PROD}"
+      GITHUB_CLIENT_ID: "${GITHUB_CLIENT_ID_PROD}"
+      GITHUB_CLIENT_SECRET: "${GITHUB_CLIENT_SECRET_PROD}"
+      LINKEDIN_CLIENT_ID: "${LINKEDIN_CLIENT_ID_PROD}"
+      LINKEDIN_CLIENT_SECRET: "${LINKEDIN_CLIENT_SECRET_PROD}"
+
+      # Subdomain & DNS
+      CLOUDFLARE_API_TOKEN: "${CLOUDFLARE_API_TOKEN}"
+      CLOUDFLARE_ZONE_ID: "${CLOUDFLARE_ZONE_ID}"
+      MAIN_DOMAIN: "neurallempire.com"
+
+      # Email
+      SMTP_USER: "${PRODUCTION_SMTP_USER}"
+      SMTP_PASS: "${PRODUCTION_SMTP_PASS}"
+
+      # Payment
+      STRIPE_SECRET_KEY: "${STRIPE_SECRET_KEY_PROD}"
+      STRIPE_WEBHOOK_SECRET: "${STRIPE_WEBHOOK_SECRET_PROD}"
+
+    scaling:
+      min_instances: 2
+      max_instances: 100
+      target_cpu: 70
+
+    health_check:
+      path: "/health"
+      interval: 30
+      timeout: 10
+      retries: 3
+
+# ==================== DATABASE ====================
+database:
+  provider: "supabase" # or "planetscale", "neon", "aws-rds"
+  type: "postgresql"
+  version: "15"
+
+  connection_pooling:
+    enabled: true
+    max_connections: 100
+
+  backup:
+    enabled: true
+    frequency: "daily"
+    retention: "30d"
+
+  migrations:
+    auto_deploy: false # Manual approval for production
+    rollback_enabled: true
+
+# ==================== CDN & STATIC ASSETS ====================
+cdn:
+  provider: "cloudflare"
+  zones:
+    - "neurallempire.com"
+
+  caching:
+    static_assets: "1y"
+    api_responses: "5m"
+    html_pages: "1h"
+
+  security:
+    ddos_protection: true
+    rate_limiting: true
+    bot_fight_mode: true
+
+# ==================== MONITORING & OBSERVABILITY ====================
+monitoring:
+  uptime:
+    provider: "pingdom" # or "uptime-robot"
+    endpoints:
+      - "https://www.neurallempire.com"
+      - "https://api.neurallempire.com/health"
+
+  application:
+    provider: "sentry"
+    error_tracking: true
+    performance_monitoring: true
+
+  logs:
+    provider: "datadog" # or "logflare"
+    retention: "30d"
+
+  metrics:
+    provider: "vercel-analytics"
+    real_user_monitoring: true
+
+# ==================== SECURITY ====================
+security:
+  waf:
+    enabled: true
+    provider: "cloudflare"
+    rules:
+      - block_sql_injection
+      - block_xss_attacks
+      - rate_limit_api
+
+  secrets_management:
+    provider: "vercel-env" # or "aws-secrets-manager"
+    rotation: "quarterly"
+
+  compliance:
+    gdpr: true
+    ccpa: true
+    soc2: true
+
+# ==================== CI/CD PIPELINE ====================
+deployment:
+  strategy: "blue-green"
+
+  environments:
+    staging:
+      auto_deploy: true
+      branch: "develop"
+      domain: "staging.neurallempire.com"
+
+    production:
+      auto_deploy: false # Manual approval
+      branch: "main"
+      domain: "neurallempire.com"
+
+  tests:
+    unit: true
+    integration: true
+    e2e: true
+    security_scan: true
+
+  rollback:
+    automatic: true
+    triggers:
+      - error_rate > 5%
+      - response_time > 2s
+      - uptime < 99%
+
+# ==================== SCALING & PERFORMANCE ====================
+performance:
+  frontend:
+    compression: "gzip"
+    minification: true
+    tree_shaking: true
+    code_splitting: true
+
+  backend:
+    auto_scaling: true
+    connection_pooling: true
+    caching_layers:
+      - redis
+      - cdn
+
+  database:
+    read_replicas: 2
+    connection_pooling: true
+    query_optimization: true
+
+# ==================== BACKUP & DISASTER RECOVERY ====================
+backup:
+  database:
+    frequency: "daily"
+    retention: "90d"
+    cross_region: true
+
+  application_data:
+    frequency: "weekly"
+    retention: "30d"
+
+  recovery_time_objective: "1h"
+  recovery_point_objective: "15m"
+
+# ==================== COST OPTIMIZATION ====================
+cost_optimization:
+  auto_scaling: true
+  spot_instances: false # Keep false for production
+  reserved_capacity: 50%
+
+  monitoring:
+    budget_alerts: true
+    monthly_limit: "$500"
+    cost_allocation_tags: true

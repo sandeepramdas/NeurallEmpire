@@ -1,0 +1,41 @@
+{
+  "name": "neurallempire",
+  "version": "2.0.0",
+  "description": "AI Agent Development Platform - Transform your business with intelligent AI agents that work 24/7",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev --workspace=backend\" \"npm run dev --workspace=frontend\"",
+    "build": "npm run build --workspace=backend && npm run build --workspace=frontend",
+    "install:all": "npm install && npm install --workspace=backend && npm install --workspace=frontend",
+    "clean": "rm -rf backend/dist frontend/dist backend/node_modules/.cache frontend/node_modules/.cache",
+    "test": "npm test --workspace=backend && npm test --workspace=frontend",
+    "lint": "npm run lint --workspace=backend && npm run lint --workspace=frontend"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sandeepramdas/NeurallEmpire.git"
+  },
+  "keywords": [
+    "ai",
+    "agents",
+    "saas",
+    "automation",
+    "multi-tenant",
+    "nodejs",
+    "react",
+    "typescript"
+  ],
+  "author": "Sandeep Ramdas",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sandeepramdas/NeurallEmpire/issues"
+  },
+  "homepage": "https://github.com/sandeepramdas/NeurallEmpire#readme",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

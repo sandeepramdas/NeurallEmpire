@@ -16,7 +16,7 @@ Set these in Railway Dashboard → Variables:
 ```env
 NODE_ENV=production
 PORT=3001
-DATABASE_URL=postgresql://postgres:pDxhsrhidcB82xpS@db.xwncwujgfgqcwzorkngk.supabase.co:5432/postgres
+DATABASE_URL=your-postgresql-connection-string
 JWT_SECRET=your-super-secret-jwt-key-for-production-make-this-very-strong
 SESSION_SECRET=your-session-secret-for-production-make-this-different
 FRONTEND_URL=https://sandeepramdas.github.io/NeurallEmpire

@@ -38,16 +38,35 @@ A comprehensive, multi-tenant SaaS platform for building, deploying, and managin
 - 🎨 **Low-Code Builder** - Visual agent configuration
 - 🌐 **API-First Design** - RESTful APIs for everything
 
-## 🏗️ Architecture
+## 📚 Documentation
+
+### **🏗️ Complete Architecture Guide**
+📖 **[ARCHITECTURE_DOCUMENTATION.md](./ARCHITECTURE_DOCUMENTATION.md)** - Comprehensive technical documentation covering:
+- **Database Design Philosophy** - Multi-tenant schema with OAuth and subdomain support
+- **Backend Service Architecture** - Domain-driven design with security-first approach
+- **Frontend Routing Strategy** - Subdomain-based routing with OAuth integration
+- **Infrastructure & Deployment** - Production-ready scalability considerations
+- **Security Implementation** - Enterprise-grade authentication and data protection
+- **Performance Optimization** - Caching, partitioning, and scaling strategies
+
+### **🗄️ Database Migration Guide**
+📊 **[DATABASE_MIGRATION_GUIDE.md](./DATABASE_MIGRATION_GUIDE.md)** - Step-by-step database enhancement:
+- Enhanced schema for subdomain management
+- OAuth provider integration tables
+- Cross-subdomain session support
+- Enterprise security features
+
+## 🏗️ Architecture Overview
 
 ```
-NeurallEmpire/
-├── backend/           # TypeScript/Express API server
+NeurallEmpire/ (Enhanced for Enterprise SaaS)
+├── backend/                    # TypeScript/Express API server
 │   ├── src/
-│   │   ├── agents/    # Elite Eight agent implementations
-│   │   ├── controllers/  # API route handlers
-│   │   ├── middleware/   # Auth, validation, tenant resolution
-│   │   ├── routes/       # Express route definitions
+│   │   ├── agents/            # Elite Eight agent implementations
+│   │   ├── controllers/       # API route handlers
+│   │   ├── middleware/        # Auth, validation, tenant resolution
+│   │   ├── services/          # Business logic (OAuth, DNS, Subdomain)
+│   │   ├── routes/            # Express route definitions
 │   │   ├── services/     # Business logic & agent orchestration
 │   │   ├── schemas/      # Zod validation schemas
 │   │   └── types/        # TypeScript type definitions
@@ -266,23 +285,87 @@ docker run -p 3001:3001 neurallempire-backend
 - **CDN**: Cloudflare
 - **Monitoring**: Built-in analytics
 
-## 🔒 Security Features
+## 🔒 Enhanced Security Features
 
-- **Multi-tenant data isolation**
-- **JWT token authentication**
-- **OAuth social login**
-- **Rate limiting & DDoS protection**
-- **Input validation & sanitization**
-- **CORS & security headers**
-- **Encrypted environment variables**
+### **🏢 Enterprise Authentication**
+- **Multi-tenant data isolation** - Complete organizational boundary enforcement
+- **OAuth/SSO Integration** - Google, LinkedIn, GitHub, Microsoft enterprise login
+- **Subdomain-based routing** - `org.neurallempire.com` for brand isolation
+- **Cross-subdomain session management** - Seamless organization switching
+- **Risk-based authentication** - ML-powered fraud detection
+- **Multi-factor authentication** - TOTP, backup codes, device fingerprinting
 
-## 📈 Performance
+### **🛡️ Data Protection**
+- **Field-level encryption** - OAuth tokens, sensitive data encrypted at rest
+- **Row-level security** - Database-enforced tenant isolation
+- **Audit trail** - Comprehensive action logging for compliance
+- **Rate limiting & DDoS protection** - Cloudflare integration
+- **Input validation & sanitization** - Zod schema validation
+- **CORS & security headers** - Production-ready security configuration
 
-- **Real-time agent execution**
-- **Efficient database queries**
-- **Caching strategies**
-- **Optimized API responses**
-- **Lazy loading & code splitting**
+## 📈 Enterprise Performance & Scalability
+
+### **⚡ Performance Optimizations**
+- **Multi-layer caching** - Memory + Redis + CDN caching strategy
+- **Database partitioning** - Organization-based data partitioning
+- **Code splitting** - Route and feature-based lazy loading
+- **Optimized queries** - Prisma with performance monitoring
+- **CDN integration** - Global content delivery via Cloudflare
+
+### **📊 Scalability Architecture**
+- **Horizontal scaling** - Stateless service design
+- **Load balancing** - Multi-region deployment ready
+- **Queue systems** - Bull/Redis for background processing
+- **Microservice ready** - Domain-driven service boundaries
+- **Real-time capabilities** - WebSocket support for live updates
+
+## 🚀 Quick Implementation Guide
+
+### **⚡ Apply Enhanced Schema (5 minutes)**
+```bash
+# 1. Backup current database
+pg_dump $DATABASE_URL > backup_$(date +%Y%m%d).sql
+
+# 2. Apply enhanced schema with OAuth and subdomain support
+cp backend/prisma/schema-enhanced.prisma backend/prisma/schema.prisma
+npx prisma migrate dev --name "enhanced_oauth_subdomain_support"
+npx prisma generate
+
+# 3. Verify new tables
+npx prisma studio
+# Check: subdomain_records, social_accounts, oauth_configs
+```
+
+### **🔑 Configure OAuth Providers**
+```bash
+# Required environment variables:
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+GITHUB_CLIENT_ID="your-github-client-id"
+GITHUB_CLIENT_SECRET="your-github-client-secret"
+LINKEDIN_CLIENT_ID="your-linkedin-client-id"
+LINKEDIN_CLIENT_SECRET="your-linkedin-client-secret"
+
+# DNS management (Cloudflare):
+CLOUDFLARE_EMAIL="your-email@example.com"
+CLOUDFLARE_API_KEY="your-cloudflare-api-key"
+CLOUDFLARE_ZONE_ID="your-zone-id"
+```
+
+### **🌐 Subdomain Setup**
+1. **DNS Configuration**: Wildcard CNAME `*.neurallempire.com` → `neurallempire.com`
+2. **SSL Certificate**: Wildcard SSL for `*.neurallempire.com`
+3. **Cloudflare Setup**: Enable proxy for security and performance
+
+### **📋 Implementation Phases**
+| Phase | Duration | Focus | Status |
+|-------|----------|-------|--------|
+| **Database Schema** | Week 1 | Enhanced schema, OAuth tables | ✅ Ready |
+| **Backend Services** | Week 2 | OAuth, DNS, Subdomain services | 📋 Planned |
+| **Frontend Integration** | Week 3 | Subdomain routing, OAuth UI | 📋 Planned |
+| **Infrastructure** | Week 4 | DNS automation, SSL, monitoring | 📋 Planned |
+
+**📖 See [ARCHITECTURE_DOCUMENTATION.md](./ARCHITECTURE_DOCUMENTATION.md) for complete implementation details**
 
 ## 🧪 Testing
 
@@ -294,6 +377,11 @@ npm test
 # Frontend tests
 cd frontend
 npm test
+
+# Integration tests (after implementation)
+npm run test:integration
+npm run test:oauth
+npm run test:subdomain
 ```
 
 ## 📝 License
