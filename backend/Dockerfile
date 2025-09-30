@@ -1,8 +1,12 @@
-# Use Node.js 20 LTS
-FROM node:20-alpine
+# Use Node.js 20 LTS (Debian-based for better OpenSSL compatibility)
+FROM node:20-slim
 
-# Install OpenSSL 1.1 for Prisma (required by the query engine)
-RUN apk add --no-cache openssl1.1-compat
+# Install OpenSSL and other required dependencies for Prisma
+RUN apt-get update && apt-get install -y \
+    openssl \
+    libssl3 \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
