@@ -25,12 +25,16 @@ RUN npx prisma generate
 # Copy backend application code
 COPY backend/ .
 
+# Copy pre-built frontend files to source before build
+RUN mkdir -p /app/public && ls -la /app
+COPY backend/public ./public
+RUN ls -la /app/public
+
 # Build TypeScript
 RUN npm run build
 
-# Copy pre-built frontend files
-COPY backend/public /app/dist/public
-RUN ls -la /app/dist/public || echo "No public folder"
+# Copy frontend to final dist location
+RUN cp -r /app/public /app/dist/public && ls -la /app/dist/public
 
 # Remove devDependencies
 RUN npm prune --production
