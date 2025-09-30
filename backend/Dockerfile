@@ -1,6 +1,9 @@
 # Use Node.js 20 LTS
 FROM node:20-alpine
 
+# Install OpenSSL 1.1 for Prisma (required by the query engine)
+RUN apk add --no-cache openssl1.1-compat
+
 # Set working directory
 WORKDIR /app
 
