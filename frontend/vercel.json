@@ -9,6 +9,6 @@
     }
   ],
   "env": {
-    "VITE_API_URL": "https://neurallempire-backend.railway.app/api"
+    "VITE_API_URL": "https://www.neurallempire.com/api"
   }
 }
