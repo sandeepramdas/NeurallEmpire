@@ -20,9 +20,10 @@ import agentRoutes from '@/routes/agents';
 import swarmRoutes from '@/routes/swarms';
 import campaignRoutes from '@/routes/campaigns';
 import analyticsRoutes from '@/routes/analytics';
-import subdomainRoutes from '@/routes/subdomains';
+import subdomainRoutes from '@/routes/subdomain';
 import webhookRoutes from '@/routes/webhooks';
 import paymentRoutes from '@/routes/payments';
+import oauthRoutes from '@/routes/oauth';
 
 dotenv.config();
 
@@ -114,13 +115,14 @@ app.get('/health', (req, res) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/oauth', oauthRoutes);
 app.use('/api/organizations', organizationRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/agents', agentRoutes);
 app.use('/api/swarms', swarmRoutes);
 app.use('/api/campaigns', campaignRoutes);
 app.use('/api/analytics', analyticsRoutes);
-app.use('/api/subdomains', subdomainRoutes);
+app.use('/api/subdomain', subdomainRoutes);
 app.use('/api/webhooks', webhookRoutes);
 app.use('/api/payments', paymentRoutes);
 

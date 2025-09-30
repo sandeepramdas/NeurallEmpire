@@ -1,0 +1,534 @@
+// ==================== ENHANCED NEURALLEMPIRE SCHEMA ====================
+// Version 2.1 - OAuth, Subdomain Management & Enterprise Features
+// This is the enhanced schema with all required tables for subdomain-based SaaS
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== PLATFORM ADMINISTRATION ====================
+
+model PlatformAdmin {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  role         AdminRole @default(SUPPORT)
+  permissions  Json      // Granular permissions
+
+  // Security
+  mfaEnabled   Boolean   @default(true)
+  mfaSecret    String?
+  lastLoginAt  DateTime?
+  lastLoginIp  String?
+
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relations
+  auditLogs    AuditLog[]
+  adminActions AdminAction[]
+
+  @@map("platform_admins")
+}
+
+model AdminAction {
+  id          String    @id @default(cuid())
+  adminId     String
+  action      String    // e.g., "DEACTIVATE_ORG", "MODIFY_SUBSCRIPTION"
+  targetType  String    // "ORGANIZATION", "USER", "AGENT"
+  targetId    String
+  reason      String?
+  metadata    Json?     // Additional action details
+
+  admin       PlatformAdmin @relation(fields: [adminId], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@index([targetType, targetId])
+  @@map("admin_actions")
+}
+
+// ==================== ENHANCED ORGANIZATION MANAGEMENT ====================
+
+model Organization {
+  id               String       @id @default(cuid())
+  name             String
+  slug             String       @unique
+  domain           String?      @unique
+  logo             String?
+  description      String?
+  industry         String?      // Industry vertical
+  size             String?      // Company size
+
+  // Enhanced Status Management
+  status           OrgStatus    @default(TRIAL)
+  statusReason     String?      // Why status changed
+  statusChangedAt  DateTime     @default(now())
+  statusChangedBy  String?      // Admin who changed it
+
+  // 🚀 SUBDOMAIN MANAGEMENT (NEW)
+  subdomainEnabled Boolean      @default(true)
+  subdomainStatus  SubdomainStatus @default(PENDING)
+  subdomainVerifiedAt DateTime?
+  customDomain     String?      @unique // Custom domain like acme.com
+  customDomainVerified Boolean  @default(false)
+  sslCertificateStatus SSLStatus @default(PENDING)
+  sslCertificateExpiry DateTime?
+
+  // Subscription & Billing
+  planType         PlanType     @default(TRIAL)
+  billingCycle     BillingCycle @default(MONTHLY)
+  subscriptionId   String?      @unique
+  stripeCustomerId String?      @unique
+  billingEmail     String?
+
+  // Trial Management
+  trialEndsAt      DateTime?
+  trialExtended    Boolean      @default(false)
+
+  // Resource Limits (Plan-based)
+  maxUsers         Int          @default(5)
+  maxAgents        Int          @default(10)
+  maxWorkflows     Int          @default(20)
+  maxApiCalls      Int          @default(10000)
+  storageLimit     BigInt       @default(5368709120) // 5GB in bytes
+
+  // Usage Tracking
+  currentUsers     Int          @default(0)
+  currentAgents    Int          @default(0)
+  currentWorkflows Int          @default(0)
+  apiCallsThisMonth Int         @default(0)
+  storageUsed      BigInt       @default(0)
+
+  // 🔐 ENHANCED SECURITY & SSO (NEW)
+  ssoEnabled       Boolean      @default(false)
+  ssoProvider      SSOProvider?
+  ssoConfig        Json?
+  samlMetadata     String?      // SAML metadata for enterprise SSO
+  allowedDomains   String[]     @default([]) // Email domains allowed to auto-join
+
+  // Compliance & Security
+  dataRetention    Int          @default(90) // days
+  ipWhitelist      String[]     @default([])
+
+  // 🚀 ONBOARDING & SETUP (NEW)
+  onboardingCompleted Boolean   @default(false)
+  onboardingStep   Int          @default(0)
+  setupWizardCompleted Boolean  @default(false)
+  firstAgentCreated Boolean     @default(false)
+
+  // Metadata
+  verifiedAt       DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  deletedAt        DateTime?    // Soft delete
+
+  // Relations
+  users            User[]
+  agents           Agent[]
+  workflows        AgentWorkflow[]
+  workflowTemplates WorkflowTemplate[]
+  interactions     AgentInteraction[]
+  subscriptions    Subscription[]
+  invoices         Invoice[]
+  apiKeys          ApiKey[]
+  webhooks         Webhook[]
+  auditLogs        AuditLog[]
+  agentTemplates   AgentTemplate[]
+  usageMetrics     UsageMetric[]
+  notifications    Notification[]
+
+  // 🚀 NEW RELATIONS
+  subdomainRecords SubdomainRecord[]
+  oauthConfigs     OAuthConfig[]
+  socialAccounts   SocialAccount[]
+
+  @@index([status])
+  @@index([planType])
+  @@index([slug])
+  @@index([subdomainStatus])
+  @@map("organizations")
+}
+
+// ==================== 🚀 NEW: SUBDOMAIN MANAGEMENT ====================
+
+model SubdomainRecord {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // DNS Configuration
+  subdomain       String   @unique // e.g., "acme" for acme.neurallempire.com
+  fullDomain      String   @unique // e.g., "acme.neurallempire.com"
+  recordType      String   @default("CNAME") // DNS record type
+  recordValue     String   // Points to main domain
+
+  // Status & Health
+  status          SubdomainStatus @default(PENDING)
+  isActive        Boolean  @default(true)
+
+  // DNS Provider Info
+  dnsProvider     String   @default("cloudflare")
+  externalRecordId String? // Provider-specific record ID
+
+  // SSL/TLS
+  sslEnabled      Boolean  @default(true)
+  sslProvider     String   @default("cloudflare")
+  sslCertId       String?
+
+  // Monitoring
+  lastHealthCheck DateTime?
+  healthStatus    HealthStatus @default(UNKNOWN)
+  uptime          Float    @default(100.0) // Percentage
+  responseTime    Int?     // Average response time in ms
+
+  // Metadata
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([subdomain])
+  @@index([status])
+  @@index([organizationId])
+  @@map("subdomain_records")
+}
+
+// ==================== 🔐 ENHANCED USER & OAUTH AUTHENTICATION ====================
+
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  passwordHash   String?  // Optional for OAuth-only users
+  firstName      String?
+  lastName       String?
+  avatar         String?
+  phone          String?
+  timezone       String   @default("UTC")
+
+  // Organization & Role
+  organizationId String
+  role           UserRole @default(MEMBER)
+  department     String?
+  title          String?
+
+  // Permissions
+  permissions    Json?    // Override permissions
+  canCreateAgents Boolean @default(true)
+  canManageWorkflows Boolean @default(true)
+  canViewAnalytics Boolean @default(true)
+
+  // Status & Security
+  status         UserStatus @default(PENDING)
+  statusReason   String?
+  emailVerified  Boolean    @default(false)
+  phoneVerified  Boolean    @default(false)
+  mfaEnabled     Boolean    @default(false)
+  mfaSecret      String?
+
+  // Activity
+  lastLoginAt    DateTime?
+  lastLoginIp    String?
+  loginCount     Int       @default(0)
+  lastLoginMethod LoginMethod? // PASSWORD, GOOGLE, GITHUB, etc.
+
+  // 🚀 ENHANCED OAUTH FIELDS (UPDATED)
+  // Remove individual OAuth IDs - use SocialAccount table instead
+  // googleId       String?   @unique  // REMOVE
+  // microsoftId    String?   @unique  // REMOVE
+  // githubId       String?   @unique  // REMOVE
+
+  // 🚀 ONBOARDING & PREFERENCES (NEW)
+  onboardingStep Int       @default(0)
+  onboardingCompleted Boolean @default(false)
+  preferences    Json?     // UI preferences, settings
+  locale         String    @default("en")
+
+  // Security
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret String?
+  backupCodes    String[] @default([])
+
+  // Metadata
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime? // Soft delete
+
+  // Relations
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  sessions       Session[]
+  socialAccounts SocialAccount[]
+  createdAgents  Agent[]      @relation("AgentCreator")
+  ownedAgents    Agent[]      @relation("AgentOwner")
+  workflows      AgentWorkflow[] @relation("WorkflowCreator")
+  auditLogs      AuditLog[]
+  notifications  Notification[]
+
+  @@index([organizationId, status])
+  @@index([email])
+  @@index([lastLoginAt])
+  @@map("users")
+}
+
+// ==================== 🚀 NEW: SOCIAL/OAUTH ACCOUNT MANAGEMENT ====================
+
+model SocialAccount {
+  id              String   @id @default(cuid())
+  userId          String
+  organizationId  String
+
+  // Provider Info
+  provider        OAuthProvider // GOOGLE, GITHUB, LINKEDIN, MICROSOFT
+  providerId      String   // User ID from the provider
+  providerEmail   String?  // Email from provider
+  providerUsername String? // Username from provider
+
+  // OAuth Data
+  accessToken     String?  // Current access token
+  refreshToken    String?  // Refresh token
+  tokenType       String   @default("Bearer")
+  expiresAt       DateTime?
+  scope           String[] @default([])
+
+  // Account Info
+  displayName     String?
+  profileUrl      String?
+  avatarUrl       String?
+
+  // Metadata from Provider
+  providerData    Json?    // Raw data from provider
+
+  // Status
+  isActive        Boolean  @default(true)
+  isPrimary       Boolean  @default(false) // Primary OAuth account
+  lastUsedAt      DateTime?
+
+  // Metadata
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerId])
+  @@unique([userId, provider]) // One account per provider per user
+  @@index([userId])
+  @@index([provider])
+  @@index([organizationId])
+  @@map("social_accounts")
+}
+
+// ==================== 🚀 NEW: OAUTH CONFIGURATION ====================
+
+model OAuthConfig {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Provider Configuration
+  provider        OAuthProvider
+  clientId        String
+  clientSecret    String   // Encrypted
+
+  // Configuration
+  enabled         Boolean  @default(true)
+  allowedDomains  String[] @default([]) // Restrict OAuth to specific domains
+  autoCreateUsers Boolean  @default(true)
+  autoJoinOrg     Boolean  @default(false)
+  defaultRole     UserRole @default(MEMBER)
+
+  // Customization
+  buttonText      String?  // Custom button text
+  buttonColor     String?  // Custom button color
+  logoUrl         String?  // Custom provider logo
+
+  // Advanced Settings
+  scope           String[] @default([])
+  additionalParams Json?   // Additional OAuth params
+
+  // Metadata
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, provider])
+  @@index([organizationId])
+  @@map("oauth_configs")
+}
+
+// ==================== 🚀 ENHANCED SESSION MANAGEMENT ====================
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique @default(cuid())
+
+  // 🚀 ENHANCED SESSION DETAILS (NEW)
+  sessionType SessionType @default(WEB) // WEB, MOBILE, API
+  loginMethod LoginMethod? // How user logged in
+
+  // Device & Location
+  userAgent String?
+  ipAddress String?
+  device    String? // Parsed device info
+  browser   String? // Parsed browser info
+  os        String? // Parsed OS info
+  location  Json?   // Geo location data
+
+  // 🚀 SUBDOMAIN SUPPORT (NEW)
+  subdomain String? // Which subdomain this session is for
+  originUrl String? // Original URL that created session
+
+  // Security
+  isActive  Boolean @default(true)
+  isSuspicious Boolean @default(false)
+  riskScore Float?  // Risk assessment score
+
+  // Session Management
+  expiresAt DateTime
+  lastAccessedAt DateTime @default(now())
+  refreshedAt DateTime @default(now())
+
+  // Metadata
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@index([subdomain])
+  @@index([isActive])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+// ==================== 🚀 NEW ENUMS ====================
+
+enum SubdomainStatus {
+  PENDING       // DNS not configured
+  CONFIGURING   // DNS being set up
+  ACTIVE        // Subdomain working
+  FAILED        // Configuration failed
+  SUSPENDED     // Temporarily disabled
+  DELETED       // Marked for deletion
+}
+
+enum SSLStatus {
+  PENDING       // Certificate not issued
+  ACTIVE        // Certificate active
+  EXPIRED       // Certificate expired
+  FAILED        // Certificate failed
+  RENEWING      // Certificate being renewed
+}
+
+enum HealthStatus {
+  HEALTHY       // Everything working
+  DEGRADED      // Some issues
+  UNHEALTHY     // Major issues
+  UNKNOWN       // Status unknown
+}
+
+enum OAuthProvider {
+  GOOGLE
+  GITHUB
+  LINKEDIN
+  MICROSOFT
+  FACEBOOK
+  TWITTER
+  APPLE
+  CUSTOM        // Custom OAuth provider
+}
+
+enum SSOProvider {
+  GOOGLE_WORKSPACE
+  MICROSOFT_365
+  OKTA
+  AUTH0
+  SAML
+  CUSTOM
+}
+
+enum SessionType {
+  WEB
+  MOBILE
+  API
+  ADMIN
+  SYSTEM
+}
+
+enum LoginMethod {
+  PASSWORD
+  GOOGLE
+  GITHUB
+  LINKEDIN
+  MICROSOFT
+  FACEBOOK
+  SSO
+  API_KEY
+  MAGIC_LINK
+}
+
+// Keep all existing enums from original schema...
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+  SUPPORT
+  VIEWER
+}
+
+enum PlanType {
+  TRIAL       // 14-day trial
+  FREE        // Limited free tier
+  STARTER     // $99/month
+  GROWTH      // $299/month
+  SCALE       // $999/month
+  ENTERPRISE  // Custom pricing
+}
+
+enum BillingCycle {
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum OrgStatus {
+  TRIAL
+  ACTIVE
+  SUSPENDED   // Admin suspended
+  DELINQUENT  // Payment issues
+  CANCELLED
+  BANNED      // Policy violation
+}
+
+enum UserStatus {
+  PENDING     // Awaiting email verification
+  ACTIVE
+  SUSPENDED   // By admin or org owner
+  INACTIVE    // Self-deactivated
+  LOCKED      // Too many failed logins
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  DEVELOPER
+  ANALYST
+  MEMBER
+  VIEWER
+}
+
+// ... [Include ALL other existing models and enums from the original schema]
+// This is just showing the NEW/ENHANCED parts

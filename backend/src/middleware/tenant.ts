@@ -42,27 +42,47 @@ export const tenantResolver = async (
           planType: true,
           maxUsers: true,
           maxAgents: true,
-          maxCampaigns: true,
+          maxWorkflows: true,
           storageLimit: true,
+          subdomainStatus: true,
+          subdomainEnabled: true,
         },
       });
 
       if (organization) {
-        if (organization.status !== 'ACTIVE') {
+        // Enhanced status validation
+        if (organization.status !== 'ACTIVE' && organization.status !== 'TRIAL') {
           res.status(403).json({
             success: false,
             error: 'Organization is not active',
+            code: 'ORG_INACTIVE'
+          });
+          return;
+        }
+
+        // Check subdomain status
+        if (!organization.subdomainEnabled || organization.subdomainStatus === 'SUSPENDED') {
+          res.status(403).json({
+            success: false,
+            error: 'Subdomain access is disabled',
+            code: 'SUBDOMAIN_DISABLED'
           });
           return;
         }
 
         req.organization = organization as any;
         req.tenant = subdomain;
+
+        // Log subdomain access for analytics
+        req.headers['x-org-id'] = organization.id;
+        req.headers['x-org-plan'] = organization.planType;
       } else if (subdomain) {
         // Subdomain exists but organization not found
         res.status(404).json({
           success: false,
           error: 'Organization not found',
+          code: 'ORG_NOT_FOUND',
+          subdomain
         });
         return;
       }
@@ -74,6 +94,7 @@ export const tenantResolver = async (
     return res.status(500).json({
       success: false,
       error: 'Internal server error during tenant resolution',
+      code: 'TENANT_RESOLUTION_ERROR'
     });
   }
 };
