@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import { PrismaClient } from '@prisma/client';
 import dotenv from 'dotenv';
+import path from 'path';
 
 // Import middleware
 import { tenantResolver } from '@/middleware/tenant';
@@ -142,6 +143,20 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/subdomain', subdomainRoutes);
 app.use('/api/webhooks', webhookRoutes);
 app.use('/api/payments', paymentRoutes);
+
+// Serve frontend static files in production
+if (NODE_ENV === 'production') {
+  const frontendPath = path.join(__dirname, '..', 'public');
+  app.use(express.static(frontendPath));
+
+  // Handle client-side routing - serve index.html for non-API routes
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api/')) {
+      return next();
+    }
+    res.sendFile(path.join(frontendPath, 'index.html'));
+  });
+}
 
 // Error handling middleware (must be last)
 app.use(notFound);

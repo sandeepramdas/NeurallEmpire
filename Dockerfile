@@ -11,6 +11,16 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app
 
+# Build frontend first
+WORKDIR /frontend
+COPY frontend/package*.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build
+
+# Switch to backend
+WORKDIR /app
+
 # Copy backend package files
 COPY backend/package*.json ./
 
@@ -28,6 +38,10 @@ COPY backend/ .
 
 # Build TypeScript
 RUN npm run build
+
+# Copy frontend build to backend public directory
+RUN mkdir -p dist/public
+COPY --from=0 /frontend/dist ./dist/public
 
 # Remove devDependencies to reduce image size
 RUN npm prune --production
