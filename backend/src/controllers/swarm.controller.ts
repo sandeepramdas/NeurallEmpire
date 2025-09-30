@@ -245,7 +245,6 @@ export class SwarmController {
     const descriptions: Record<SwarmType, string> = {
       [SwarmType.SEQUENTIAL]: 'Agents execute one after another, each using the output of the previous agent',
       [SwarmType.PARALLEL]: 'All agents execute simultaneously with the same input',
-      [SwarmType.CONDITIONAL]: 'Agents execute based on conditions and previous results',
       [SwarmType.COLLABORATIVE]: 'Agents work together, sharing data and coordinating tasks',
       [SwarmType.HIERARCHICAL]: 'Agents execute in a parent-child hierarchy structure',
     };
@@ -255,10 +254,10 @@ export class SwarmController {
 
   private getSwarmRoleDescription(role: SwarmRole): string {
     const descriptions: Record<SwarmRole, string> = {
-      [SwarmRole.COORDINATOR]: 'Plans and coordinates the execution of other agents',
+      [SwarmRole.LEADER]: 'Coordinates and leads other agents in the swarm',
       [SwarmRole.WORKER]: 'Performs the main tasks and processing work',
-      [SwarmRole.OBSERVER]: 'Monitors execution and provides feedback or validation',
-      [SwarmRole.VALIDATOR]: 'Validates results and ensures quality standards',
+      [SwarmRole.COORDINATOR]: 'Manages workflow and coordinates tasks',
+      [SwarmRole.SPECIALIST]: 'Performs specialized tasks with expert knowledge',
     };
 
     return descriptions[role] || 'Custom agent role';

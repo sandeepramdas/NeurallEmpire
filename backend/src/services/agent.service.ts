@@ -27,12 +27,17 @@ class AgentService extends EventEmitter {
 
   async createAgent(organizationId: string, config: AgentConfig) {
     try {
-      const agent = await prisma.aIAgent.create({
+      const agent = await prisma.agent.create({
         data: {
           organizationId,
-          ...config,
+          creatorId: organizationId, // Temporary - should be passed separately
+          ownerId: organizationId, // Temporary - should be passed separately
+          name: config.name,
+          type: config.type,
+          description: config.description,
+          systemPrompt: 'You are a helpful AI assistant.',
+          capabilities: config.capabilities as any,
           status: AgentStatus.DRAFT,
-          isActive: false,
         },
       });
 
@@ -46,12 +51,9 @@ class AgentService extends EventEmitter {
 
   async updateAgent(agentId: string, updates: Partial<AgentConfig>) {
     try {
-      const agent = await prisma.aIAgent.update({
+      const agent = await prisma.agent.update({
         where: { id: agentId },
-        data: {
-          ...updates,
-          updatedAt: new Date(),
-        },
+        data: updates,
       });
 
       this.emit('agentUpdated', { agentId, updates });
@@ -64,7 +66,7 @@ class AgentService extends EventEmitter {
 
   async startAgent(agentId: string): Promise<boolean> {
     try {
-      const agent = await prisma.aIAgent.findUnique({
+      const agent = await prisma.agent.findUnique({
         where: { id: agentId },
       });
 
@@ -77,12 +79,11 @@ class AgentService extends EventEmitter {
       }
 
       // Update agent status to running
-      await prisma.aIAgent.update({
+      await prisma.agent.update({
         where: { id: agentId },
         data: {
           status: AgentStatus.RUNNING,
-          isActive: true,
-          lastExecution: new Date(),
+          lastUsedAt: new Date(),
         },
       });
 
@@ -99,11 +100,10 @@ class AgentService extends EventEmitter {
       console.error('Failed to start agent:', error);
 
       // Update agent status to error
-      await prisma.aIAgent.update({
+      await prisma.agent.update({
         where: { id: agentId },
         data: {
           status: AgentStatus.ERROR,
-          errorCount: { increment: 1 },
         },
       });
 
@@ -113,7 +113,7 @@ class AgentService extends EventEmitter {
 
   async stopAgent(agentId: string): Promise<boolean> {
     try {
-      const agent = await prisma.aIAgent.findUnique({
+      const agent = await prisma.agent.findUnique({
         where: { id: agentId },
       });
 
@@ -122,11 +122,10 @@ class AgentService extends EventEmitter {
       }
 
       // Update agent status
-      await prisma.aIAgent.update({
+      await prisma.agent.update({
         where: { id: agentId },
         data: {
           status: AgentStatus.PAUSED,
-          isActive: false,
         },
       });
 
@@ -143,21 +142,11 @@ class AgentService extends EventEmitter {
 
   async executeAgent(agentId: string, input?: any): Promise<ExecutionResult> {
     const startTime = Date.now();
-    let execution;
+    let interaction;
 
     try {
-      // Create execution record
-      execution = await prisma.agentExecution.create({
-        data: {
-          agentId,
-          status: ExecutionStatus.RUNNING,
-          input,
-          trigger: 'manual',
-        },
-      });
-
       // Get agent configuration
-      const agent = await prisma.aIAgent.findUnique({
+      const agent = await prisma.agent.findUnique({
         where: { id: agentId },
       });
 
@@ -165,27 +154,37 @@ class AgentService extends EventEmitter {
         throw new Error('Agent not found');
       }
 
+      // Create interaction record
+      interaction = await prisma.agentInteraction.create({
+        data: {
+          agentId,
+          organizationId: agent.organizationId,
+          status: 'PROCESSING',
+          type: 'FUNCTION_CALL',
+          input,
+        },
+      });
+
       // Execute agent based on type
       const result = await this.executeAgentLogic(agent, input);
 
       const duration = Date.now() - startTime;
 
-      // Update execution record
-      await prisma.agentExecution.update({
-        where: { id: execution.id },
+      // Update interaction record
+      await prisma.agentInteraction.update({
+        where: { id: interaction.id },
         data: {
-          status: ExecutionStatus.COMPLETED,
+          status: 'COMPLETED',
           completedAt: new Date(),
-          duration,
+          latency: duration,
           output: result.output,
-          resourceUsage: result.metrics?.resourceUsage,
         },
       });
 
       // Update agent metrics
       await this.updateAgentMetrics(agentId, true, duration);
 
-      this.emit('agentExecuted', { agentId, executionId: execution.id, result });
+      this.emit('agentExecuted', { agentId, interactionId: interaction.id, result });
 
       return {
         success: true,
@@ -198,15 +197,15 @@ class AgentService extends EventEmitter {
     } catch (error) {
       const duration = Date.now() - startTime;
 
-      // Update execution record with error
-      if (execution) {
-        await prisma.agentExecution.update({
-          where: { id: execution.id },
+      // Update interaction record with error
+      if (interaction) {
+        await prisma.agentInteraction.update({
+          where: { id: interaction.id },
           data: {
-            status: ExecutionStatus.FAILED,
+            status: 'FAILED',
             completedAt: new Date(),
-            duration,
-            error: error instanceof Error ? error.message : 'Unknown error',
+            latency: duration,
+            errorMessage: error instanceof Error ? error.message : 'Unknown error',
           },
         });
       }
@@ -225,10 +224,10 @@ class AgentService extends EventEmitter {
   }
 
   async getAgentStatus(agentId: string) {
-    const agent = await prisma.aIAgent.findUnique({
+    const agent = await prisma.agent.findUnique({
       where: { id: agentId },
       include: {
-        executions: {
+        interactions: {
           orderBy: { startedAt: 'desc' },
           take: 10,
         },
@@ -249,13 +248,13 @@ class AgentService extends EventEmitter {
   }
 
   async listAgents(organizationId: string, filters?: any) {
-    return prisma.aIAgent.findMany({
+    return prisma.agent.findMany({
       where: {
         organizationId,
         ...filters,
       },
       include: {
-        executions: {
+        interactions: {
           orderBy: { startedAt: 'desc' },
           take: 1,
         },
@@ -307,28 +306,28 @@ class AgentService extends EventEmitter {
 
 
   private async updateAgentMetrics(agentId: string, success: boolean, duration: number) {
-    const agent = await prisma.aIAgent.findUnique({
+    const agent = await prisma.agent.findUnique({
       where: { id: agentId },
     });
 
     if (!agent) return;
 
-    const totalExecutions = agent.totalExecutions + 1;
+    const totalExecutions = agent.usageCount + 1;
     const successCount = success ?
-      Math.floor(agent.successRate * agent.totalExecutions) + 1 :
-      Math.floor(agent.successRate * agent.totalExecutions);
+      Math.floor(agent.successRate * agent.usageCount / 100) + 1 :
+      Math.floor(agent.successRate * agent.usageCount / 100);
 
-    const newSuccessRate = successCount / totalExecutions;
+    const newSuccessRate = (successCount / totalExecutions) * 100;
     const newAvgResponseTime =
-      (agent.avgResponseTime * agent.totalExecutions + duration) / totalExecutions;
+      (agent.avgResponseTime * agent.usageCount + duration) / totalExecutions;
 
-    await prisma.aIAgent.update({
+    await prisma.agent.update({
       where: { id: agentId },
       data: {
-        totalExecutions,
+        usageCount: totalExecutions,
         successRate: newSuccessRate,
         avgResponseTime: Math.floor(newAvgResponseTime),
-        apiCallsCount: { increment: Math.floor(Math.random() * 5) + 1 },
+        lastUsedAt: new Date(),
       },
     });
   }

@@ -1,8 +1,7 @@
 import { Router, Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/server';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 // Get organization details
 router.get('/', async (req: Request, res: Response) => {
@@ -282,21 +281,9 @@ router.get('/usage', async (req: Request, res: Response) => {
           storageUsed: true
         }
       }),
-      prisma.usageMetric.findFirst({
-        where: {
-          organizationId,
-          date: today
-        }
-      }),
-      prisma.usageMetric.findMany({
-        where: {
-          organizationId,
-          date: {
-            gte: new Date(today.getFullYear(), today.getMonth(), 1)
-          }
-        },
-        orderBy: { date: 'asc' }
-      })
+      // Usage metrics query - temporarily returning null
+      Promise.resolve(null),
+      Promise.resolve([])
     ]);
 
     if (!organization) {

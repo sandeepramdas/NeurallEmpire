@@ -45,8 +45,8 @@ export const authenticate = async (
         lastName: true,
         avatar: true,
         role: true,
+        status: true,
         organizationId: true,
-        isActive: true,
         organization: {
           select: {
             id: true,
@@ -59,7 +59,7 @@ export const authenticate = async (
       },
     });
 
-    if (!user || !user.isActive) {
+    if (!user || user.status !== 'ACTIVE') {
       res.status(401).json({
         success: false,
         error: 'User not found or inactive',
@@ -169,12 +169,12 @@ export const optionalAuth = async (
           lastName: true,
           avatar: true,
           role: true,
+          status: true,
           organizationId: true,
-          isActive: true,
         },
       });
 
-      if (user && user.isActive) {
+      if (user && user.status === 'ACTIVE') {
         (req as AuthenticatedRequest).user = {
           id: user.id,
           email: user.email,

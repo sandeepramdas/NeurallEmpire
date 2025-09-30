@@ -122,12 +122,9 @@ export class AdminController {
           action: 'UPDATE_STATUS',
           resourceType: 'ORGANIZATION',
           resourceId: id,
-          oldValues: {
-            status: organization.status
-          } as any,
-          newValues: {
-            status: status
-          } as any,
+          changes: {
+            status: { from: organization.status, to: status }
+          },
           metadata: { reason: statusReason }
         }
       });
@@ -326,7 +323,7 @@ export class AdminController {
         prisma.user.count({ where: { status: 'ACTIVE' } }),
         prisma.agent.count(),
         prisma.agentWorkflow.count(),
-        prisma.agentInteraction.count(),
+        prisma.agentExecution.count(),
         prisma.organization.groupBy({
           by: ['planType'],
           _count: { id: true }
@@ -354,9 +351,9 @@ export class AdminController {
         },
         executions: {
           total: totalExecutions,
-          today: await prisma.agentInteraction.count({
+          today: await prisma.agentExecution.count({
             where: {
-              startedAt: {
+              createdAt: {
                 gte: new Date(new Date().setHours(0, 0, 0, 0))
               }
             }

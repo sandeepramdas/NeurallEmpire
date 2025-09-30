@@ -205,7 +205,6 @@ export const login = async (
             name: true,
             slug: true,
             status: true,
-            trialEndsAt: true,
           },
         },
       },
@@ -287,7 +286,7 @@ export const login = async (
       await tx.auditLog.create({
         data: {
           action: 'LOGIN',
-          resourceType: 'USER',
+          resource: 'USER',
           resourceId: user.id,
           userId: user.id,
           organizationId: user.organizationId,

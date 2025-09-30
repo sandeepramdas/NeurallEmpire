@@ -31,11 +31,8 @@ class SwarmService extends EventEmitter {
       const swarm = await prisma.agentSwarm.create({
         data: {
           organizationId,
-          creatorId: organizationId, // Temporary - should be passed in
-          name: config.name,
-          description: config.description,
-          type: config.coordinatorType,
-          configuration: config.configuration as any,
+          ...config,
+          isActive: false,
         },
       });
 
@@ -58,7 +55,7 @@ class SwarmService extends EventEmitter {
         throw new Error('Swarm not found');
       }
 
-      const agent = await prisma.agent.findFirst({
+      const agent = await prisma.aIAgent.findFirst({
         where: {
           id: memberConfig.agentId,
           organizationId: swarm.organizationId,
@@ -74,6 +71,7 @@ class SwarmService extends EventEmitter {
           swarmId,
           agentId: memberConfig.agentId,
           role: memberConfig.role,
+          priority: memberConfig.priority,
         },
       });
 
@@ -114,6 +112,7 @@ class SwarmService extends EventEmitter {
               agent: true,
             },
             orderBy: [
+              { priority: 'desc' },
               { createdAt: 'asc' },
             ],
           },
@@ -138,14 +137,23 @@ class SwarmService extends EventEmitter {
 
       this.activeSwarms.set(swarmId, context);
 
+      // Update swarm status
+      await prisma.agentSwarm.update({
+        where: { id: swarmId },
+        data: { isActive: true },
+      });
+
       let result;
 
-      switch (swarm.type) {
+      switch (swarm.coordinatorType) {
         case SwarmType.SEQUENTIAL:
           result = await this.executeSequential(swarm, context);
           break;
         case SwarmType.PARALLEL:
           result = await this.executeParallel(swarm, context);
+          break;
+        case SwarmType.CONDITIONAL:
+          result = await this.executeConditional(swarm, context);
           break;
         case SwarmType.COLLABORATIVE:
           result = await this.executeCollaborative(swarm, context);
@@ -154,11 +162,15 @@ class SwarmService extends EventEmitter {
           result = await this.executeHierarchical(swarm, context);
           break;
         default:
-          throw new Error(`Unsupported swarm type: ${swarm.type}`);
+          throw new Error(`Unsupported swarm type: ${swarm.coordinatorType}`);
       }
 
       // Clean up
       this.activeSwarms.delete(swarmId);
+      await prisma.agentSwarm.update({
+        where: { id: swarmId },
+        data: { isActive: false },
+      });
 
       this.emit('swarmExecuted', { swarmId, executionId, result });
 
@@ -166,6 +178,10 @@ class SwarmService extends EventEmitter {
     } catch (error) {
       // Clean up on error
       this.activeSwarms.delete(swarmId);
+      await prisma.agentSwarm.update({
+        where: { id: swarmId },
+        data: { isActive: false },
+      });
 
       console.error('Swarm execution failed:', error);
       throw error;
@@ -280,12 +296,84 @@ class SwarmService extends EventEmitter {
     };
   }
 
+  private async executeConditional(swarm: any, context: SwarmExecutionContext): Promise<any> {
+    const results: any[] = [];
+    const config = swarm.configuration || {};
+
+    // Sort by priority for conditional execution
+    const sortedMembers = swarm.members.sort((a: any, b: any) => b.priority - a.priority);
+
+    for (const member of sortedMembers) {
+      if (member.agent.status !== AgentStatus.READY && member.agent.status !== AgentStatus.RUNNING) {
+        continue;
+      }
+
+      // Check if conditions are met for this agent
+      const shouldExecute = await this.evaluateConditions(member, context, results);
+
+      if (shouldExecute) {
+        try {
+          console.log(`Executing agent ${member.agentId} (${member.role}) - conditions met`);
+
+          const agentResult = await agentService.executeAgent(member.agentId, {
+            ...context.input,
+            swarmContext: {
+              swarmId: context.swarmId,
+              executionId: context.executionId,
+              previousResults: results,
+              sharedData: Object.fromEntries(context.sharedData!),
+            },
+          });
+
+          results.push({
+            agentId: member.agentId,
+            role: member.role,
+            result: agentResult,
+            conditionsMet: true,
+            timestamp: new Date(),
+          });
+
+          // Update shared data
+          if (agentResult.success && agentResult.output?.sharedData) {
+            Object.entries(agentResult.output.sharedData).forEach(([key, value]) => {
+              context.sharedData!.set(key, value);
+            });
+          }
+
+        } catch (error) {
+          console.error(`Agent ${member.agentId} failed in conditional execution:`, error);
+          results.push({
+            agentId: member.agentId,
+            role: member.role,
+            error: error instanceof Error ? error.message : 'Unknown error',
+            conditionsMet: true,
+            timestamp: new Date(),
+          });
+        }
+      } else {
+        console.log(`Skipping agent ${member.agentId} - conditions not met`);
+        results.push({
+          agentId: member.agentId,
+          role: member.role,
+          skipped: true,
+          conditionsMet: false,
+          timestamp: new Date(),
+        });
+      }
+    }
+
+    return {
+      executionType: 'conditional',
+      results,
+      sharedData: Object.fromEntries(context.sharedData!),
+    };
+  }
 
   private async executeCollaborative(swarm: any, context: SwarmExecutionContext): Promise<any> {
     const results: any[] = [];
     const coordinators = swarm.members.filter((m: any) => m.role === SwarmRole.COORDINATOR);
     const workers = swarm.members.filter((m: any) => m.role === SwarmRole.WORKER);
-    const leaders = swarm.members.filter((m: any) => m.role === SwarmRole.LEADER);
+    const observers = swarm.members.filter((m: any) => m.role === SwarmRole.OBSERVER);
 
     // Phase 1: Coordinators plan and distribute work
     if (coordinators.length > 0) {
@@ -356,6 +444,33 @@ class SwarmService extends EventEmitter {
 
     const workerResults = await Promise.allSettled(workerPromises);
     results.push(...workerResults.map(r => r.status === 'fulfilled' ? r.value : { error: 'Promise rejected' }));
+
+    // Phase 3: Observers monitor and validate
+    if (observers.length > 0) {
+      for (const observer of observers) {
+        try {
+          const observeResult = await agentService.executeAgent(observer.agentId, {
+            phase: 'observation',
+            workerResults: results.filter(r => r.role === SwarmRole.WORKER),
+            swarmContext: {
+              swarmId: context.swarmId,
+              executionId: context.executionId,
+              role: 'observer',
+            },
+          });
+
+          results.push({
+            agentId: observer.agentId,
+            role: observer.role,
+            phase: 'observation',
+            result: observeResult,
+            timestamp: new Date(),
+          });
+        } catch (error) {
+          console.error(`Observer ${observer.agentId} failed:`, error);
+        }
+      }
+    }
 
     return {
       executionType: 'collaborative',

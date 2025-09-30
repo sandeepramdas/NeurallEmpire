@@ -8,11 +8,10 @@ const prisma = new PrismaClient();
 const createAgentSchema = z.object({
   name: z.string().min(1),
   type: z.enum([
-    'LEAD_GENERATOR', 'EMAIL_MARKETER', 'SOCIAL_MEDIA', 'CONTENT_CREATOR',
-    'ANALYTICS', 'CUSTOMER_SERVICE', 'SALES', 'SEO_OPTIMIZER',
-    'CONVERSATIONAL', 'TASK_AUTOMATION', 'DATA_PROCESSOR', 'INTEGRATION',
-    'EMAIL_MARKETING', 'WORKFLOW_AUTOMATION', 'DATA_PROCESSING',
-    'INTEGRATION_AGENT', 'MONITORING_AGENT'
+    'CONVERSATIONAL', 'TASK_AUTOMATION', 'DATA_PROCESSOR', 'INTEGRATION', 'ANALYTICS',
+    'EMAIL_MARKETING', 'SOCIAL_MEDIA', 'CONTENT_CREATOR', 'CUSTOMER_SERVICE',
+    'SALES_ASSISTANT', 'LEAD_GENERATOR', 'SEO_OPTIMIZER', 'ORCHESTRATOR',
+    'MONITOR', 'SCHEDULER', 'CUSTOM'
   ]),
   category: z.string(),
   description: z.string().optional(),
@@ -67,16 +66,18 @@ export class AgentsController {
       const agent = await prisma.agent.create({
         data: {
           name: validatedData.name,
+          slug: `${slug}-${Date.now()}`,
           type: validatedData.type,
           category: validatedData.category,
           description: validatedData.description,
+          config: validatedData.config as any,
           capabilities: validatedData.capabilities as any,
-          systemPrompt: validatedData.config.systemPrompt || 'You are a helpful AI assistant.',
+          triggers: validatedData.triggers as any,
           model: validatedData.config.model || 'gpt-4',
           temperature: validatedData.config.temperature || 0.7,
           maxTokens: validatedData.config.maxTokens || 2000,
           organizationId,
-          creatorId: userId,
+          createdById: userId,
           ownerId: userId,
           status: 'DRAFT'
         }
@@ -94,7 +95,7 @@ export class AgentsController {
           userId,
           organizationId,
           action: 'CREATE',
-          resourceType: 'AGENT',
+          resource: 'AGENT',
           resourceId: agent.id,
           metadata: { agentName: agent.name, agentType: agent.type }
         }
@@ -140,7 +141,9 @@ export class AgentsController {
           },
           _count: {
             select: {
-              interactions: true
+              executions: true,
+              sentInteractions: true,
+              receivedInteractions: true
             }
           }
         },
@@ -185,9 +188,13 @@ export class AgentsController {
               email: true
             }
           },
-          interactions: {
+          executions: {
             take: 10,
-            orderBy: { startedAt: 'desc' }
+            orderBy: { createdAt: 'desc' }
+          },
+          metrics: {
+            take: 7,
+            orderBy: { timestamp: 'desc' }
           }
         }
       });
@@ -238,10 +245,9 @@ export class AgentsController {
           userId,
           organizationId,
           action: 'UPDATE',
-          resourceType: 'AGENT',
+          resource: 'AGENT',
           resourceId: id,
-          oldValues: agent as any,
-          newValues: req.body as any
+          changes: req.body
         }
       });
 
@@ -305,13 +311,12 @@ export class AgentsController {
       }
 
       // Create execution record
-      const execution = await prisma.agentInteraction.create({
+      const execution = await prisma.agentExecution.create({
         data: {
           agentId: id,
-          organizationId,
-          userId,
-          type: 'CHAT',
-          status: 'PENDING',
+          triggeredBy: 'USER',
+          triggerId: userId,
+          status: 'QUEUED',
           input: input as any
         }
       });
@@ -329,14 +334,15 @@ export class AgentsController {
             timestamp: new Date()
           };
 
-          await prisma.agentInteraction.update({
+          await prisma.agentExecution.update({
             where: { id: execution.id },
             data: {
               status: 'COMPLETED',
               completedAt: new Date(),
               output: output as any,
-              latency: 1500,
-              tokens: { used: 150 } as any
+              duration: 1500,
+              tokensUsed: 150,
+              apiCalls: 1
             }
           });
 
@@ -344,16 +350,16 @@ export class AgentsController {
           await prisma.agent.update({
             where: { id },
             data: {
-              usageCount: { increment: 1 },
-              lastUsedAt: new Date()
+              totalExecutions: { increment: 1 },
+              lastHealthCheck: new Date()
             }
           });
         } catch (error) {
-          await prisma.agentInteraction.update({
+          await prisma.agentExecution.update({
             where: { id: execution.id },
             data: {
               status: 'FAILED',
-              errorMessage: 'Execution failed',
+              error: 'Execution failed',
               completedAt: new Date()
             }
           });
@@ -365,7 +371,7 @@ export class AgentsController {
         message: 'Agent execution started',
         data: {
           executionId: execution.id,
-          status: 'PENDING'
+          status: 'QUEUED'
         }
       });
     } catch (error) {
@@ -392,10 +398,16 @@ export class AgentsController {
         return res.status(404).json({ error: 'Agent not found' });
       }
 
-      // Metrics are now stored differently - skip for now
-      const metrics: any[] = [];
+      const metrics = await prisma.agentMetric.findMany({
+        where: {
+          agentId: id,
+          period
+        },
+        orderBy: { timestamp: 'desc' },
+        take: 30
+      });
 
-      const executions = await prisma.agentInteraction.groupBy({
+      const executions = await prisma.agentExecution.groupBy({
         by: ['status'],
         where: { agentId: id },
         _count: { id: true }
@@ -407,14 +419,16 @@ export class AgentsController {
           agent: {
             id: agent.id,
             name: agent.name,
-            status: agent.status
+            status: agent.status,
+            health: agent.health
           },
           metrics,
           executions,
           summary: {
-            usageCount: agent.usageCount,
+            totalExecutions: agent.totalExecutions,
             successRate: agent.successRate,
-            avgResponseTime: agent.avgResponseTime
+            avgResponseTime: agent.avgResponseTime,
+            totalTokensUsed: agent.totalTokensUsed
           }
         }
       });
@@ -441,11 +455,12 @@ export class AgentsController {
         return res.status(404).json({ error: 'Agent not found' });
       }
 
-      // Soft delete - mark as inactive
+      // Soft delete
       await prisma.agent.update({
         where: { id },
         data: {
-          isActive: false
+          status: 'ARCHIVED',
+          deletedAt: new Date()
         }
       });
 

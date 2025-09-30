@@ -433,7 +433,7 @@ export class SubdomainService {
     await prisma.auditLog.create({
       data: {
         action,
-        resourceType: 'SUBDOMAIN',
+        resource: 'SUBDOMAIN',
         resourceId: subdomain,
         organizationId,
         metadata: { subdomain, ...metadata }
@@ -451,7 +451,9 @@ export class SubdomainService {
         type: 'SUCCESS',
         title: 'Your subdomain is ready!',
         message: `Your custom subdomain ${organization.slug}.${this.mainDomain} is now active and ready to use.`,
-        actionUrl: `https://${organization.slug}.${this.mainDomain}/dashboard`
+        actionUrl: `https://${organization.slug}.${this.mainDomain}/dashboard`,
+        actionLabel: 'Visit Your Subdomain',
+        priority: 'HIGH'
       }
     });
   }

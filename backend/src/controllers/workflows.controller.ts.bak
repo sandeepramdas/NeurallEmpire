@@ -8,11 +8,21 @@ const prisma = new PrismaClient();
 const createWorkflowSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
-  category: z.string().optional(),
-  triggerType: z.enum(['MANUAL', 'SCHEDULED', 'EVENT', 'WEBHOOK']).optional(),
-  triggerConfig: z.any().optional(),
+  type: z.enum(['SEQUENTIAL', 'PARALLEL', 'CONDITIONAL', 'LOOP', 'EVENT_DRIVEN', 'SCHEDULED']),
+  trigger: z.object({
+    type: z.string(),
+    conditions: z.any()
+  }),
   schedule: z.string().optional(), // Cron expression
-  definition: z.any() // Workflow definition as JSON (includes nodes, edges, etc.)
+  nodes: z.array(z.object({
+    agentId: z.string(),
+    nodeType: z.string(),
+    order: z.number(),
+    config: z.any(),
+    condition: z.any().optional(),
+    inputMapping: z.any().optional(),
+    outputMapping: z.any().optional()
+  }))
 });
 
 export class WorkflowsController {
@@ -43,20 +53,41 @@ export class WorkflowsController {
         });
       }
 
-      // Create workflow
-      const workflow = await prisma.agentWorkflow.create({
-        data: {
-          name: validatedData.name,
-          description: validatedData.description,
-          category: validatedData.category,
-          triggerType: validatedData.triggerType || 'MANUAL',
-          triggerConfig: validatedData.triggerConfig as any,
-          schedule: validatedData.schedule,
-          definition: validatedData.definition as any,
-          organizationId,
-          creatorId: userId,
-          status: 'DRAFT'
+      // Create workflow with nodes in transaction
+      const workflow = await prisma.$transaction(async (tx) => {
+        // Create workflow
+        const workflow = await tx.agentWorkflow.create({
+          data: {
+            name: validatedData.name,
+            description: validatedData.description,
+            type: validatedData.type,
+            trigger: validatedData.trigger as any,
+            schedule: validatedData.schedule,
+            config: {} as any,
+            organizationId,
+            createdById: userId,
+            status: 'DRAFT'
+          }
+        });
+
+        // Create workflow nodes
+        if (validatedData.nodes && validatedData.nodes.length > 0) {
+          await tx.agentWorkflowNode.createMany({
+            data: validatedData.nodes.map(node => ({
+              workflowId: workflow.id,
+              agentId: node.agentId,
+              nodeType: node.nodeType,
+              order: node.order,
+              position: { x: node.order * 200, y: 100 } as any,
+              config: node.config as any,
+              condition: node.condition as any,
+              inputMapping: node.inputMapping as any,
+              outputMapping: node.outputMapping as any
+            }))
+          });
         }
+
+        return workflow;
       });
 
       // Update organization workflow count
@@ -71,9 +102,9 @@ export class WorkflowsController {
           userId,
           organizationId,
           action: 'CREATE',
-          resourceType: 'WORKFLOW',
+          resource: 'WORKFLOW',
           resourceId: workflow.id,
-          metadata: { workflowName: workflow.name }
+          metadata: { workflowName: workflow.name, workflowType: workflow.type }
         }
       });
 
@@ -96,9 +127,11 @@ export class WorkflowsController {
     try {
       const organizationId = (req as any).user.organizationId;
       const status = req.query.status as string;
+      const type = req.query.type as string;
 
       const where: any = { organizationId };
       if (status) where.status = status;
+      if (type) where.type = type;
 
       const workflows = await prisma.agentWorkflow.findMany({
         where,
@@ -110,6 +143,19 @@ export class WorkflowsController {
               lastName: true,
               email: true
             }
+          },
+          nodes: {
+            include: {
+              agent: {
+                select: {
+                  id: true,
+                  name: true,
+                  type: true,
+                  status: true
+                }
+              }
+            },
+            orderBy: { order: 'asc' }
           },
           _count: {
             select: {
@@ -150,6 +196,12 @@ export class WorkflowsController {
               email: true
             }
           },
+          nodes: {
+            include: {
+              agent: true
+            },
+            orderBy: { order: 'asc' }
+          },
           executions: {
             take: 10,
             orderBy: { startedAt: 'desc' }
@@ -189,19 +241,47 @@ export class WorkflowsController {
         return res.status(404).json({ error: 'Workflow not found' });
       }
 
-      // Update workflow
-      const updated = await prisma.agentWorkflow.update({
-        where: { id },
-        data: {
-          name: req.body.name,
-          description: req.body.description,
-          category: req.body.category,
-          triggerType: req.body.triggerType,
-          triggerConfig: req.body.triggerConfig,
-          schedule: req.body.schedule,
-          definition: req.body.definition,
-          updatedAt: new Date()
+      // Update workflow and nodes in transaction
+      const updated = await prisma.$transaction(async (tx) => {
+        // Update workflow
+        const updatedWorkflow = await tx.agentWorkflow.update({
+          where: { id },
+          data: {
+            name: req.body.name,
+            description: req.body.description,
+            type: req.body.type,
+            trigger: req.body.trigger,
+            schedule: req.body.schedule,
+            config: req.body.config,
+            version: { increment: 1 },
+            updatedAt: new Date()
+          }
+        });
+
+        // Update nodes if provided
+        if (req.body.nodes) {
+          // Delete existing nodes
+          await tx.agentWorkflowNode.deleteMany({
+            where: { workflowId: id }
+          });
+
+          // Create new nodes
+          await tx.agentWorkflowNode.createMany({
+            data: req.body.nodes.map((node: any) => ({
+              workflowId: id,
+              agentId: node.agentId,
+              nodeType: node.nodeType,
+              order: node.order,
+              position: node.position || { x: node.order * 200, y: 100 },
+              config: node.config,
+              condition: node.condition,
+              inputMapping: node.inputMapping,
+              outputMapping: node.outputMapping
+            }))
+          });
         }
+
+        return updatedWorkflow;
       });
 
       // Log update
@@ -210,10 +290,9 @@ export class WorkflowsController {
           userId,
           organizationId,
           action: 'UPDATE',
-          resourceType: 'WORKFLOW',
+          resource: 'WORKFLOW',
           resourceId: id,
-          oldValues: workflow as any,
-          newValues: req.body as any
+          changes: req.body
         }
       });
 
@@ -235,7 +314,7 @@ export class WorkflowsController {
       const { status, isActive } = req.body;
       const organizationId = (req as any).user.organizationId;
 
-      const validStatuses = ['DRAFT', 'ACTIVE', 'PAUSED', 'ARCHIVED'];
+      const validStatuses = ['DRAFT', 'TESTING', 'PUBLISHED', 'ACTIVE', 'PAUSED', 'ERROR', 'ARCHIVED'];
       if (status && !validStatuses.includes(status)) {
         return res.status(400).json({ error: 'Invalid status' });
       }
@@ -243,7 +322,8 @@ export class WorkflowsController {
       const workflow = await prisma.agentWorkflow.update({
         where: { id },
         data: {
-          status: status || undefined
+          status: status || undefined,
+          isActive: isActive !== undefined ? isActive : undefined
         }
       });
 
@@ -269,7 +349,16 @@ export class WorkflowsController {
         where: {
           id,
           organizationId,
-          status: 'ACTIVE'
+          status: 'ACTIVE',
+          isActive: true
+        },
+        include: {
+          nodes: {
+            include: {
+              agent: true
+            },
+            orderBy: { order: 'asc' }
+          }
         }
       });
 
@@ -293,26 +382,20 @@ export class WorkflowsController {
       // Simulate workflow execution
       setTimeout(async () => {
         try {
-          // Parse workflow definition to get agents
-          const definition = workflow.definition as any;
-          const nodes = definition?.nodes || [];
-
-          // Process each node
-          for (const node of nodes) {
-            if (node.agentId) {
-              // Execute agent
-              await prisma.agentInteraction.create({
-                data: {
-                  agentId: node.agentId,
-                  organizationId,
-                  type: 'WORKFLOW',
-                  status: 'COMPLETED',
-                  input: input as any,
-                  output: { result: 'Processed' } as any,
-                  latency: 500
-                }
-              });
-            }
+          // Process each node based on workflow type
+          for (const node of workflow.nodes) {
+            // Execute agent
+            await prisma.agentExecution.create({
+              data: {
+                agentId: node.agentId,
+                triggeredBy: 'WORKFLOW',
+                triggerId: execution.id,
+                status: 'COMPLETED',
+                input: input as any,
+                output: { result: 'Processed' } as any,
+                duration: 500
+              }
+            });
           }
 
           // Update workflow execution
@@ -321,7 +404,8 @@ export class WorkflowsController {
             data: {
               status: 'COMPLETED',
               completedAt: new Date(),
-              output: { result: 'Workflow completed successfully' } as any
+              output: { result: 'Workflow completed successfully' } as any,
+              duration: 2000
             }
           });
 
@@ -329,8 +413,9 @@ export class WorkflowsController {
           await prisma.agentWorkflow.update({
             where: { id },
             data: {
-              executionCount: { increment: 1 },
-              lastExecutedAt: new Date()
+              totalRuns: { increment: 1 },
+              successfulRuns: { increment: 1 },
+              lastRunAt: new Date()
             }
           });
         } catch (error) {
@@ -346,7 +431,8 @@ export class WorkflowsController {
           await prisma.agentWorkflow.update({
             where: { id },
             data: {
-              executionCount: { increment: 1 }
+              totalRuns: { increment: 1 },
+              failedRuns: { increment: 1 }
             }
           });
         }
@@ -416,11 +502,12 @@ export class WorkflowsController {
         return res.status(404).json({ error: 'Workflow not found' });
       }
 
-      // Soft delete - mark as archived
+      // Soft delete
       await prisma.agentWorkflow.update({
         where: { id },
         data: {
-          status: 'ARCHIVED'
+          status: 'ARCHIVED',
+          deletedAt: new Date()
         }
       });
 
@@ -463,12 +550,11 @@ export class WorkflowsController {
         data: {
           name: name || templateData.name,
           description: templateData.description,
-          category: templateData.category,
-          triggerType: templateData.triggerType || 'MANUAL',
-          triggerConfig: templateData.triggerConfig,
-          definition: templateData.definition,
+          type: templateData.type,
+          trigger: templateData.trigger,
+          config: templateData.config,
           organizationId,
-          creatorId: userId,
+          createdById: userId,
           status: 'DRAFT'
         }
       });

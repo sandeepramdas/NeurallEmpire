@@ -186,14 +186,14 @@ export class AgentController {
       // This would typically be a separate service method
       const { prisma } = await import('@/server');
 
-      const executions = await prisma.agentInteraction.findMany({
+      const executions = await prisma.agentExecution.findMany({
         where: { agentId: id! },
         orderBy: { startedAt: 'desc' },
         skip: (Number(page) - 1) * Number(limit),
         take: Number(limit),
       });
 
-      const total = await prisma.agentInteraction.count({
+      const total = await prisma.agentExecution.count({
         where: { agentId: id! },
       });
 
@@ -249,16 +249,13 @@ export class AgentController {
       [AgentType.CUSTOMER_SERVICE]: 'Handles customer inquiries and support tickets',
       [AgentType.SALES]: 'Manages sales pipeline and customer relationships',
       [AgentType.SEO_OPTIMIZER]: 'Optimizes content and website for search engines',
-      [AgentType.CONVERSATIONAL]: 'Provides conversational AI interactions',
-      [AgentType.TASK_AUTOMATION]: 'Automates repetitive tasks',
-      [AgentType.DATA_PROCESSOR]: 'Processes and analyzes data',
-      [AgentType.INTEGRATION]: 'Integrates with external services',
-      [AgentType.EMAIL_MARKETING]: 'Manages email marketing campaigns',
       [AgentType.WORKFLOW_AUTOMATION]: 'Automates business processes and workflows',
       [AgentType.DATA_PROCESSING]: 'Processes and transforms large datasets',
       [AgentType.INTEGRATION_AGENT]: 'Connects and synchronizes different systems',
       [AgentType.MONITORING_AGENT]: 'Monitors system health and performance',
-    } as Record<AgentType, string>;
+      [AgentType.RESEARCH_AGENT]: 'Conducts market research and competitive analysis',
+      [AgentType.CUSTOM]: 'Custom agent with user-defined functionality',
+    };
 
     return descriptions[type] || 'Custom agent functionality';
   }

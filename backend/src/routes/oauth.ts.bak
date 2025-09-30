@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import { prisma } from '@/server';
 import { oauthService } from '@/services/oauth.service';
 import { tenantResolver, requireTenant } from '@/middleware/tenant';
 import { authenticate, optionalAuth } from '@/middleware/auth';
@@ -235,7 +234,8 @@ router.delete('/unlink/:provider', authenticate, requireTenant, async (req, res)
     await prisma.socialAccount.update({
       where: { id: socialAccount.id },
       data: {
-        isActive: false
+        isActive: false,
+        deletedAt: new Date()
       }
     });
 
@@ -243,7 +243,7 @@ router.delete('/unlink/:provider', authenticate, requireTenant, async (req, res)
     await prisma.auditLog.create({
       data: {
         action: 'OAUTH_UNLINK',
-        resourceType: 'SOCIAL_ACCOUNT',
+        resource: 'SOCIAL_ACCOUNT',
         resourceId: socialAccount.id,
         userId,
         organizationId: req.organization.id,

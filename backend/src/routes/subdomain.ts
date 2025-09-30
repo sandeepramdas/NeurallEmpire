@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { prisma } from '@/server';
 import { subdomainService } from '@/services/subdomain.service';
 import { authenticate } from '@/middleware/auth';
 import { tenantResolver, requireTenant } from '@/middleware/tenant';

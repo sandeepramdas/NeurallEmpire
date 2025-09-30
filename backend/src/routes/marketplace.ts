@@ -1,8 +1,7 @@
 import { Router, Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/server';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 // Public marketplace endpoints (no auth required)
 
@@ -40,7 +39,7 @@ router.get('/agents', async (req: Request, res: Response) => {
               name: true,
               type: true,
               description: true,
-              totalExecutions: true,
+              usageCount: true,
               successRate: true
             }
           },
@@ -53,7 +52,6 @@ router.get('/agents', async (req: Request, res: Response) => {
           }
         },
         orderBy: [
-          { isFeatured: 'desc' },
           { rating: 'desc' },
           { installCount: 'desc' }
         ]

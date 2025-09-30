@@ -370,7 +370,7 @@ export class OAuthService {
         scope: tokens.scope?.split(' ') || [],
         displayName: `${oauthUser.firstName} ${oauthUser.lastName}`.trim(),
         avatarUrl: oauthUser.avatar,
-        providerData: oauthUser,
+        providerData: oauthUser as any,
         isPrimary: true,
         lastUsedAt: new Date()
       }
@@ -454,7 +454,7 @@ export class OAuthService {
     await prisma.auditLog.create({
       data: {
         action,
-        resource: 'OAUTH',
+        resourceType: 'OAUTH',
         resourceId: userId,
         userId,
         organizationId,
