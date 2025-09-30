@@ -1,4 +1,12 @@
-# Use Node.js 20 LTS (Debian-based for better OpenSSL compatibility)
+# Stage 1: Build frontend
+FROM node:20-slim AS frontend-build
+WORKDIR /frontend
+COPY frontend/package*.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build && ls -la /frontend/dist
+
+# Stage 2: Build backend and combine
 FROM node:20-slim
 
 # Install OpenSSL and other required dependencies for Prisma
@@ -8,17 +16,6 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
-WORKDIR /app
-
-# Build frontend first
-WORKDIR /frontend
-COPY frontend/package*.json ./
-RUN npm ci
-COPY frontend/ ./
-RUN npm run build
-
-# Switch to backend
 WORKDIR /app
 
 # Copy backend package files
@@ -27,10 +24,10 @@ COPY backend/package*.json ./
 # Copy Prisma schema first (before npm install)
 COPY backend/prisma ./prisma
 
-# Install dependencies without running postinstall (to avoid prisma generate before schema is copied)
+# Install dependencies without running postinstall
 RUN npm install --ignore-scripts
 
-# Generate Prisma client now that schema is present
+# Generate Prisma client
 RUN npx prisma generate
 
 # Copy backend application code
@@ -39,18 +36,19 @@ COPY backend/ .
 # Build TypeScript
 RUN npm run build
 
-# Copy frontend build to backend public directory BEFORE changing ownership
-RUN mkdir -p /app/dist/public && cp -r /frontend/dist/* /app/dist/public/ && ls -la /app/dist/public
+# Copy frontend build from stage 1
+COPY --from=frontend-build /frontend/dist /app/dist/public
+RUN ls -la /app/dist/public
 
-# Remove devDependencies to reduce image size
+# Remove devDependencies
 RUN npm prune --production
 
 # Create non-root user
 RUN groupadd -g 1001 nodejs && \
     useradd -r -u 1001 -g nodejs neurall
 
-# Change ownership of the entire app directory including frontend files
-RUN chown -R neurall:nodejs /app /frontend
+# Change ownership
+RUN chown -R neurall:nodejs /app
 USER neurall
 
 # Expose port
