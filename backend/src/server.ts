@@ -131,6 +131,24 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Debug endpoint to check frontend files
+app.get('/api/debug/files', (req, res) => {
+  const fs = require('fs');
+  const frontendPath = path.join(__dirname, 'public');
+
+  try {
+    const files = fs.existsSync(frontendPath) ? fs.readdirSync(frontendPath) : [];
+    res.json({
+      frontendPath,
+      __dirname,
+      exists: fs.existsSync(frontendPath),
+      files: files,
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/oauth', oauthRoutes);
