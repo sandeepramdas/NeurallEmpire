@@ -31,8 +31,8 @@ RUN npm run build
 RUN npm prune --production
 
 # Create non-root user
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S neurall -u 1001
+RUN groupadd -g 1001 nodejs && \
+    useradd -r -u 1001 -g nodejs neurall
 
 # Change ownership of the app directory
 RUN chown -R neurall:nodejs /app
