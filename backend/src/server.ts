@@ -146,7 +146,9 @@ app.use('/api/payments', paymentRoutes);
 
 // Serve frontend static files in production
 if (NODE_ENV === 'production') {
-  const frontendPath = path.join(__dirname, '..', 'public');
+  const frontendPath = path.join(__dirname, 'public');
+  console.log('📂 Frontend path:', frontendPath);
+
   app.use(express.static(frontendPath));
 
   // Handle client-side routing - serve index.html for non-API routes
@@ -154,7 +156,14 @@ if (NODE_ENV === 'production') {
     if (req.path.startsWith('/api/')) {
       return next();
     }
-    res.sendFile(path.join(frontendPath, 'index.html'));
+    const indexPath = path.join(frontendPath, 'index.html');
+    console.log('📄 Serving index.html from:', indexPath);
+    res.sendFile(indexPath, (err) => {
+      if (err) {
+        console.error('❌ Error serving index.html:', err);
+        next(err);
+      }
+    });
   });
 }
 
