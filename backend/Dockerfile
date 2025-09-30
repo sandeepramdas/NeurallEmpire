@@ -7,8 +7,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Install dependencies (use ci for production)
+RUN npm ci --only=production || npm install
 
 # Install tsx for TypeScript execution
 RUN npm install -g tsx
