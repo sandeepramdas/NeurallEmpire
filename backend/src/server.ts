@@ -149,15 +149,17 @@ if (NODE_ENV === 'production') {
   const frontendPath = path.join(__dirname, 'public');
   console.log('📂 Frontend path:', frontendPath);
 
-  app.use(express.static(frontendPath));
+  // Serve static files (JS, CSS, images, etc.)
+  app.use(express.static(frontendPath, { maxAge: '1d' }));
 
-  // Handle client-side routing - serve index.html for non-API routes
-  app.get('*', (req, res, next) => {
-    if (req.path.startsWith('/api/')) {
+  // SPA fallback - serve index.html for all non-API, non-static routes
+  app.use((req, res, next) => {
+    // Skip API routes
+    if (req.path.startsWith('/api/') || req.path === '/health') {
       return next();
     }
+
     const indexPath = path.join(frontendPath, 'index.html');
-    console.log('📄 Serving index.html from:', indexPath);
     res.sendFile(indexPath, (err) => {
       if (err) {
         console.error('❌ Error serving index.html:', err);
