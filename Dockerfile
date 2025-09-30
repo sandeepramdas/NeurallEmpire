@@ -1,12 +1,4 @@
-# Stage 1: Build frontend
-FROM node:20-slim AS frontend-build
-WORKDIR /frontend
-COPY frontend/package*.json ./
-RUN npm ci
-COPY frontend/ ./
-RUN npm run build && ls -la /frontend/dist
-
-# Stage 2: Build backend and combine
+# Use Node.js 20 LTS (Debian-based for better OpenSSL compatibility)
 FROM node:20-slim
 
 # Install OpenSSL and other required dependencies for Prisma
@@ -36,9 +28,9 @@ COPY backend/ .
 # Build TypeScript
 RUN npm run build
 
-# Copy frontend build from stage 1
-COPY --from=frontend-build /frontend/dist /app/dist/public
-RUN ls -la /app/dist/public
+# Copy pre-built frontend files
+COPY backend/public /app/dist/public
+RUN ls -la /app/dist/public || echo "No public folder"
 
 # Remove devDependencies
 RUN npm prune --production
