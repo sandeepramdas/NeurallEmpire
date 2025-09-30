@@ -1,5 +1,12 @@
-# Use Node.js 20 LTS
-FROM node:20-alpine
+# Use Node.js 20 LTS (Debian-based for better OpenSSL compatibility)
+FROM node:20-slim
+
+# Install OpenSSL and other required dependencies for Prisma
+RUN apt-get update && apt-get install -y \
+    openssl \
+    libssl3 \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
@@ -26,8 +33,8 @@ RUN npm run build
 RUN npm prune --production
 
 # Create non-root user
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S neurall -u 1001
+RUN groupadd -g 1001 nodejs && \
+    useradd -r -u 1001 -g nodejs neurall
 
 # Change ownership of the app directory
 RUN chown -R neurall:nodejs /app
