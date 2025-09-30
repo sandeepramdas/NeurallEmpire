@@ -39,8 +39,8 @@ COPY backend/ .
 # Build TypeScript
 RUN npm run build
 
-# Copy frontend build to backend public directory
-RUN mkdir -p /app/dist/public && cp -r /frontend/dist/* /app/dist/public/
+# Copy frontend build to backend public directory BEFORE changing ownership
+RUN mkdir -p /app/dist/public && cp -r /frontend/dist/* /app/dist/public/ && ls -la /app/dist/public
 
 # Remove devDependencies to reduce image size
 RUN npm prune --production
@@ -49,8 +49,8 @@ RUN npm prune --production
 RUN groupadd -g 1001 nodejs && \
     useradd -r -u 1001 -g nodejs neurall
 
-# Change ownership of the app directory
-RUN chown -R neurall:nodejs /app
+# Change ownership of the entire app directory including frontend files
+RUN chown -R neurall:nodejs /app /frontend
 USER neurall
 
 # Expose port
