@@ -40,8 +40,7 @@ COPY backend/ .
 RUN npm run build
 
 # Copy frontend build to backend public directory
-RUN mkdir -p dist/public
-COPY --from=0 /frontend/dist ./dist/public
+RUN mkdir -p /app/dist/public && cp -r /frontend/dist/* /app/dist/public/
 
 # Remove devDependencies to reduce image size
 RUN npm prune --production
