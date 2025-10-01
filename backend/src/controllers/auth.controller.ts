@@ -150,9 +150,10 @@ export const register = async (
             data: {
               organizationId: result.organization.id,
               subdomain: slug!,
-              cloudflareRecordId: cloudflareResult.recordId || null,
+              fullDomain: `${slug}.neurallempire.com`,
+              recordValue: 'www.neurallempire.com',
+              externalRecordId: cloudflareResult.recordId || null,
               status: 'ACTIVE',
-              verifiedAt: new Date(),
             },
           }).catch(err => console.error('Error creating subdomain record:', err));
 

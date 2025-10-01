@@ -10,8 +10,7 @@ async function main() {
   const superAdminOrg = await prisma.organization.upsert({
     where: { slug: 'neurallempire' },
     update: {
-      status: UserStatus.ACTIVE,
-      emailVerified: true,
+      status: 'ACTIVE',
     },
     create: {
       name: 'NeurallEmpire Admin',
@@ -83,8 +82,7 @@ async function main() {
   const demoOrg = await prisma.organization.upsert({
     where: { slug: 'demo' },
     update: {
-      status: UserStatus.ACTIVE,
-      emailVerified: true,
+      status: 'ACTIVE',
     },
     create: {
       name: 'Demo Company',
