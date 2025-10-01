@@ -1,0 +1,22 @@
+# Nixpacks configuration for NeurallEmpire monorepo
+
+[phases.setup]
+nixPkgs = ["nodejs-20_x", "openssl"]
+
+[phases.install]
+cmds = [
+  "npm install --prefix frontend",
+  "npm install --prefix backend"
+]
+
+[phases.build]
+cmds = [
+  "cd frontend && npm run build",
+  "cd backend && npx prisma generate && npm run build",
+  "mkdir -p backend/dist/public",
+  "cp -r frontend/dist/* backend/dist/public/",
+  "ls -la backend/dist/public"
+]
+
+[start]
+cmd = "cd backend && node dist/server.js"

@@ -2,14 +2,12 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "npm install && cd frontend && npm install && npm run build && cd ../backend && npm install && npx prisma generate && npm run build && mkdir -p dist/public && cp -r ../frontend/dist/* dist/public/ && ls -la dist/public",
     "watchPatterns": [
       "backend/**",
       "frontend/**"
     ]
   },
   "deploy": {
-    "startCommand": "cd backend && node dist/server.js",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
