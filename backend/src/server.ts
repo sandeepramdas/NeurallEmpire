@@ -41,6 +41,17 @@ export const prisma = new PrismaClient({
 // Trust only the first proxy (Railway/Cloudflare)
 app.set('trust proxy', 1);
 
+// CRITICAL: Health check endpoint MUST be before CORS middleware
+// This allows Railway healthchecks and direct browser access without Origin header
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: NODE_ENV,
+  });
+});
+
 // Security middleware
 app.use(helmet({
   contentSecurityPolicy: NODE_ENV === 'production' ? false : {
@@ -73,10 +84,9 @@ app.use(cors({
       return callback(null, true);
     }
 
-    // Production: Only allow specific origins
+    // Production: Allow requests without origin (health checks, direct browser access)
     if (!origin) {
-      // Reject requests with no origin in production (except health checks)
-      return callback(new Error('CORS: Origin header required'));
+      return callback(null, true);
     }
 
     // Allow subdomain pattern *.neurallempire.com
@@ -145,16 +155,6 @@ if (NODE_ENV === 'development') {
 
 // Tenant resolution middleware (must be before routes)
 app.use(tenantResolver);
-
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: NODE_ENV,
-  });
-});
 
 // Debug endpoint to check frontend files
 app.get('/api/debug/files', (req, res) => {
