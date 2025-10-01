@@ -7,7 +7,7 @@
     "start": "tsx src/server.ts",
     "start:prod": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
-    "build": "npx prisma generate && tsc --noEmit false --skipLibCheck || true && tsc-alias",
+    "build": "npx prisma generate && tsc --noEmit false --skipLibCheck || true && tsc-alias && cp -r public dist/public || true",
     "build:strict": "tsc && tsc-alias",
     "postinstall": "prisma generate",
     "test": "jest",

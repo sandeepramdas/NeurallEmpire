@@ -25,11 +25,8 @@ RUN npx prisma generate
 # Copy source code
 COPY . .
 
-# Build TypeScript
+# Build TypeScript (includes copying public folder)
 RUN npm run build
-
-# Copy frontend public folder to dist
-RUN if [ -d "public" ]; then cp -r public dist/public; fi
 
 # Remove devDependencies
 RUN npm prune --production
