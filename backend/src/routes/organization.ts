@@ -343,7 +343,6 @@ router.get('/billing', async (req: Request, res: Response) => {
         select: {
           planType: true,
           billingEmail: true,
-          stripeCustomerId: true,
           trialEndsAt: true
         }
       }),
