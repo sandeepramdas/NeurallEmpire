@@ -28,6 +28,9 @@ COPY . .
 # Build TypeScript
 RUN npm run build
 
+# Copy frontend public folder to dist
+RUN if [ -d "public" ]; then cp -r public dist/public; fi
+
 # Remove devDependencies
 RUN npm prune --production
 
