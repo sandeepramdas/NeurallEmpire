@@ -75,7 +75,6 @@
     "redis": "^5.8.2",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
-    "stripe": "^14.25.0",
     "zod": "^3.22.4",
     "zustand": "^4.4.7"
   },

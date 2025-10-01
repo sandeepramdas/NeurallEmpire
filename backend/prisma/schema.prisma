@@ -86,7 +86,6 @@ model Organization {
   planType         PlanType     @default(TRIAL)
   billingCycle     BillingCycle @default(MONTHLY)
   subscriptionId   String?      @unique
-  stripeCustomerId String?      @unique
   billingEmail     String?
 
   // Trial Management
@@ -682,7 +681,7 @@ model WorkflowTemplate {
 model Subscription {
   id              String   @id @default(cuid())
   organizationId  String
-  stripeSubscriptionId String @unique
+  paymentGatewaySubscriptionId String @unique
 
   // Subscription Details
   status          SubscriptionStatus
@@ -736,9 +735,10 @@ model Invoice {
   dueDate         DateTime
   paidAt          DateTime?
 
-  // Stripe Integration
-  stripeInvoiceId String?  @unique
-  stripeChargeId  String?
+  // Payment Gateway Integration
+  paymentGatewayInvoiceId String?  @unique
+  paymentGatewayChargeId  String?
+  paymentGateway          String   @default("razorpay") // razorpay, manual, etc.
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
