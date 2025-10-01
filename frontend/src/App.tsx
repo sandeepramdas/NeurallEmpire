@@ -97,20 +97,30 @@ const ProtectedRoute: React.FC<RouteGuardProps> = ({ children }) => {
 const PublicRoute: React.FC<RouteGuardProps> = ({ children }) => {
   const { isAuthenticated, organization } = useAuthStore();
   const orgFromUrl = getOrganizationFromUrl();
+  const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
   // Authenticated user - redirect to dashboard
   if (isAuthenticated && organization) {
+    // In development, just redirect to /dashboard with org query param
+    if (isDev) {
+      return <Navigate to={`/dashboard?org=${organization.slug}`} replace />;
+    }
+
     // If on organization subdomain, go to that org's dashboard
     if (orgFromUrl && orgFromUrl === organization.slug) {
       return <Navigate to="/dashboard" replace />;
     }
-    // Otherwise, redirect to user's organization
-    redirectToOrganization(organization.slug);
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full" />
-      </div>
-    );
+
+    // Otherwise, redirect to user's organization subdomain (only once)
+    if (!window.location.href.includes('redirecting')) {
+      const targetUrl = `${window.location.protocol}//${organization.slug}.neurallempire.com/dashboard?redirecting=1`;
+      window.location.href = targetUrl;
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full" />
+        </div>
+      );
+    }
   }
 
   return <>{children}</>;
@@ -171,6 +181,10 @@ const App: React.FC = () => {
 
     const orgFromUrl = getOrganizationFromUrl();
     const subdomainInfo = getSubdomainInfo();
+    const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+    // Skip redirects in development
+    if (isDev) return;
 
     // User is authenticated and we have organization context
     if (organization) {

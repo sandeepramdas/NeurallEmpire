@@ -1,0 +1,9 @@
+name = "neurallempire-subdomain-router"
+main = "subdomain-router.js"
+compatibility_date = "2024-01-01"
+workers_dev = false
+
+# Route configuration
+routes = [
+  { pattern = "*.neurallempire.com/*", zone_name = "neurallempire.com" }
+]

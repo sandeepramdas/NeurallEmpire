@@ -45,10 +45,18 @@ const RegisterPage: React.FC = () => {
       const { organization } = useAuthStore.getState();
 
       if (organization) {
-        // Redirect to organization subdomain
-        const protocol = window.location.protocol;
-        const subdomain = organization.slug;
-        window.location.href = `${protocol}//${subdomain}.neurallempire.com/dashboard`;
+        // Check if we're in development (localhost)
+        const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+        if (isDev) {
+          // In development, use query parameter
+          navigate(`/dashboard?org=${organization.slug}`);
+        } else {
+          // In production, redirect to organization subdomain
+          const protocol = window.location.protocol;
+          const subdomain = organization.slug;
+          window.location.href = `${protocol}//${subdomain}.neurallempire.com/dashboard`;
+        }
       } else {
         navigate('/dashboard');
       }
