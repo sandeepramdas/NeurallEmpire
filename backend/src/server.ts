@@ -55,7 +55,7 @@ app.use(helmet({
   },
 }));
 
-// CORS configuration
+// CORS configuration - Restrictive for production
 app.use(cors({
   origin: function (origin, callback) {
     const allowedOrigins = [
@@ -67,38 +67,38 @@ app.use(cors({
       'https://app.neurallempire.com',
     ];
 
-    // Log origin for debugging
+    // In development, allow any origin for testing
     if (NODE_ENV === 'development') {
       console.log('🌐 CORS Request from origin:', origin);
+      return callback(null, true);
     }
 
-    // Allow requests with no origin (mobile apps, Postman, etc.)
+    // Production: Only allow specific origins
     if (!origin) {
-      console.log('✅ CORS: Allowing request with no origin');
-      return callback(null, true);
+      // Reject requests with no origin in production (except health checks)
+      return callback(new Error('CORS: Origin header required'));
     }
 
     // Allow subdomain pattern *.neurallempire.com
     if (origin.endsWith('.neurallempire.com') || origin.endsWith('neurallempire.com')) {
-      console.log('✅ CORS: Allowing neurallempire domain:', origin);
       return callback(null, true);
     }
 
     // Check allowed origins list
     if (allowedOrigins.indexOf(origin) !== -1) {
-      console.log('✅ CORS: Allowing whitelisted origin:', origin);
       return callback(null, true);
     }
 
-    // Reject with detailed error
-    console.log('❌ CORS: Blocked origin:', origin);
+    // Reject all other origins
     callback(new Error(`CORS: Origin ${origin} not allowed`));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'x-tenant'],
   exposedHeaders: ['Content-Range', 'X-Content-Range'],
   maxAge: 600, // Cache preflight requests for 10 minutes
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
 }));
 
 // Rate limiting - More permissive for production
