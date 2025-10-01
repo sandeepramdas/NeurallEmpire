@@ -37,6 +37,10 @@ export const prisma = new PrismaClient({
   log: NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
 });
 
+// Trust proxy - Required for Railway/Cloudflare/reverse proxies
+// This enables Express to trust X-Forwarded-* headers
+app.set('trust proxy', true);
+
 // Security middleware
 app.use(helmet({
   contentSecurityPolicy: NODE_ENV === 'production' ? false : {
