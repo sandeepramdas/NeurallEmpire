@@ -2,7 +2,7 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "cd backend && npm install && npx prisma generate && npm run build && cd ../frontend && npm install && npm run build && mkdir -p ../backend/dist/public && cp -r dist/* ../backend/dist/public/",
+    "buildCommand": "npm install && cd frontend && npm install && npm run build && cd ../backend && npm install && npx prisma generate && npm run build && mkdir -p dist/public && cp -r ../frontend/dist/* dist/public/ && ls -la dist/public",
     "watchPatterns": [
       "backend/**",
       "frontend/**"
