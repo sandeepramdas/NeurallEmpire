@@ -4,8 +4,8 @@
   "description": "Modern SaaS Backend API for NeurallEmpire",
   "main": "dist/server.js",
   "scripts": {
-    "start": "tsx src/server.ts",
-    "start:prod": "node dist/server.js",
+    "start": "node dist/server.js",
+    "start:dev": "tsx src/server.ts",
     "dev": "tsx watch src/server.ts",
     "build": "npx prisma generate && tsc --noEmit false --skipLibCheck || true && tsc-alias && cp -r public dist/public || true",
     "build:strict": "tsc && tsc-alias",
