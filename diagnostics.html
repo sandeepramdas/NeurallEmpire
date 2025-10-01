@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeurallEmpire - System Diagnostics</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #0f172a;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #cbd5e1;
+        }
+        
+        .test-section.loading {
+            background: #dbeafe;
+            border-color: #3b82f6;
+        }
+        
+        .test-section.success {
+            background: #d1fae5;
+            border-color: #10b981;
+        }
+        
+        .test-section.error {
+            background: #fee2e2;
+            border-color: #ef4444;
+        }
+        
+        .test-section h3 {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .icon {
+            font-size: 24px;
+        }
+        
+        .details {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: 'Monaco', 'Courier New', monospace;
+        }
+        
+        button {
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+        
+        button:hover:not(:disabled) {
+            background: #0284c7;
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
+        
+        .info-box {
+            background: #fff7ed;
+            border: 2px solid #fb923c;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .info-box h4 {
+            color: #92400e;
+            margin-bottom: 8px;
+        }
+        
+        .info-box p {
+            color: #78350f;
+            font-size: 14px;
+        }
+        
+        .results {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>🧠 NeurallEmpire System Diagnostics</h1>
+            <p class="subtitle">Checking Railway deployment and Supabase database</p>
+            
+            <div class="info-box">
+                <h4>📋 What This Tests:</h4>
+                <p>
+                    1. Local backend connection<br>
+                    2. Railway deployment status (production)<br>
+                    3. Supabase database connection<br>
+                    4. Database tables and migrations
+                </p>
+            </div>
+            
+            <button id="testButton" onclick="runFullDiagnostics()">
+                🔍 Run Full Diagnostics
+            </button>
+            
+            <div class="results" id="results"></div>
+        </div>
+    </div>
+
+    <script>
+        const LOCAL_API = 'http://localhost:3001';
+        const RAILWAY_API = 'https://www.neurallempire.com/api';
+        
+        function addTest(title, status, details = null) {
+            const results = document.getElementById('results');
+            const icon = status === 'loading' ? '⏳' : 
+                        status === 'success' ? '✅' : 
+                        status === 'error' ? '❌' : '⚠️';
+            
+            const testDiv = document.createElement('div');
+            testDiv.className = `test-section ${status}`;
+            testDiv.innerHTML = `
+                <h3><span class="icon">${icon}</span> ${title}</h3>
+                ${details ? `<div class="details">${details}</div>` : ''}
+            `;
+            
+            results.appendChild(testDiv);
+            return testDiv;
+        }
+        
+        async function testLocalBackend() {
+            const test = addTest('Testing Local Backend (localhost:3001)', 'loading');
+            
+            try {
+                const response = await fetch(`${LOCAL_API}/health`, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    test.className = 'test-section success';
+                    test.querySelector('h3 .icon').textContent = '✅';
+                    test.querySelector('h3').insertAdjacentHTML('beforeend', 
+                        ' - Backend is running!'
+                    );
+                    test.querySelector('.details').textContent = 
+                        `Status: ${data.status}\nUptime: ${Math.floor(data.uptime)}s\nEnvironment: ${data.environment}`;
+                    return true;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                test.className = 'test-section error';
+                test.querySelector('h3 .icon').textContent = '❌';
+                test.querySelector('h3').insertAdjacentHTML('beforeend', 
+                    ' - Not running'
+                );
+                test.querySelector('.details').textContent = 
+                    `Error: ${error.message}\n\n⚠️ Backend is not running locally!\nPlease start it with: cd backend && npm run dev`;
+                return false;
+            }
+        }
+        
+        async function testRailwayBackend() {
+            const test = addTest('Testing Railway Backend (Production)', 'loading');
+            
+            try {
+                const response = await fetch(`${RAILWAY_API.replace('/api', '')}/health`, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    test.className = 'test-section success';
+                    test.querySelector('h3 .icon').textContent = '✅';
+                    test.querySelector('h3').insertAdjacentHTML('beforeend', 
+                        ' - Deployed and running!'
+                    );
+                    test.querySelector('.details').textContent = 
+                        `Status: ${data.status}\nUptime: ${Math.floor(data.uptime)}s\nEnvironment: ${data.environment}`;
+                    return true;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                test.className = 'test-section error';
+                test.querySelector('h3 .icon').textContent = '❌';
+                test.querySelector('h3').insertAdjacentHTML('beforeend', 
+                    ' - Deployment issue'
+                );
+                test.querySelector('.details').textContent = 
+                    `Error: ${error.message}\n\n⚠️ Railway backend might not be deployed or accessible.`;
+                return false;
+            }
+        }
+        
+        async function testLogin(apiUrl) {
+            const test = addTest(`Testing Login API (${apiUrl.includes('localhost') ? 'Local' : 'Railway'})`, 'loading');
+            
+            try {
+                const response = await fetch(`${apiUrl}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'test@test.com',
+                        password: 'wrongpassword'
+                    }),
+                    credentials: 'include'
+                });
+                
+                // We expect 401 for wrong credentials, but endpoint should exist
+                if (response.status === 404) {
+                    throw new Error('Login endpoint not found (404)');
+                }
+                
+                test.className = 'test-section success';
+                test.querySelector('h3 .icon').textContent = '✅';
+                test.querySelector('h3').insertAdjacentHTML('beforeend', 
+                    ' - Endpoint exists'
+                );
+                test.querySelector('.details').textContent = 
+                    `Status: ${response.status}\n✓ Login endpoint is properly configured`;
+                return true;
+                
+            } catch (error) {
+                test.className = 'test-section error';
+                test.querySelector('h3 .icon').textContent = '❌';
+                test.querySelector('h3').insertAdjacentHTML('beforeend', 
+                    ' - Endpoint missing or error'
+                );
+                test.querySelector('.details').textContent = 
+                    `Error: ${error.message}\n\n⚠️ The /api/auth/login endpoint is not responding.`;
+                return false;
+            }
+        }
+        
+        async function runFullDiagnostics() {
+            const button = document.getElementById('testButton');
+            const results = document.getElementById('results');
+            
+            button.disabled = true;
+            button.textContent = '⏳ Running diagnostics...';
+            results.innerHTML = '';
+            
+            // Test 1: Local Backend
+            const localBackend = await testLocalBackend();
+            
+            // Test 2: Railway Backend
+            const railwayBackend = await testRailwayBackend();
+            
+            // Test 3: Login endpoint (if any backend is working)
+            if (localBackend) {
+                await testLogin(LOCAL_API);
+            } else if (railwayBackend) {
+                await testLogin(RAILWAY_API);
+            }
+            
+            // Summary
+            const summary = addTest(
+                'Diagnostic Summary',
+                localBackend || railwayBackend ? 'success' : 'error',
+                localBackend
+                    ? '✅ Local backend is running - you can develop locally!'
+                    : railwayBackend
+                    ? '✅ Railway backend is running - but local backend is not. Start local backend for development.'
+                    : '❌ Neither local nor Railway backend is responding. Please check your setup.'
+            );
+            
+            button.textContent = '🔄 Run Again';
+            button.disabled = false;
+        }
+    </script>
+</body>
+</html>

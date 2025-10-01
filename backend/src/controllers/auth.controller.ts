@@ -4,6 +4,7 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 import { z } from 'zod';
 import { prisma } from '@/server';
 import { AuthenticatedRequest, RegisterData, LoginData, ApiResponse, AuthUser } from '@/types';
+import { createSubdomainDNS } from '@/services/cloudflare.service';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
@@ -139,6 +140,28 @@ export const register = async (
 
       return { user, organization };
     });
+
+    // Create Cloudflare subdomain DNS record (non-blocking)
+    createSubdomainDNS(slug!)
+      .then(async (cloudflareResult) => {
+        if (cloudflareResult.success) {
+          // Update subdomain record in database
+          await prisma.subdomainRecord.create({
+            data: {
+              organizationId: result.organization.id,
+              subdomain: slug!,
+              cloudflareRecordId: cloudflareResult.recordId || null,
+              status: 'ACTIVE',
+              verifiedAt: new Date(),
+            },
+          }).catch(err => console.error('Error creating subdomain record:', err));
+
+          console.log(`✅ Subdomain created: ${slug}.neurallempire.com`);
+        } else {
+          console.error(`❌ Failed to create subdomain: ${cloudflareResult.error}`);
+        }
+      })
+      .catch(err => console.error('Cloudflare DNS creation error:', err));
 
     // Generate JWT token
     const token = generateToken(result.user.id, result.user.organizationId, result.user.role);

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeurallEmpire - Automated Login Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #0f172a;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 30px;
+        }
+        
+        .status-box {
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+        }
+        
+        .status-box.idle {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+        }
+        
+        .status-box.loading {
+            background: #dbeafe;
+            border-color: #3b82f6;
+        }
+        
+        .status-box.success {
+            background: #d1fae5;
+            border-color: #10b981;
+        }
+        
+        .status-box.error {
+            background: #fee2e2;
+            border-color: #ef4444;
+        }
+        
+        .credentials {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .credentials div {
+            margin: 5px 0;
+        }
+        
+        button {
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #0284c7;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
+        }
+        
+        button:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .steps {
+            margin-top: 20px;
+            padding: 20px;
+            background: #fff7ed;
+            border-radius: 8px;
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .steps h3 {
+            color: #92400e;
+            margin-bottom: 10px;
+        }
+        
+        .steps ol {
+            padding-left: 20px;
+            color: #78350f;
+        }
+        
+        .steps li {
+            margin: 8px 0;
+        }
+        
+        .log {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .log-entry {
+            margin: 4px 0;
+            padding: 4px 0;
+            border-bottom: 1px solid #334155;
+        }
+        
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .log-entry.success { color: #34d399; }
+        .log-entry.error { color: #f87171; }
+        .log-entry.info { color: #60a5fa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 NeurallEmpire Login Test</h1>
+        <p class="subtitle">Automated test for the authentication system</p>
+        
+        <div id="status" class="status-box idle">
+            <strong>Status:</strong> Ready to test
+        </div>
+        
+        <div class="credentials">
+            <strong>Test Credentials:</strong>
+            <div>📧 Email: testuser@testempire.com</div>
+            <div>🔑 Password: TestUser123!</div>
+            <div>🏢 Organization: test-empire</div>
+        </div>
+        
+        <button id="testButton" onclick="runLoginTest()">
+            🚀 Run Login Test
+        </button>
+        
+        <div class="steps">
+            <h3>📋 What This Test Does:</h3>
+            <ol>
+                <li>Checks backend health endpoint</li>
+                <li>Attempts to login with test credentials</li>
+                <li>Validates the response</li>
+                <li>Shows detailed results</li>
+            </ol>
+        </div>
+        
+        <div id="log" class="log" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3001';
+        
+        function addLog(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            logDiv.style.display = 'block';
+            
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function updateStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status-box ${type}`;
+            statusDiv.innerHTML = `<strong>Status:</strong> ${message}`;
+        }
+        
+        async function runLoginTest() {
+            const button = document.getElementById('testButton');
+            button.disabled = true;
+            button.textContent = '⏳ Testing...';
+            
+            document.getElementById('log').innerHTML = '';
+            
+            try {
+                // Step 1: Check backend health
+                addLog('Step 1: Checking backend health...', 'info');
+                updateStatus('Checking backend connection...', 'loading');
+                
+                const healthResponse = await fetch(`${API_URL}/health`);
+                
+                if (!healthResponse.ok) {
+                    throw new Error('Backend is not responding');
+                }
+                
+                const healthData = await healthResponse.json();
+                addLog(`✓ Backend is healthy: ${healthData.status}`, 'success');
+                
+                // Step 2: Attempt login
+                addLog('Step 2: Attempting login with test credentials...', 'info');
+                updateStatus('Logging in...', 'loading');
+                
+                const loginResponse = await fetch(`${API_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'testuser@testempire.com',
+                        password: 'TestUser123!'
+                    }),
+                    credentials: 'include'
+                });
+                
+                const loginData = await loginResponse.json();
+                
+                addLog(`Response status: ${loginResponse.status}`, 'info');
+                addLog(`Response: ${JSON.stringify(loginData, null, 2)}`, 'info');
+                
+                if (loginResponse.ok && loginData.success) {
+                    // Login successful
+                    addLog('✓ Login successful!', 'success');
+                    addLog(`✓ User: ${loginData.data?.user?.name || loginData.data?.user?.email}`, 'success');
+                    addLog(`✓ Organization: ${loginData.data?.organization?.name}`, 'success');
+                    
+                    updateStatus('✅ Login Test Passed! Credentials are valid.', 'success');
+                    
+                    // Store token for manual testing
+                    if (loginData.data?.token) {
+                        localStorage.setItem('authToken', loginData.data.token);
+                        addLog('✓ Auth token saved to localStorage', 'success');
+                    }
+                    
+                    button.textContent = '✅ Test Passed - Try Dashboard';
+                    button.onclick = () => window.location.href = 'http://localhost:3000/dashboard';
+                    button.disabled = false;
+                    
+                } else if (loginResponse.status === 401) {
+                    // Invalid credentials - need to register first
+                    addLog('⚠️ Credentials not found in database', 'error');
+                    addLog('💡 You need to register the test user first!', 'info');
+                    
+                    updateStatus('⚠️ Test user not found. Register first!', 'error');
+                    
+                    button.textContent = '📝 Go to Register Page';
+                    button.onclick = () => window.location.href = 'http://localhost:3000/register';
+                    button.disabled = false;
+                    
+                } else {
+                    // Other error
+                    throw new Error(loginData.message || loginData.error || 'Login failed');
+                }
+                
+            } catch (error) {
+                addLog(`✗ Error: ${error.message}`, 'error');
+                updateStatus(`❌ Test Failed: ${error.message}`, 'error');
+                
+                button.textContent = '🔄 Try Again';
+                button.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
