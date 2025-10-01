@@ -173,7 +173,8 @@ const App: React.FC = () => {
     };
 
     initAuth();
-  }, [refreshProfile]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only once on mount
 
   // Handle subdomain routing and organization validation
   useEffect(() => {
