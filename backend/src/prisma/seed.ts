@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, PlanType } from '@prisma/client';
+import { PrismaClient, UserRole, PlanType, UserStatus } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -9,7 +9,10 @@ async function main() {
   // Create Super Admin Organization
   const superAdminOrg = await prisma.organization.upsert({
     where: { slug: 'neurallempire' },
-    update: {},
+    update: {
+      status: UserStatus.ACTIVE,
+      emailVerified: true,
+    },
     create: {
       name: 'NeurallEmpire Admin',
       slug: 'neurallempire',
@@ -29,7 +32,10 @@ async function main() {
   const superAdminPassword = await bcrypt.hash('NeurallEmpire2024!', 10);
   const superAdmin = await prisma.user.upsert({
     where: { email: 'admin@neurallempire.com' },
-    update: {},
+    update: {
+      status: UserStatus.ACTIVE,
+      emailVerified: true,
+    },
     create: {
       email: 'admin@neurallempire.com',
       passwordHash: superAdminPassword,
@@ -38,6 +44,7 @@ async function main() {
       organizationId: superAdminOrg.id,
       role: UserRole.OWNER,
       emailVerified: true,
+      status: UserStatus.ACTIVE,
       canCreateAgents: true,
       canManageWorkflows: true,
       canViewAnalytics: true,
@@ -50,7 +57,10 @@ async function main() {
   const adminPassword = await bcrypt.hash('Admin2024!', 10);
   const admin = await prisma.user.upsert({
     where: { email: 'support@neurallempire.com' },
-    update: {},
+    update: {
+      status: UserStatus.ACTIVE,
+      emailVerified: true,
+    },
     create: {
       email: 'support@neurallempire.com',
       passwordHash: adminPassword,
@@ -59,6 +69,7 @@ async function main() {
       organizationId: superAdminOrg.id,
       role: UserRole.ADMIN,
       emailVerified: true,
+      status: UserStatus.ACTIVE,
       canCreateAgents: true,
       canManageWorkflows: true,
       canViewAnalytics: true,
@@ -70,7 +81,10 @@ async function main() {
   // Create Demo Organization
   const demoOrg = await prisma.organization.upsert({
     where: { slug: 'demo' },
-    update: {},
+    update: {
+      status: UserStatus.ACTIVE,
+      emailVerified: true,
+    },
     create: {
       name: 'Demo Company',
       slug: 'demo',
@@ -87,7 +101,10 @@ async function main() {
   const demoPassword = await bcrypt.hash('Demo2024!', 10);
   const demoUser = await prisma.user.upsert({
     where: { email: 'demo@neurallempire.com' },
-    update: {},
+    update: {
+      status: UserStatus.ACTIVE,
+      emailVerified: true,
+    },
     create: {
       email: 'demo@neurallempire.com',
       passwordHash: demoPassword,
@@ -96,6 +113,7 @@ async function main() {
       organizationId: demoOrg.id,
       role: UserRole.OWNER,
       emailVerified: true,
+      status: UserStatus.ACTIVE,
       canCreateAgents: true,
       canManageWorkflows: true,
       canViewAnalytics: true,
