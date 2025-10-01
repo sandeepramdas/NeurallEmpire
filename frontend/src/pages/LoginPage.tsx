@@ -29,7 +29,18 @@ const LoginPage: React.FC = () => {
     try {
       await login(data.email, data.password);
       toast.success('Welcome back!');
-      navigate('/dashboard');
+
+      // Get the organization from auth store after login
+      const { organization } = useAuthStore.getState();
+
+      if (organization) {
+        // Redirect to organization subdomain
+        const protocol = window.location.protocol;
+        const subdomain = organization.slug;
+        window.location.href = `${protocol}//${subdomain}.neurallempire.com/dashboard`;
+      } else {
+        navigate('/dashboard');
+      }
     } catch (error: any) {
       toast.error(error.message || 'Login failed');
     }

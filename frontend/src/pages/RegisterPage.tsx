@@ -40,7 +40,18 @@ const RegisterPage: React.FC = () => {
       const { confirmPassword, acceptTerms, ...registerData } = data;
       await registerUser(registerData);
       toast.success('Welcome to NeurallEmpire! 🎉');
-      navigate('/dashboard');
+
+      // Get the organization from auth store after registration
+      const { organization } = useAuthStore.getState();
+
+      if (organization) {
+        // Redirect to organization subdomain
+        const protocol = window.location.protocol;
+        const subdomain = organization.slug;
+        window.location.href = `${protocol}//${subdomain}.neurallempire.com/dashboard`;
+      } else {
+        navigate('/dashboard');
+      }
     } catch (error: any) {
       toast.error(error.message || 'Registration failed');
     }
