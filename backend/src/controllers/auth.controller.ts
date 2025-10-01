@@ -101,7 +101,7 @@ export const register = async (
         data: {
           name: organizationName || `${firstName || email.split('@')[0]}'s Organization`,
           slug,
-          status: 'TRIAL',
+          status: 'ACTIVE',  // Organizations are active immediately
           planType: 'TRIAL',
           billingEmail: email,
           trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14-day trial

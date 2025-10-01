@@ -19,6 +19,7 @@ async function main() {
       domain: 'www.neurallempire.com',
       customDomain: 'www.neurallempire.com',
       customDomainVerified: true,
+      status: 'ACTIVE',
       planType: PlanType.ENTERPRISE,
       maxUsers: 1000,
       maxAgents: 10000,
@@ -88,6 +89,7 @@ async function main() {
     create: {
       name: 'Demo Company',
       slug: 'demo',
+      status: 'ACTIVE',
       planType: PlanType.GROWTH,
       maxUsers: 50,
       maxAgents: 100,
