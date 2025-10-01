@@ -38,8 +38,8 @@ export const prisma = new PrismaClient({
 });
 
 // Trust proxy - Required for Railway/Cloudflare/reverse proxies
-// This enables Express to trust X-Forwarded-* headers
-app.set('trust proxy', true);
+// Trust only the first proxy (Railway/Cloudflare)
+app.set('trust proxy', 1);
 
 // Security middleware
 app.use(helmet({
@@ -108,6 +108,8 @@ const generalLimiter = rateLimit({
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
+  // Validate that trust proxy is configured correctly
+  validate: { trustProxy: false },
 });
 
 // Stricter rate limiting for auth endpoints only
@@ -118,6 +120,8 @@ const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: true, // Don't count successful requests
+  // Validate that trust proxy is configured correctly
+  validate: { trustProxy: false },
 });
 
 // Apply general rate limiting to all API routes
