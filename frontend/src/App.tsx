@@ -37,6 +37,16 @@ import UserProfile from '@/pages/settings/UserProfile';
 import NotificationsPage from '@/pages/settings/NotificationsPage';
 import ActivityLog from '@/pages/settings/ActivityLog';
 
+// Import new dashboard pages
+import Workflows from '@/pages/dashboard/Workflows';
+import Integrations from '@/pages/dashboard/Integrations';
+import Templates from '@/pages/dashboard/Templates';
+import KnowledgeBase from '@/pages/dashboard/KnowledgeBase';
+import APIPlayground from '@/pages/dashboard/APIPlayground';
+import Reports from '@/pages/dashboard/Reports';
+import Messages from '@/pages/dashboard/Messages';
+import Webhooks from '@/pages/dashboard/Webhooks';
+
 // OAuth buttons component available for login page
 
 // Subdomain-aware components
@@ -288,7 +298,15 @@ const App: React.FC = () => {
           <Route index element={<Dashboard />} />
           <Route path="agents" element={<Agents />} />
           <Route path="campaigns" element={<Campaigns />} />
+          <Route path="workflows" element={<Workflows />} />
           <Route path="analytics" element={<Analytics />} />
+          <Route path="reports" element={<Reports />} />
+          <Route path="integrations" element={<Integrations />} />
+          <Route path="templates" element={<Templates />} />
+          <Route path="messages" element={<Messages />} />
+          <Route path="webhooks" element={<Webhooks />} />
+          <Route path="docs" element={<KnowledgeBase />} />
+          <Route path="api-playground" element={<APIPlayground />} />
           <Route path="settings" element={<Settings />} />
 
           {/* Settings routes */}
@@ -302,7 +320,6 @@ const App: React.FC = () => {
           <Route path="settings/domains" element={<DomainSettings />} />
           <Route path="settings/data" element={<Settings />} />
           <Route path="settings/emails" element={<Settings />} />
-          <Route path="settings/integrations" element={<Settings />} />
 
           {/* User-specific routes */}
           <Route path="profile" element={<UserProfile />} />
