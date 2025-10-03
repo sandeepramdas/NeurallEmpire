@@ -27,6 +27,11 @@ router.get('/health', (req, res) => {
   });
 });
 
+// Test error endpoint for Sentry (development/testing only)
+router.get('/test-sentry', (req, res) => {
+  throw new Error('Test error for Sentry monitoring - this is intentional');
+});
+
 // Public routes
 router.use('/auth', authRoutes);
 router.use('/marketplace/public', marketplaceRoutes);
