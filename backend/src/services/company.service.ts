@@ -306,8 +306,8 @@ class CompanyService {
           resourceId: companyId,
           userId: updatedBy,
           companyId,
-          oldValues: existingCompany,
-          newValues: data,
+          oldValues: existingCompany as any,
+          newValues: data as any,
         },
       });
 

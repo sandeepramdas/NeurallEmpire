@@ -617,6 +617,7 @@ class RBACService {
    */
   async seedDefaultRoles(organizationId: string): Promise<Role[]> {
     try {
+      // @ts-ignore - Importing from outside rootDir
       const { DEFAULT_ROLES } = await import('../../prisma/seeds/permissions.seed');
 
       const createdRoles: Role[] = [];
