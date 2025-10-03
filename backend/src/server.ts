@@ -13,18 +13,8 @@ import { tenantResolver } from '@/middleware/tenant';
 import { errorHandler } from '@/middleware/errorHandler';
 import { notFound } from '@/middleware/notFound';
 
-// Import routes
-import authRoutes from '@/routes/auth';
-import organizationRoutes from '@/routes/organizations';
-import userRoutes from '@/routes/users';
-import agentRoutes from '@/routes/agents';
-import swarmRoutes from '@/routes/swarms';
-import campaignRoutes from '@/routes/campaigns';
-import analyticsRoutes from '@/routes/analytics';
-import subdomainRoutes from '@/routes/subdomain';
-import webhookRoutes from '@/routes/webhooks';
-import paymentRoutes from '@/routes/payments';
-import oauthRoutes from '@/routes/oauth';
+// Import consolidated routes
+import apiRoutes from '@/routes';
 
 dotenv.config();
 
@@ -174,18 +164,8 @@ app.get('/api/debug/files', (req, res) => {
   }
 });
 
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/oauth', oauthRoutes);
-app.use('/api/organizations', organizationRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/agents', agentRoutes);
-app.use('/api/swarms', swarmRoutes);
-app.use('/api/campaigns', campaignRoutes);
-app.use('/api/analytics', analyticsRoutes);
-app.use('/api/subdomain', subdomainRoutes);
-app.use('/api/webhooks', webhookRoutes);
-app.use('/api/payments', paymentRoutes);
+// API Routes - Use consolidated routes that include all endpoints
+app.use('/api', apiRoutes);
 
 // Serve frontend static files in production
 if (NODE_ENV === 'production') {
