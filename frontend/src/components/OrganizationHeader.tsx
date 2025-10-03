@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import {
   Bell,
@@ -19,6 +19,14 @@ import {
   Mail,
   Zap,
   HelpCircle,
+  User,
+  LogOut,
+  Command,
+  Activity,
+  Crown,
+  Keyboard,
+  Clock,
+  ArrowUpCircle,
 } from 'lucide-react';
 
 interface OrganizationHeaderProps {
@@ -26,11 +34,17 @@ interface OrganizationHeaderProps {
 }
 
 const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }) => {
-  const { organization } = useAuthStore();
+  const { user, organization, logout } = useAuthStore();
   const [showOrgMenu, setShowOrgMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showOrgSwitcher, setShowOrgSwitcher] = useState(false);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const [showActivityFeed, setShowActivityFeed] = useState(false);
+  const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [unreadCount] = useState(3); // Remove setUnreadCount if not used
 
   // Mock data - replace with real data from your store/API
   const notifications = [
@@ -60,6 +74,47 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
     { icon: Zap, label: 'Integrations', href: '/dashboard/settings/integrations' },
     { icon: HelpCircle, label: 'Help & Support', href: '/dashboard/support' },
   ];
+
+  // Additional mock data
+  const recentActivities = [
+    { id: 1, user: 'John Doe', action: 'created a new agent', time: '2 min ago' },
+    { id: 2, user: 'Jane Smith', action: 'updated company settings', time: '15 min ago' },
+    { id: 3, user: 'You', action: 'logged in from new device', time: '1 hour ago' },
+  ];
+
+  const userOrganizations = [
+    { id: '1', name: organization?.name || 'Current Org', slug: organization?.slug || 'current', planType: organization?.planType || 'FREE', current: true },
+    { id: '2', name: 'Demo Organization', slug: 'demo', planType: 'EMPEROR', current: false },
+    { id: '3', name: 'Test Workspace', slug: 'test', planType: 'CONQUEROR', current: false },
+  ];
+
+  const keyboardShortcuts = [
+    { keys: ['⌘', 'K'], description: 'Open command palette' },
+    { keys: ['⌘', 'N'], description: 'Create new item' },
+    { keys: ['⌘', 'B'], description: 'Toggle sidebar' },
+    { keys: ['⌘', '/'], description: 'Show keyboard shortcuts' },
+    { keys: ['G', 'H'], description: 'Go to home' },
+    { keys: ['G', 'S'], description: 'Go to settings' },
+  ];
+
+  // Keyboard shortcut listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd/Ctrl + K for command palette
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowCommandPalette(true);
+      }
+      // Cmd/Ctrl + / for shortcuts guide
+      if ((e.metaKey || e.ctrlKey) && e.key === '/') {
+        e.preventDefault();
+        setShowKeyboardShortcuts(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
@@ -209,8 +264,10 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
                 title="Notifications"
               >
                 <Bell className="w-5 h-5 text-gray-600" />
-                {notifications.length > 0 && (
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-semibold rounded-full flex items-center justify-center">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
                 )}
               </button>
 
@@ -246,6 +303,71 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
               )}
             </div>
 
+            {/* Command Palette */}
+            <button
+              onClick={() => setShowCommandPalette(true)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors hidden md:flex items-center space-x-1"
+              title="Command Palette (⌘K)"
+            >
+              <Command className="w-5 h-5 text-gray-600" />
+              <span className="text-xs text-gray-500">⌘K</span>
+            </button>
+
+            {/* Activity Feed */}
+            <div className="relative">
+              <button
+                onClick={() => setShowActivityFeed(!showActivityFeed)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                title="Recent Activity"
+              >
+                <Activity className="w-5 h-5 text-gray-600" />
+              </button>
+
+              {showActivityFeed && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setShowActivityFeed(false)}
+                  />
+                  <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <p className="text-sm font-semibold text-gray-900">Recent Activity</p>
+                    </div>
+                    <div className="max-h-96 overflow-y-auto">
+                      {recentActivities.map((activity) => (
+                        <div
+                          key={activity.id}
+                          className="px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                        >
+                          <p className="text-sm text-gray-800">
+                            <span className="font-medium">{activity.user}</span> {activity.action}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1 flex items-center">
+                            <Clock className="w-3 h-3 mr-1" />
+                            {activity.time}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="px-4 py-2 border-t border-gray-100">
+                      <a href="/dashboard/activity" className="text-xs text-indigo-600 hover:text-indigo-700 font-medium">
+                        View all activity →
+                      </a>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Keyboard Shortcuts */}
+            <button
+              onClick={() => setShowKeyboardShortcuts(true)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors hidden lg:block"
+              title="Keyboard Shortcuts (⌘/)"
+            >
+              <Keyboard className="w-5 h-5 text-gray-600" />
+            </button>
+
             {/* Theme Toggle */}
             <button
               onClick={() => onThemeChange?.('dark')}
@@ -263,6 +385,88 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
             >
               <Settings className="w-5 h-5 text-gray-600" />
             </a>
+
+            {/* Divider */}
+            <div className="w-px h-6 bg-gray-300"></div>
+
+            {/* User Profile Menu */}
+            <div className="relative">
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center space-x-2 p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                title="User Menu"
+              >
+                <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-medium">
+                    {user?.firstName?.charAt(0) || user?.email?.charAt(0) || 'U'}
+                  </span>
+                </div>
+                <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
+              </button>
+
+              {showUserMenu && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setShowUserMenu(false)}
+                  />
+                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20">
+                    {/* User Info */}
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <p className="text-sm font-semibold text-gray-900">
+                        {user?.firstName} {user?.lastName}
+                      </p>
+                      <p className="text-xs text-gray-500">{user?.email}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Role: <span className="font-medium capitalize">{user?.role?.toLowerCase()}</span>
+                      </p>
+                    </div>
+
+                    {/* User Menu Items */}
+                    <a
+                      href="/dashboard/profile"
+                      className="flex items-center px-4 py-2.5 hover:bg-gray-50 transition-colors"
+                      onClick={() => setShowUserMenu(false)}
+                    >
+                      <User className="w-4 h-4 mr-3 text-gray-500" />
+                      <span className="text-sm text-gray-700">Profile Settings</span>
+                    </a>
+                    <a
+                      href="/dashboard/billing"
+                      className="flex items-center px-4 py-2.5 hover:bg-gray-50 transition-colors"
+                      onClick={() => setShowUserMenu(false)}
+                    >
+                      <CreditCard className="w-4 h-4 mr-3 text-gray-500" />
+                      <span className="text-sm text-gray-700">Billing</span>
+                    </a>
+                    <button
+                      onClick={() => {
+                        setShowOrgSwitcher(true);
+                        setShowUserMenu(false);
+                      }}
+                      className="w-full flex items-center px-4 py-2.5 hover:bg-gray-50 transition-colors text-left"
+                    >
+                      <Building2 className="w-4 h-4 mr-3 text-gray-500" />
+                      <span className="text-sm text-gray-700">Switch Organization</span>
+                    </button>
+
+                    {/* Logout */}
+                    <div className="border-t border-gray-100 mt-2 pt-2">
+                      <button
+                        onClick={() => {
+                          logout();
+                          setShowUserMenu(false);
+                        }}
+                        className="w-full flex items-center px-4 py-2.5 hover:bg-gray-50 transition-colors text-left text-red-600"
+                      >
+                        <LogOut className="w-4 h-4 mr-3" />
+                        <span className="text-sm">Logout</span>
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -309,11 +513,170 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
             </div>
           </div>
 
-          <div className="text-gray-500">
-            Last login: {new Date().toLocaleString()}
+          <div className="flex items-center space-x-4">
+            {/* Upgrade CTA for Free/Basic plans */}
+            {(organization?.planType === 'FREE' || !organization?.planType) && (
+              <a
+                href="/dashboard/settings/billing"
+                className="flex items-center space-x-2 px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all"
+              >
+                <Crown className="w-4 h-4" />
+                <span className="text-xs font-medium">Upgrade to Pro</span>
+                <ArrowUpCircle className="w-3 h-3" />
+              </a>
+            )}
+
+            <span className="text-gray-500">Last login: {new Date().toLocaleString()}</span>
           </div>
         </div>
       </div>
+
+      {/* Command Palette Modal */}
+      {showCommandPalette && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center pt-20 z-50">
+          <div className="bg-white rounded-lg shadow-2xl w-full max-w-2xl">
+            <div className="p-4 border-b border-gray-200">
+              <div className="flex items-center space-x-3">
+                <Command className="w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Type a command or search..."
+                  className="flex-1 outline-none text-gray-900 placeholder-gray-400"
+                  autoFocus
+                  onKeyDown={(e) => e.key === 'Escape' && setShowCommandPalette(false)}
+                />
+                <button
+                  onClick={() => setShowCommandPalette(false)}
+                  className="text-xs text-gray-500 hover:text-gray-700"
+                >
+                  ESC
+                </button>
+              </div>
+            </div>
+            <div className="max-h-96 overflow-y-auto p-2">
+              {['Create New Agent', 'View Analytics', 'Invite Team Member', 'Export Data', 'Settings', 'Help & Support'].map((cmd, index) => (
+                <button
+                  key={index}
+                  className="w-full flex items-center px-4 py-3 hover:bg-gray-50 rounded-lg text-left"
+                  onClick={() => setShowCommandPalette(false)}
+                >
+                  <Search className="w-4 h-4 mr-3 text-gray-400" />
+                  <span className="text-sm text-gray-700">{cmd}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Organization Switcher Modal */}
+      {showOrgSwitcher && (
+        <>
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            onClick={() => setShowOrgSwitcher(false)}
+          />
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-2xl w-full max-w-md z-50">
+            <div className="p-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Switch Organization</h3>
+              <p className="text-sm text-gray-500 mt-1">Select an organization to switch to</p>
+            </div>
+            <div className="max-h-96 overflow-y-auto p-2">
+              {userOrganizations.map((org) => (
+                <button
+                  key={org.id}
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-lg mb-1 ${
+                    org.current ? 'bg-indigo-50 border-2 border-indigo-500' : 'hover:bg-gray-50'
+                  }`}
+                  onClick={() => {
+                    if (!org.current) {
+                      // Switch organization logic
+                      console.log('Switching to:', org.name);
+                      setShowOrgSwitcher(false);
+                    }
+                  }}
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                      <span className="text-white font-bold">{org.name.charAt(0)}</span>
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-medium text-gray-900">{org.name}</p>
+                      <p className="text-xs text-gray-500">{org.slug}.neurallempire.com</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className={`text-xs px-2 py-1 rounded-full ${
+                      org.planType === 'OVERLORD' ? 'bg-yellow-100 text-yellow-800' :
+                      org.planType === 'EMPEROR' ? 'bg-blue-100 text-blue-800' :
+                      org.planType === 'CONQUEROR' ? 'bg-purple-100 text-purple-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {org.planType}
+                    </span>
+                    {org.current && (
+                      <span className="text-xs text-indigo-600 font-medium">Current</span>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+            <div className="p-4 border-t border-gray-200">
+              <button
+                onClick={() => setShowOrgSwitcher(false)}
+                className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                Create New Organization
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Keyboard Shortcuts Modal */}
+      {showKeyboardShortcuts && (
+        <>
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            onClick={() => setShowKeyboardShortcuts(false)}
+          />
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-2xl w-full max-w-2xl z-50">
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Keyboard Shortcuts</h3>
+              <p className="text-sm text-gray-500 mt-1">Navigate faster with these shortcuts</p>
+            </div>
+            <div className="p-6 max-h-96 overflow-y-auto">
+              <div className="space-y-4">
+                {keyboardShortcuts.map((shortcut, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <span className="text-sm text-gray-700">{shortcut.description}</span>
+                    <div className="flex items-center space-x-1">
+                      {shortcut.keys.map((key, keyIndex) => (
+                        <React.Fragment key={keyIndex}>
+                          <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-300 rounded">
+                            {key}
+                          </kbd>
+                          {keyIndex < shortcut.keys.length - 1 && (
+                            <span className="text-gray-500">+</span>
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="p-4 border-t border-gray-200 flex justify-end">
+              <button
+                onClick={() => setShowKeyboardShortcuts(false)}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </header>
   );
 };
