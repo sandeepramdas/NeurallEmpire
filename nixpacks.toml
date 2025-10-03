@@ -15,6 +15,7 @@ cmds = [
   "cd backend && npx prisma generate && npm run build",
   "mkdir -p backend/dist/public",
   "cp -r frontend/dist/* backend/dist/public/",
+  "ls -la backend/dist/routes",
   "ls -la backend/dist/public"
 ]
 
