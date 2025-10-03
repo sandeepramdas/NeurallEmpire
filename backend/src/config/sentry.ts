@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/node';
-import { Express } from 'express';
+import { Application } from 'express';
 
 /**
  * Sentry Error Monitoring Configuration (Simplified)
@@ -13,7 +13,7 @@ const APP_VERSION = process.env.npm_package_version || '1.0.0';
 /**
  * Initialize Sentry
  */
-export const initSentry = (app?: Express): void => {
+export const initSentry = (app?: Application): void => {
   // Only enable Sentry in production or if DSN is explicitly provided
   if (!SENTRY_DSN) {
     console.log('ℹ️  Sentry DSN not configured, skipping error monitoring setup');

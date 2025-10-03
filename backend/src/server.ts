@@ -16,9 +16,15 @@ import { notFound } from '@/middleware/notFound';
 // Import consolidated routes
 import apiRoutes from '@/routes';
 
+// Import Sentry for error monitoring
+import { initSentry, sentryErrorHandler } from '@/config/sentry';
+
 dotenv.config();
 
 const app: Application = express();
+
+// Initialize Sentry error monitoring (must be first)
+initSentry(app);
 const PORT = process.env.PORT || 3001;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
@@ -194,6 +200,7 @@ if (NODE_ENV === 'production') {
 
 // Error handling middleware (must be last)
 app.use(notFound);
+app.use(sentryErrorHandler); // Capture errors in Sentry before handling
 app.use(errorHandler);
 
 // Graceful shutdown
