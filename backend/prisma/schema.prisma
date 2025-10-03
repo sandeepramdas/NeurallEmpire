@@ -1368,10 +1368,13 @@ model AuditLog {
 
   // Action Details
   action         String
+  eventType      String?  // e.g., "LOGIN_SUCCESS", "PERMISSION_DENIED"
+  severity       String?  // e.g., "INFO", "WARNING", "ERROR", "CRITICAL"
   resourceType   String
   resourceId     String?
   oldValues      Json?
   newValues      Json?
+  details        Json?    // Additional event-specific details
 
   // Context
   ipAddress      String?
