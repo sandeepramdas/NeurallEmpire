@@ -1,16 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import OrganizationSwitcher from '@/components/OrganizationSwitcher';
+import OrganizationHeader from '@/components/OrganizationHeader';
 
 const DashboardLayout: React.FC = () => {
   const { user, logout } = useAuthStore();
+  const [, setTheme] = useState<'light' | 'dark' | 'auto'>('light');
+
+  const handleThemeChange = (newTheme: 'light' | 'dark' | 'auto') => {
+    setTheme(newTheme);
+    // Implement theme logic here
+    // TODO: Apply theme to document root
+    document.documentElement.setAttribute('data-theme', newTheme);
+    console.log('Theme changed to:', newTheme);
+  };
 
   return (
     <div className="min-h-screen bg-neural-50">
       <div className="flex">
         {/* Sidebar */}
-        <div className="w-64 bg-white shadow-sm border-r border-neutral-200">
+        <div className="w-64 bg-white shadow-sm border-r border-neutral-200 h-screen sticky top-0">
           <div className="p-6">
             <h2 className="text-2xl font-display font-bold text-neural-900">
               🧠 Dashboard
@@ -80,27 +90,11 @@ const DashboardLayout: React.FC = () => {
         </div>
 
         {/* Main content */}
-        <div className="flex-1">
-          {/* Top header with tenant info */}
-          <header className="bg-white shadow-sm border-b border-neutral-200 px-8 py-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-lg font-semibold text-gray-900">
-                  {user?.organization?.name || 'NeurallEmpire Platform'}
-                </h1>
-                {user?.organization && (
-                  <p className="text-sm text-gray-500">
-                    Organization: {user.organization.slug} • Plan: {user.organization.planType}
-                  </p>
-                )}
-              </div>
-              <div className="text-sm text-gray-500">
-                Welcome back, {user?.firstName || 'User'}
-              </div>
-            </div>
-          </header>
+        <div className="flex-1 flex flex-col">
+          {/* Enhanced Organization Header */}
+          <OrganizationHeader onThemeChange={handleThemeChange} />
 
-          <main className="p-8">
+          <main className="flex-1 p-8 overflow-auto">
             <Outlet />
           </main>
         </div>
