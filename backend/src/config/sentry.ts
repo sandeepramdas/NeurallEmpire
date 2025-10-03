@@ -1,10 +1,9 @@
 import * as Sentry from '@sentry/node';
-import { ProfilingIntegration } from '@sentry/profiling-node';
 import { Express } from 'express';
 
 /**
- * Sentry Error Monitoring Configuration
- * Provides real-time error tracking and performance monitoring
+ * Sentry Error Monitoring Configuration (Simplified)
+ * Compatible with latest @sentry/node
  */
 
 const SENTRY_DSN = process.env.SENTRY_DSN;
@@ -14,7 +13,7 @@ const APP_VERSION = process.env.npm_package_version || '1.0.0';
 /**
  * Initialize Sentry
  */
-export const initSentry = (app: Express): void => {
+export const initSentry = (app?: Express): void => {
   // Only enable Sentry in production or if DSN is explicitly provided
   if (!SENTRY_DSN) {
     console.log('ℹ️  Sentry DSN not configured, skipping error monitoring setup');
@@ -27,26 +26,10 @@ export const initSentry = (app: Express): void => {
     release: `neurallempire-backend@${APP_VERSION}`,
 
     // Performance Monitoring
-    tracesSampleRate: NODE_ENV === 'production' ? 0.1 : 1.0, // 10% in prod, 100% in dev
-
-    // Profiling
-    profilesSampleRate: NODE_ENV === 'production' ? 0.1 : 1.0,
-
-    integrations: [
-      // HTTP integration for Express
-      new Sentry.Integrations.Http({ tracing: true }),
-
-      // Express integration
-      new Sentry.Integrations.Express({
-        app,
-      }),
-
-      // Profiling
-      new ProfilingIntegration(),
-    ],
+    tracesSampleRate: NODE_ENV === 'production' ? 0.1 : 1.0,
 
     // Filter out sensitive data
-    beforeSend(event, hint) {
+    beforeSend(event) {
       // Remove sensitive headers
       if (event.request?.headers) {
         delete event.request.headers.authorization;
@@ -72,15 +55,10 @@ export const initSentry = (app: Express): void => {
 
     // Ignore certain errors
     ignoreErrors: [
-      // Browser errors that don't matter for backend
       'Non-Error exception captured',
       'Non-Error promise rejection captured',
-
-      // Network errors
       'NetworkError',
       'Network request failed',
-
-      // Validation errors (these are expected)
       'ValidationError',
       'Invalid input',
     ],
@@ -88,35 +66,6 @@ export const initSentry = (app: Express): void => {
 
   console.log('✅ Sentry error monitoring initialized');
 };
-
-/**
- * Request handler middleware (must be first)
- */
-export const sentryRequestHandler = Sentry.Handlers.requestHandler();
-
-/**
- * Tracing middleware
- */
-export const sentryTracingHandler = Sentry.Handlers.tracingHandler();
-
-/**
- * Error handler middleware (must be before other error handlers)
- */
-export const sentryErrorHandler = Sentry.Handlers.errorHandler({
-  shouldHandleError(error) {
-    // Capture all errors with status >= 500
-    if (error.status && error.status >= 500) {
-      return true;
-    }
-
-    // Capture specific error types
-    if (error.name === 'UnauthorizedError') {
-      return false; // Don't report auth errors
-    }
-
-    return true;
-  },
-});
 
 /**
  * Manually capture error
@@ -132,21 +81,16 @@ export const captureError = (
   }
 ): void => {
   Sentry.withScope(scope => {
-    // Add user context
     if (context?.userId) {
-      scope.setUser({
-        id: context.userId,
-      });
+      scope.setUser({ id: context.userId });
     }
 
-    // Add tags
     if (context?.tags) {
       Object.entries(context.tags).forEach(([key, value]) => {
         scope.setTag(key, value);
       });
     }
 
-    // Add extra context
     if (context?.organizationId) {
       scope.setTag('organizationId', context.organizationId);
     }
@@ -166,7 +110,7 @@ export const captureError = (
  */
 export const captureMessage = (
   message: string,
-  level: 'info' | 'warning' | 'error' | 'fatal' = 'info',
+  level: Sentry.SeverityLevel = 'info',
   context?: {
     tags?: Record<string, string>;
     extra?: Record<string, any>;
@@ -189,36 +133,12 @@ export const captureMessage = (
   });
 };
 
-/**
- * Start a transaction for performance monitoring
- */
-export const startTransaction = (
-  name: string,
-  op: string
-): Sentry.Transaction => {
-  return Sentry.startTransaction({
-    name,
-    op,
-  });
-};
-
-/**
- * Performance monitoring helper
- */
-export const measurePerformance = async <T>(
-  name: string,
-  operation: () => Promise<T>
-): Promise<T> => {
-  const transaction = startTransaction(name, 'function');
-
-  try {
-    const result = await operation();
-    transaction.setStatus('ok');
-    return result;
-  } catch (error) {
-    transaction.setStatus('internal_error');
-    throw error;
-  } finally {
-    transaction.finish();
+// Export basic error handler middleware
+export const sentryErrorHandler = (err: any, req: any, res: any, next: any) => {
+  if (SENTRY_DSN && err.status >= 500) {
+    Sentry.captureException(err);
   }
+  next(err);
 };
+
+export default Sentry;
