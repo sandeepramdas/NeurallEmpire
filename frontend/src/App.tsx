@@ -24,6 +24,19 @@ import Settings from '@/pages/dashboard/Settings';
 import NotFound from '@/pages/NotFound';
 import OAuthCallback from '@/pages/auth/OAuthCallback';
 
+// Import settings pages
+import OrganizationProfile from '@/pages/settings/OrganizationProfile';
+import TeamMembers from '@/pages/settings/TeamMembers';
+import BillingSubscription from '@/pages/settings/BillingSubscription';
+import APIKeys from '@/pages/settings/APIKeys';
+import SecurityCompliance from '@/pages/settings/SecurityCompliance';
+import BrandingTheme from '@/pages/settings/BrandingTheme';
+import UsageAnalytics from '@/pages/settings/UsageAnalytics';
+import DomainSettings from '@/pages/settings/DomainSettings';
+import UserProfile from '@/pages/settings/UserProfile';
+import NotificationsPage from '@/pages/settings/NotificationsPage';
+import ActivityLog from '@/pages/settings/ActivityLog';
+
 // OAuth buttons component available for login page
 
 // Subdomain-aware components
@@ -277,6 +290,24 @@ const App: React.FC = () => {
           <Route path="campaigns" element={<Campaigns />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="settings" element={<Settings />} />
+
+          {/* Settings routes */}
+          <Route path="settings/organization" element={<OrganizationProfile />} />
+          <Route path="settings/team" element={<TeamMembers />} />
+          <Route path="settings/billing" element={<BillingSubscription />} />
+          <Route path="settings/api-keys" element={<APIKeys />} />
+          <Route path="settings/security" element={<SecurityCompliance />} />
+          <Route path="settings/branding" element={<BrandingTheme />} />
+          <Route path="settings/analytics" element={<UsageAnalytics />} />
+          <Route path="settings/domains" element={<DomainSettings />} />
+          <Route path="settings/data" element={<Settings />} />
+          <Route path="settings/emails" element={<Settings />} />
+          <Route path="settings/integrations" element={<Settings />} />
+
+          {/* User-specific routes */}
+          <Route path="profile" element={<UserProfile />} />
+          <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="activity" element={<ActivityLog />} />
         </Route>
 
         {/* Legacy path-based routes for backwards compatibility */}
