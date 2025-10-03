@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { prisma } from '@/server';
 import { AuthenticatedRequest, JwtPayload, AuthUser } from '@/types';
+import { rbacService } from '@/services/rbac.service';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
 
@@ -46,6 +47,7 @@ export const authenticate = async (
         avatar: true,
         role: true,
         status: true,
+        isSuperAdmin: true,
         organizationId: true,
         organization: {
           select: {
@@ -90,10 +92,24 @@ export const authenticate = async (
       email: user.email,
       role: user.role,
       organizationId: user.organizationId,
+      isSuperAdmin: user.isSuperAdmin,
       firstName: user.firstName || undefined,
       lastName: user.lastName || undefined,
       avatar: user.avatar || undefined,
     };
+
+    // Extract companyId from JWT if present (for multi-company context)
+    if (decoded.companyId) {
+      req.companyId = decoded.companyId;
+
+      // Load user permissions for this company
+      const permissions = await rbacService.getUserPermissions(user.id, decoded.companyId);
+      req.permissions = permissions;
+
+      // Load user roles for this company
+      const roles = await rbacService.getUserRoles(user.id, decoded.companyId);
+      req.roles = roles.map(r => r.code);
+    }
 
     // If no tenant context yet, set from user's organization
     if (!req.organization) {

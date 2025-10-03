@@ -9,6 +9,12 @@ import adminRoutes from './admin';
 import marketplaceRoutes from './marketplace';
 import organizationRoutes from './organization';
 
+// Import multi-company & accounting routes
+import companiesRoutes from './companies';
+import rolesRoutes from './roles';
+import menusRoutes from './menus';
+import accountingRoutes from './accounting';
+
 const router = Router();
 
 // Health check
@@ -29,6 +35,14 @@ router.use('/marketplace/public', marketplaceRoutes);
 router.use('/agents', authenticate, agentsRoutes);
 router.use('/workflows', authenticate, workflowsRoutes);
 router.use('/organization', authenticate, organizationRoutes);
+
+// Multi-company routes
+router.use('/companies', companiesRoutes);
+router.use('/roles', rolesRoutes);
+router.use('/menus', menusRoutes);
+
+// Accounting routes
+router.use('/accounting', accountingRoutes);
 
 // Admin routes (require admin authentication)
 router.use('/admin', authenticate, adminRoutes);

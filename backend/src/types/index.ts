@@ -1,9 +1,14 @@
 import { Request } from 'express';
-import { Organization, User, PlanType, UserRole } from '@prisma/client';
+import { Organization, User, PlanType, UserRole, Company } from '@prisma/client';
 
 // Extended Request with authenticated user and tenant
 export interface AuthenticatedRequest extends Request {
-  user: AuthUser;
+  user?: AuthUser;
+  organization?: Organization;
+  companyId?: string;
+  company?: Company;
+  permissions?: string[];
+  roles?: string[];
 }
 
 export interface AuthUser {
@@ -11,6 +16,7 @@ export interface AuthUser {
   email: string;
   role: UserRole;
   organizationId: string;
+  isSuperAdmin?: boolean;
   firstName?: string;
   lastName?: string;
   avatar?: string;
@@ -20,6 +26,7 @@ export interface JwtPayload {
   userId: string;
   organizationId: string;
   role: UserRole;
+  companyId?: string;
   iat?: number;
   exp?: number;
 }

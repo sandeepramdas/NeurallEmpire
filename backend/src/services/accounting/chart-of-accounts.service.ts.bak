@@ -1,0 +1,727 @@
+/**
+ * Chart of Accounts Service
+ * Manages the chart of accounts for multi-company accounting
+ * Handles account creation, updates, hierarchies, and account queries
+ */
+
+import { prisma } from '@/server';
+import { Account, AccountType } from '@prisma/client';
+
+interface CreateAccountDTO {
+  accountNumber: string;
+  name: string;
+  accountType: AccountType;
+  description?: string;
+  parentId?: string;
+  taxCategoryId?: string;
+  isActive?: boolean;
+  allowManualEntries?: boolean;
+  requiresReconciliation?: boolean;
+  metadata?: any;
+}
+
+interface UpdateAccountDTO {
+  accountNumber?: string;
+  name?: string;
+  description?: string;
+  parentId?: string;
+  taxCategoryId?: string;
+  isActive?: boolean;
+  allowManualEntries?: boolean;
+  requiresReconciliation?: boolean;
+  metadata?: any;
+}
+
+interface AccountBalance {
+  accountId: string;
+  accountNumber: string;
+  accountName: string;
+  accountType: AccountType;
+  debitBalance: number;
+  creditBalance: number;
+  netBalance: number;
+  currency: string;
+}
+
+interface AccountTreeNode extends Account {
+  children?: AccountTreeNode[];
+  level?: number;
+}
+
+class ChartOfAccountsService {
+  /**
+   * Create a new account
+   */
+  async createAccount(
+    companyId: string,
+    data: CreateAccountDTO,
+    createdBy: string
+  ): Promise<Account> {
+    try {
+      // Verify company exists
+      const company = await prisma.company.findUnique({
+        where: { id: companyId },
+      });
+
+      if (!company) {
+        throw new Error('Company not found');
+      }
+
+      // Check if account number already exists in this company
+      const existingAccount = await prisma.account.findFirst({
+        where: {
+          companyId,
+          accountNumber: data.accountNumber,
+        },
+      });
+
+      if (existingAccount) {
+        throw new Error('Account number already exists in this company');
+      }
+
+      // If parent account specified, validate it
+      if (data.parentId) {
+        const parent = await prisma.account.findFirst({
+          where: {
+            id: data.parentId,
+            companyId,
+          },
+        });
+
+        if (!parent) {
+          throw new Error('Parent account not found or does not belong to this company');
+        }
+
+        // Ensure parent account type matches
+        if (parent.accountType !== data.accountType) {
+          throw new Error('Parent account type must match child account type');
+        }
+      }
+
+      // Create account
+      const account = await prisma.account.create({
+        data: {
+          companyId,
+          accountNumber: data.accountNumber,
+          name: data.name,
+          accountType: data.accountType,
+          description: data.description,
+          parentId: data.parentId,
+          taxCategoryId: data.taxCategoryId,
+          isActive: data.isActive ?? true,
+          allowManualEntries: data.allowManualEntries ?? true,
+          requiresReconciliation: data.requiresReconciliation ?? false,
+          currency: company.currencyCode,
+          debitBalance: 0,
+          creditBalance: 0,
+          metadata: data.metadata || {},
+        },
+      });
+
+      // Audit log
+      await prisma.auditLog.create({
+        data: {
+          action: 'CREATE_ACCOUNT',
+          resourceType: 'ACCOUNT',
+          resourceId: account.id,
+          userId: createdBy,
+          companyId,
+          newValues: {
+            accountNumber: account.accountNumber,
+            name: account.name,
+            accountType: account.accountType,
+          },
+        },
+      });
+
+      return account;
+    } catch (error) {
+      console.error('Error creating account:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update an account
+   */
+  async updateAccount(
+    accountId: string,
+    companyId: string,
+    data: UpdateAccountDTO,
+    updatedBy: string
+  ): Promise<Account> {
+    try {
+      const existingAccount = await prisma.account.findFirst({
+        where: {
+          id: accountId,
+          companyId,
+        },
+      });
+
+      if (!existingAccount) {
+        throw new Error('Account not found or does not belong to this company');
+      }
+
+      // Check if account number is being changed and if it conflicts
+      if (data.accountNumber && data.accountNumber !== existingAccount.accountNumber) {
+        const duplicate = await prisma.account.findFirst({
+          where: {
+            companyId,
+            accountNumber: data.accountNumber,
+            id: { not: accountId },
+          },
+        });
+
+        if (duplicate) {
+          throw new Error('Account number already exists in this company');
+        }
+      }
+
+      // Validate parent if being changed
+      if (data.parentId && data.parentId !== existingAccount.parentId) {
+        const parent = await prisma.account.findFirst({
+          where: {
+            id: data.parentId,
+            companyId,
+          },
+        });
+
+        if (!parent) {
+          throw new Error('Parent account not found');
+        }
+
+        // Prevent circular reference
+        if (data.parentId === accountId) {
+          throw new Error('Account cannot be its own parent');
+        }
+
+        // Check if new parent would create a circular reference
+        const wouldCreateCircular = await this.checkCircularReference(
+          accountId,
+          data.parentId,
+          companyId
+        );
+
+        if (wouldCreateCircular) {
+          throw new Error('This change would create a circular reference');
+        }
+      }
+
+      const account = await prisma.account.update({
+        where: { id: accountId },
+        data: {
+          accountNumber: data.accountNumber,
+          name: data.name,
+          description: data.description,
+          parentId: data.parentId,
+          taxCategoryId: data.taxCategoryId,
+          isActive: data.isActive,
+          allowManualEntries: data.allowManualEntries,
+          requiresReconciliation: data.requiresReconciliation,
+          metadata: data.metadata,
+          updatedAt: new Date(),
+        },
+      });
+
+      // Audit log
+      await prisma.auditLog.create({
+        data: {
+          action: 'UPDATE_ACCOUNT',
+          resourceType: 'ACCOUNT',
+          resourceId: accountId,
+          userId: updatedBy,
+          companyId,
+          oldValues: {
+            accountNumber: existingAccount.accountNumber,
+            name: existingAccount.name,
+          },
+          newValues: {
+            accountNumber: account.accountNumber,
+            name: account.name,
+          },
+        },
+      });
+
+      return account;
+    } catch (error) {
+      console.error('Error updating account:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete an account (soft delete by deactivating)
+   */
+  async deleteAccount(
+    accountId: string,
+    companyId: string,
+    deletedBy: string
+  ): Promise<void> {
+    try {
+      const account = await prisma.account.findFirst({
+        where: {
+          id: accountId,
+          companyId,
+        },
+        include: {
+          children: true,
+          journalEntries: true,
+        },
+      });
+
+      if (!account) {
+        throw new Error('Account not found');
+      }
+
+      // Check if account has children
+      if (account.children.length > 0) {
+        throw new Error('Cannot delete account with child accounts. Delete children first.');
+      }
+
+      // Check if account has transactions
+      if (account.journalEntries.length > 0) {
+        throw new Error('Cannot delete account with existing transactions. Deactivate instead.');
+      }
+
+      // Soft delete by deactivating
+      await prisma.account.update({
+        where: { id: accountId },
+        data: {
+          isActive: false,
+          updatedAt: new Date(),
+        },
+      });
+
+      // Audit log
+      await prisma.auditLog.create({
+        data: {
+          action: 'DELETE_ACCOUNT',
+          resourceType: 'ACCOUNT',
+          resourceId: accountId,
+          userId: deletedBy,
+          companyId,
+          oldValues: {
+            accountNumber: account.accountNumber,
+            name: account.name,
+            isActive: true,
+          },
+          newValues: {
+            isActive: false,
+          },
+        },
+      });
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get account by ID
+   */
+  async getAccount(accountId: string, companyId: string): Promise<Account | null> {
+    try {
+      return await prisma.account.findFirst({
+        where: {
+          id: accountId,
+          companyId,
+        },
+        include: {
+          parent: true,
+          children: true,
+          taxCategory: true,
+        },
+      });
+    } catch (error) {
+      console.error('Error getting account:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get account by account number
+   */
+  async getAccountByNumber(
+    accountNumber: string,
+    companyId: string
+  ): Promise<Account | null> {
+    try {
+      return await prisma.account.findFirst({
+        where: {
+          accountNumber,
+          companyId,
+        },
+      });
+    } catch (error) {
+      console.error('Error getting account by number:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get all accounts for a company
+   */
+  async getAccounts(
+    companyId: string,
+    options?: {
+      accountType?: AccountType;
+      isActive?: boolean;
+      includeInactive?: boolean;
+    }
+  ): Promise<Account[]> {
+    try {
+      const where: any = { companyId };
+
+      if (options?.accountType) {
+        where.accountType = options.accountType;
+      }
+
+      if (options?.isActive !== undefined) {
+        where.isActive = options.isActive;
+      } else if (!options?.includeInactive) {
+        where.isActive = true;
+      }
+
+      return await prisma.account.findMany({
+        where,
+        orderBy: [
+          { accountNumber: 'asc' },
+        ],
+        include: {
+          parent: true,
+          taxCategory: true,
+        },
+      });
+    } catch (error) {
+      console.error('Error getting accounts:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get accounts by type
+   */
+  async getAccountsByType(
+    companyId: string,
+    accountType: AccountType
+  ): Promise<Account[]> {
+    return this.getAccounts(companyId, { accountType, isActive: true });
+  }
+
+  /**
+   * Get chart of accounts as hierarchical tree
+   */
+  async getAccountTree(companyId: string): Promise<AccountTreeNode[]> {
+    try {
+      const accounts = await this.getAccounts(companyId, { includeInactive: false });
+
+      // Build tree structure
+      const accountMap = new Map<string, AccountTreeNode>();
+      const rootAccounts: AccountTreeNode[] = [];
+
+      // First pass: create map
+      accounts.forEach(account => {
+        accountMap.set(account.id, { ...account, children: [], level: 0 });
+      });
+
+      // Second pass: build hierarchy
+      accounts.forEach(account => {
+        const node = accountMap.get(account.id)!;
+
+        if (account.parentId) {
+          const parent = accountMap.get(account.parentId);
+          if (parent) {
+            node.level = (parent.level || 0) + 1;
+            parent.children!.push(node);
+          } else {
+            // Parent not found, treat as root
+            rootAccounts.push(node);
+          }
+        } else {
+          rootAccounts.push(node);
+        }
+      });
+
+      // Sort by account number at each level
+      const sortChildren = (nodes: AccountTreeNode[]) => {
+        nodes.sort((a, b) => a.accountNumber.localeCompare(b.accountNumber));
+        nodes.forEach(node => {
+          if (node.children && node.children.length > 0) {
+            sortChildren(node.children);
+          }
+        });
+      };
+
+      sortChildren(rootAccounts);
+
+      return rootAccounts;
+    } catch (error) {
+      console.error('Error getting account tree:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get account balance
+   */
+  async getAccountBalance(accountId: string, companyId: string): Promise<AccountBalance | null> {
+    try {
+      const account = await prisma.account.findFirst({
+        where: {
+          id: accountId,
+          companyId,
+        },
+      });
+
+      if (!account) {
+        return null;
+      }
+
+      // Calculate net balance based on account type
+      let netBalance = 0;
+
+      // For normal debit accounts (Assets, Expenses)
+      if (
+        account.accountType === 'ASSET' ||
+        account.accountType === 'EXPENSE'
+      ) {
+        netBalance = account.debitBalance - account.creditBalance;
+      }
+      // For normal credit accounts (Liabilities, Equity, Revenue)
+      else if (
+        account.accountType === 'LIABILITY' ||
+        account.accountType === 'EQUITY' ||
+        account.accountType === 'REVENUE'
+      ) {
+        netBalance = account.creditBalance - account.debitBalance;
+      }
+
+      return {
+        accountId: account.id,
+        accountNumber: account.accountNumber,
+        accountName: account.name,
+        accountType: account.accountType,
+        debitBalance: account.debitBalance,
+        creditBalance: account.creditBalance,
+        netBalance,
+        currency: account.currency,
+      };
+    } catch (error) {
+      console.error('Error getting account balance:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get balances for all accounts of a specific type
+   */
+  async getAccountBalancesByType(
+    companyId: string,
+    accountType: AccountType
+  ): Promise<AccountBalance[]> {
+    try {
+      const accounts = await this.getAccountsByType(companyId, accountType);
+
+      const balances = await Promise.all(
+        accounts.map(account => this.getAccountBalance(account.id, companyId))
+      );
+
+      return balances.filter(balance => balance !== null) as AccountBalance[];
+    } catch (error) {
+      console.error('Error getting account balances by type:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Search accounts
+   */
+  async searchAccounts(
+    companyId: string,
+    query: string,
+    limit = 20
+  ): Promise<Account[]> {
+    try {
+      return await prisma.account.findMany({
+        where: {
+          companyId,
+          isActive: true,
+          OR: [
+            { accountNumber: { contains: query, mode: 'insensitive' } },
+            { name: { contains: query, mode: 'insensitive' } },
+            { description: { contains: query, mode: 'insensitive' } },
+          ],
+        },
+        orderBy: [
+          { accountNumber: 'asc' },
+        ],
+        take: limit,
+      });
+    } catch (error) {
+      console.error('Error searching accounts:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get account hierarchy path (breadcrumb)
+   */
+  async getAccountPath(accountId: string, companyId: string): Promise<Account[]> {
+    try {
+      const account = await this.getAccount(accountId, companyId);
+
+      if (!account) {
+        return [];
+      }
+
+      const path: Account[] = [account];
+
+      let currentParentId = account.parentId;
+      while (currentParentId) {
+        const parent = await prisma.account.findFirst({
+          where: {
+            id: currentParentId,
+            companyId,
+          },
+        });
+
+        if (parent) {
+          path.unshift(parent);
+          currentParentId = parent.parentId;
+        } else {
+          break;
+        }
+      }
+
+      return path;
+    } catch (error) {
+      console.error('Error getting account path:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Seed default chart of accounts for a company
+   */
+  async seedDefaultAccounts(companyId: string, createdBy: string): Promise<Account[]> {
+    try {
+      const defaultAccounts = this.getDefaultAccountStructure();
+      const createdAccounts: Account[] = [];
+      const accountIdMap = new Map<string, string>();
+
+      // Create accounts in order (parents first)
+      for (const accountData of defaultAccounts) {
+        const parentId = accountData.parentKey
+          ? accountIdMap.get(accountData.parentKey)
+          : undefined;
+
+        const account = await this.createAccount(
+          companyId,
+          {
+            accountNumber: accountData.accountNumber,
+            name: accountData.name,
+            accountType: accountData.accountType,
+            description: accountData.description,
+            parentId,
+            allowManualEntries: accountData.allowManualEntries,
+            requiresReconciliation: accountData.requiresReconciliation,
+          },
+          createdBy
+        );
+
+        createdAccounts.push(account);
+        accountIdMap.set(accountData.key, account.id);
+      }
+
+      console.log(`✅ Seeded ${createdAccounts.length} default accounts for company ${companyId}`);
+      return createdAccounts;
+    } catch (error) {
+      console.error('Error seeding default accounts:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check if changing parent would create circular reference
+   */
+  private async checkCircularReference(
+    accountId: string,
+    newParentId: string,
+    companyId: string
+  ): Promise<boolean> {
+    let currentId: string | null = newParentId;
+
+    while (currentId) {
+      if (currentId === accountId) {
+        return true; // Circular reference detected
+      }
+
+      const parent = await prisma.account.findFirst({
+        where: {
+          id: currentId,
+          companyId,
+        },
+        select: { parentId: true },
+      });
+
+      currentId = parent?.parentId || null;
+    }
+
+    return false;
+  }
+
+  /**
+   * Get default account structure for seeding
+   */
+  private getDefaultAccountStructure() {
+    return [
+      // Assets
+      { key: 'ASSETS', accountNumber: '1000', name: 'Assets', accountType: 'ASSET' as AccountType, parentKey: undefined, allowManualEntries: false },
+      { key: 'CURRENT_ASSETS', accountNumber: '1100', name: 'Current Assets', accountType: 'ASSET' as AccountType, parentKey: 'ASSETS', allowManualEntries: false },
+      { key: 'CASH', accountNumber: '1110', name: 'Cash', accountType: 'ASSET' as AccountType, parentKey: 'CURRENT_ASSETS', description: 'Cash on hand and in banks', requiresReconciliation: true },
+      { key: 'CHECKING', accountNumber: '1120', name: 'Checking Account', accountType: 'ASSET' as AccountType, parentKey: 'CURRENT_ASSETS', requiresReconciliation: true },
+      { key: 'SAVINGS', accountNumber: '1130', name: 'Savings Account', accountType: 'ASSET' as AccountType, parentKey: 'CURRENT_ASSETS', requiresReconciliation: true },
+      { key: 'AR', accountNumber: '1200', name: 'Accounts Receivable', accountType: 'ASSET' as AccountType, parentKey: 'CURRENT_ASSETS', description: 'Money owed by customers' },
+      { key: 'INVENTORY', accountNumber: '1300', name: 'Inventory', accountType: 'ASSET' as AccountType, parentKey: 'CURRENT_ASSETS', description: 'Goods for sale' },
+
+      { key: 'FIXED_ASSETS', accountNumber: '1500', name: 'Fixed Assets', accountType: 'ASSET' as AccountType, parentKey: 'ASSETS', allowManualEntries: false },
+      { key: 'EQUIPMENT', accountNumber: '1510', name: 'Equipment', accountType: 'ASSET' as AccountType, parentKey: 'FIXED_ASSETS' },
+      { key: 'ACCUMULATED_DEPRECIATION', accountNumber: '1520', name: 'Accumulated Depreciation', accountType: 'ASSET' as AccountType, parentKey: 'FIXED_ASSETS', description: 'Contra asset account' },
+
+      // Liabilities
+      { key: 'LIABILITIES', accountNumber: '2000', name: 'Liabilities', accountType: 'LIABILITY' as AccountType, parentKey: undefined, allowManualEntries: false },
+      { key: 'CURRENT_LIABILITIES', accountNumber: '2100', name: 'Current Liabilities', accountType: 'LIABILITY' as AccountType, parentKey: 'LIABILITIES', allowManualEntries: false },
+      { key: 'AP', accountNumber: '2110', name: 'Accounts Payable', accountType: 'LIABILITY' as AccountType, parentKey: 'CURRENT_LIABILITIES', description: 'Money owed to vendors' },
+      { key: 'CREDIT_CARD', accountNumber: '2120', name: 'Credit Card', accountType: 'LIABILITY' as AccountType, parentKey: 'CURRENT_LIABILITIES' },
+      { key: 'SALES_TAX', accountNumber: '2130', name: 'Sales Tax Payable', accountType: 'LIABILITY' as AccountType, parentKey: 'CURRENT_LIABILITIES' },
+
+      { key: 'LONG_TERM_LIABILITIES', accountNumber: '2500', name: 'Long-term Liabilities', accountType: 'LIABILITY' as AccountType, parentKey: 'LIABILITIES', allowManualEntries: false },
+      { key: 'LOANS', accountNumber: '2510', name: 'Loans Payable', accountType: 'LIABILITY' as AccountType, parentKey: 'LONG_TERM_LIABILITIES' },
+
+      // Equity
+      { key: 'EQUITY', accountNumber: '3000', name: 'Equity', accountType: 'EQUITY' as AccountType, parentKey: undefined, allowManualEntries: false },
+      { key: 'OWNERS_EQUITY', accountNumber: '3100', name: "Owner's Equity", accountType: 'EQUITY' as AccountType, parentKey: 'EQUITY' },
+      { key: 'RETAINED_EARNINGS', accountNumber: '3200', name: 'Retained Earnings', accountType: 'EQUITY' as AccountType, parentKey: 'EQUITY', description: 'Accumulated profits' },
+
+      // Revenue
+      { key: 'REVENUE', accountNumber: '4000', name: 'Revenue', accountType: 'REVENUE' as AccountType, parentKey: undefined, allowManualEntries: false },
+      { key: 'SALES_REVENUE', accountNumber: '4100', name: 'Sales Revenue', accountType: 'REVENUE' as AccountType, parentKey: 'REVENUE', description: 'Income from product sales' },
+      { key: 'SERVICE_REVENUE', accountNumber: '4200', name: 'Service Revenue', accountType: 'REVENUE' as AccountType, parentKey: 'REVENUE', description: 'Income from services' },
+
+      // Expenses
+      { key: 'EXPENSES', accountNumber: '5000', name: 'Expenses', accountType: 'EXPENSE' as AccountType, parentKey: undefined, allowManualEntries: false },
+      { key: 'COGS', accountNumber: '5100', name: 'Cost of Goods Sold', accountType: 'EXPENSE' as AccountType, parentKey: 'EXPENSES', description: 'Direct costs of products sold' },
+      { key: 'OPERATING_EXPENSES', accountNumber: '5200', name: 'Operating Expenses', accountType: 'EXPENSE' as AccountType, parentKey: 'EXPENSES', allowManualEntries: false },
+      { key: 'SALARIES', accountNumber: '5210', name: 'Salaries & Wages', accountType: 'EXPENSE' as AccountType, parentKey: 'OPERATING_EXPENSES' },
+      { key: 'RENT', accountNumber: '5220', name: 'Rent Expense', accountType: 'EXPENSE' as AccountType, parentKey: 'OPERATING_EXPENSES' },
+      { key: 'UTILITIES', accountNumber: '5230', name: 'Utilities', accountType: 'EXPENSE' as AccountType, parentKey: 'OPERATING_EXPENSES' },
+      { key: 'OFFICE_SUPPLIES', accountNumber: '5240', name: 'Office Supplies', accountType: 'EXPENSE' as AccountType, parentKey: 'OPERATING_EXPENSES' },
+      { key: 'INSURANCE', accountNumber: '5250', name: 'Insurance', accountType: 'EXPENSE' as AccountType, parentKey: 'OPERATING_EXPENSES' },
+      { key: 'DEPRECIATION', accountNumber: '5260', name: 'Depreciation Expense', accountType: 'EXPENSE' as AccountType, parentKey: 'OPERATING_EXPENSES' },
+    ];
+  }
+}
+
+// Export singleton instance
+export const chartOfAccountsService = new ChartOfAccountsService();
+export default chartOfAccountsService;
