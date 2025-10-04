@@ -103,6 +103,13 @@ export const createInvoice = async (params: CreateInvoiceParams) => {
  */
 export const createSubscription = async (params: CreateSubscriptionParams) => {
   try {
+    console.log('📦 Creating subscription:', {
+      organizationId: params.organizationId,
+      planType: params.planType,
+      billingCycle: params.billingCycle,
+      amount: params.amount,
+    });
+
     const plan = SUBSCRIPTION_PLANS[params.planType];
     if (!plan) {
       throw new Error('Invalid plan type');

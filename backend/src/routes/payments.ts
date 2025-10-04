@@ -165,6 +165,12 @@ router.post('/verify-payment', async (req: Request, res: Response) => {
     }
 
     // Verify signature
+    console.log('🔐 Verifying payment signature:', {
+      order_id: razorpay_order_id,
+      payment_id: razorpay_payment_id,
+      signature_length: razorpay_signature?.length,
+    });
+
     const isValid = razorpayService.verifyPaymentSignature({
       razorpay_order_id,
       razorpay_payment_id,
@@ -172,11 +178,19 @@ router.post('/verify-payment', async (req: Request, res: Response) => {
     });
 
     if (!isValid) {
+      console.error('❌ Payment signature verification failed:', {
+        order_id: razorpay_order_id,
+        payment_id: razorpay_payment_id,
+        organizationId,
+      });
       return res.status(400).json({
         success: false,
         message: 'Invalid payment signature',
+        error: 'SIGNATURE_VERIFICATION_FAILED',
       });
     }
+
+    console.log('✅ Payment signature verified successfully');
 
     // Handle contribution (one-time payment)
     if (type === 'CONTRIBUTION') {
