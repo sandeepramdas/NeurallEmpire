@@ -53,10 +53,13 @@ router.post('/create-order', async (req: Request, res: Response) => {
         });
       }
 
+      // Create short receipt ID (max 40 chars for Razorpay)
+      const receiptId = `C${Date.now().toString().slice(-10)}`;
+
       const result = await razorpayService.createOrder({
         amount: amount, // Amount already in paise from frontend
         currency: 'INR',
-        receipt: `contribution_${organizationId}_${Date.now()}`,
+        receipt: receiptId,
         notes: {
           organizationId,
           type: 'contribution',
@@ -255,10 +258,16 @@ router.get('/subscription', async (req: Request, res: Response) => {
 
     const subscriptionResult = await subscriptionService.getActiveSubscription(organizationId);
 
+    // Convert BigInt to string for JSON serialization
+    const orgData = organization ? {
+      ...organization,
+      storageLimit: organization.storageLimit.toString(),
+    } : null;
+
     res.json({
       success: true,
       data: {
-        organization,
+        organization: orgData,
         subscription: subscriptionResult.data,
       },
     });

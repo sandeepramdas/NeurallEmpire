@@ -210,10 +210,13 @@ export const createSubscriptionOrder = async (
     // Calculate amount based on billing cycle
     const amount = billingCycle === 'YEARLY' ? plan.price * 12 * 0.8 : plan.price; // 20% discount for yearly
 
+    // Create short receipt ID (max 40 chars for Razorpay)
+    const receiptId = `S${Date.now().toString().slice(-10)}`;
+
     const order = await createOrder({
       amount,
       currency: plan.currency,
-      receipt: `sub_${organizationId}_${Date.now()}`,
+      receipt: receiptId,
       notes: {
         organizationId,
         planType,
