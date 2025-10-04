@@ -15,6 +15,10 @@ import rolesRoutes from './roles';
 import menusRoutes from './menus';
 import accountingRoutes from './accounting';
 
+// Import payment & webhook routes
+import paymentsRoutes from './payments';
+import webhooksRoutes from './webhooks';
+
 const router = Router();
 
 // Health check
@@ -51,6 +55,10 @@ router.use('/accounting', accountingRoutes);
 
 // Admin routes (require admin authentication)
 router.use('/admin', authenticate, adminRoutes);
+
+// Payment & webhook routes
+router.use('/payments', paymentsRoutes);
+router.use('/webhooks', webhooksRoutes);
 
 // API documentation
 router.get('/', (req, res) => {
