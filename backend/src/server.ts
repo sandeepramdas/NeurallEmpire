@@ -73,7 +73,7 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "https://api.razorpay.com"],
+      connectSrc: ["'self'", "https://www.neurallempire.com", "https://*.neurallempire.com", "https://api.razorpay.com"],
       frameSrc: ["'self'", "https://api.razorpay.com"],
       objectSrc: ["'none'"],
       upgradeInsecureRequests: NODE_ENV === 'production' ? [] : null,
