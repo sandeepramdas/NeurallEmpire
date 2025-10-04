@@ -69,6 +69,7 @@
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
+    "node-cron": "^4.2.1",
     "nodemailer": "^7.0.6",
     "openai": "^5.23.1",
     "passport": "^0.7.0",
@@ -88,6 +89,7 @@
   "devDependencies": {
     "@types/jest": "^29.5.8",
     "@types/morgan": "^1.9.10",
+    "@types/node-cron": "^3.0.11",
     "@types/supertest": "^2.0.16",
     "@typescript-eslint/eslint-plugin": "^6.13.1",
     "@typescript-eslint/parser": "^6.13.1",

@@ -19,6 +19,9 @@ import apiRoutes from '@/routes';
 // Import Sentry for error monitoring
 import { initSentry, sentryErrorHandler } from '@/config/sentry';
 
+// Import cron jobs
+import { startCronJobs, stopCronJobs } from '@/services/cron.service';
+
 dotenv.config();
 
 const app: Application = express();
@@ -206,12 +209,14 @@ app.use(errorHandler);
 // Graceful shutdown
 process.on('SIGINT', async () => {
   console.log('🔄 Shutting down gracefully...');
+  stopCronJobs();
   await prisma.$disconnect();
   process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
   console.log('🔄 Shutting down gracefully...');
+  stopCronJobs();
   await prisma.$disconnect();
   process.exit(0);
 });
@@ -225,6 +230,9 @@ app.listen(PORT, () => {
   if (NODE_ENV === 'development') {
     console.log(`📊 Prisma Studio: npx prisma studio`);
   }
+
+  // Start cron jobs for auto-renewals and scheduled tasks
+  startCronJobs();
 });
 
 export default app;

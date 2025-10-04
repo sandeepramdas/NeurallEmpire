@@ -145,13 +145,15 @@ const Billing: React.FC = () => {
                 razorpay_signature: response.razorpay_signature,
                 planType: planId.toUpperCase(),
                 billingCycle,
+                amount: orderData.data.amount,
+                type: 'SUBSCRIPTION',
               }),
             });
 
             const verifyData = await verifyResponse.json();
 
             if (verifyData.success) {
-              alert('Payment successful! Your subscription has been activated.');
+              alert('Payment successful! Your subscription has been activated. Invoice generated successfully.');
               window.location.reload();
             } else {
               alert('Payment verification failed. Please contact support.');
@@ -254,11 +256,38 @@ const Billing: React.FC = () => {
         name: 'NeurallEmpire',
         description: 'Contribution to NeurallEmpire',
         order_id: orderData.data.orderId,
-        handler: async function () {
-          alert('Thank you for your contribution! 🙏');
-          setShowContribution(false);
-          setContributionAmount(500);
-          fetchInvoices();
+        handler: async function (response: any) {
+          // Verify contribution payment
+          try {
+            const verifyResponse = await fetch('/api/payments/verify-payment', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                amount: contributionAmount * 100,
+                type: 'CONTRIBUTION',
+              }),
+            });
+
+            const verifyData = await verifyResponse.json();
+
+            if (verifyData.success) {
+              alert('Thank you for your contribution! 🙏 Invoice generated successfully.');
+              setShowContribution(false);
+              setContributionAmount(500);
+              fetchInvoices();
+            } else {
+              alert('Payment verification failed. Please contact support.');
+            }
+          } catch (error) {
+            console.error('Verification error:', error);
+            alert('Payment verification failed. Please contact support.');
+          }
         },
         prefill: {
           name: organization?.name || '',

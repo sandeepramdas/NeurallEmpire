@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { authenticate } from '@/middleware/auth';
 import razorpayService from '@/services/razorpay.service';
+import subscriptionService from '@/services/subscription.service';
 
 const router = Router();
 
@@ -140,6 +141,8 @@ router.post('/verify-payment', async (req: Request, res: Response) => {
       razorpay_signature,
       planType,
       billingCycle,
+      amount,
+      type, // 'SUBSCRIPTION' or 'CONTRIBUTION'
     } = req.body;
 
     const organizationId = req.user?.organizationId;
@@ -172,23 +175,46 @@ router.post('/verify-payment', async (req: Request, res: Response) => {
       });
     }
 
-    // Process subscription payment
-    const result = await razorpayService.processSubscriptionPayment(
-      organizationId,
-      razorpay_payment_id,
-      razorpay_order_id,
-      planType,
-      billingCycle
-    );
+    // Handle contribution (one-time payment)
+    if (type === 'CONTRIBUTION') {
+      const invoiceResult = await subscriptionService.createContributionInvoice(
+        organizationId,
+        amount,
+        razorpay_order_id,
+        razorpay_payment_id
+      );
 
-    if (!result.success) {
-      return res.status(400).json(result);
+      if (!invoiceResult.success) {
+        return res.status(400).json(invoiceResult);
+      }
+
+      return res.json({
+        success: true,
+        message: 'Contribution received successfully',
+        data: {
+          invoice: invoiceResult.data,
+        },
+      });
+    }
+
+    // Handle subscription payment - create subscription with invoice
+    const subscriptionResult = await subscriptionService.createSubscription({
+      organizationId,
+      planType,
+      billingCycle,
+      amount,
+      razorpayOrderId: razorpay_order_id,
+      razorpayPaymentId: razorpay_payment_id,
+    });
+
+    if (!subscriptionResult.success) {
+      return res.status(400).json(subscriptionResult);
     }
 
     res.json({
       success: true,
       message: 'Payment verified and subscription activated',
-      data: result.data,
+      data: subscriptionResult.data,
     });
   } catch (error: any) {
     console.error('Verify payment error:', error);
@@ -227,21 +253,13 @@ router.get('/subscription', async (req: Request, res: Response) => {
       },
     });
 
-    const subscription = await prisma.subscription.findFirst({
-      where: {
-        organizationId,
-        status: 'ACTIVE',
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    const subscriptionResult = await subscriptionService.getActiveSubscription(organizationId);
 
     res.json({
       success: true,
       data: {
         organization,
-        subscription,
+        subscription: subscriptionResult.data,
       },
     });
   } catch (error: any) {
@@ -267,7 +285,7 @@ router.post('/cancel-subscription', async (req: Request, res: Response) => {
       });
     }
 
-    const result = await razorpayService.cancelSubscription(organizationId);
+    const result = await subscriptionService.cancelSubscriptionAtPeriodEnd(organizationId);
 
     if (!result.success) {
       return res.status(400).json(result);
@@ -275,7 +293,7 @@ router.post('/cancel-subscription', async (req: Request, res: Response) => {
 
     res.json({
       success: true,
-      message: 'Subscription cancelled successfully',
+      message: 'Subscription will be cancelled at the end of the current billing period',
       data: result.data,
     });
   } catch (error: any) {
@@ -301,17 +319,16 @@ router.get('/invoices', async (req: Request, res: Response) => {
       });
     }
 
-    const { prisma } = await import('@/server');
+    const limit = parseInt(req.query.limit as string) || 50;
+    const result = await subscriptionService.getInvoices(organizationId, limit);
 
-    const invoices = await prisma.invoice.findMany({
-      where: { organizationId },
-      orderBy: { createdAt: 'desc' },
-      take: 50, // Limit to last 50 invoices
-    });
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
 
     res.json({
       success: true,
-      data: invoices,
+      data: result.data,
     });
   } catch (error: any) {
     console.error('Get invoices error:', error);
