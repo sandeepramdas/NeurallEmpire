@@ -27,7 +27,7 @@ import OAuthCallback from '@/pages/auth/OAuthCallback';
 // Import settings pages
 import OrganizationProfile from '@/pages/settings/OrganizationProfile';
 import TeamMembers from '@/pages/settings/TeamMembers';
-import BillingSubscription from '@/pages/settings/BillingSubscription';
+import BillingSubscription from '@/pages/dashboard/settings/Billing';
 import APIKeys from '@/pages/settings/APIKeys';
 import SecurityCompliance from '@/pages/settings/SecurityCompliance';
 import BrandingTheme from '@/pages/settings/BrandingTheme';

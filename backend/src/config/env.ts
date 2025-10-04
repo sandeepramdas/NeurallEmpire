@@ -44,7 +44,10 @@ interface EnvConfig {
   SMTP_PASS?: string;
   EMAIL_FROM?: string;
 
-  // Payment Processing (for future use)
+  // Payment Processing
+  RAZORPAY_KEY_ID?: string;
+  RAZORPAY_KEY_SECRET?: string;
+  RAZORPAY_WEBHOOK_SECRET?: string;
   STRIPE_SECRET_KEY?: string;
   STRIPE_WEBHOOK_SECRET?: string;
 
@@ -144,6 +147,9 @@ const loadEnv = (): EnvConfig => {
     EMAIL_FROM: env.EMAIL_FROM,
 
     // Payment
+    RAZORPAY_KEY_ID: env.RAZORPAY_KEY_ID,
+    RAZORPAY_KEY_SECRET: env.RAZORPAY_KEY_SECRET,
+    RAZORPAY_WEBHOOK_SECRET: env.RAZORPAY_WEBHOOK_SECRET,
     STRIPE_SECRET_KEY: env.STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET: env.STRIPE_WEBHOOK_SECRET,
 

@@ -19,7 +19,9 @@ export interface Organization {
   slug: string;
   description?: string;
   logo?: string;
-  planType: 'FREE' | 'CONQUEROR' | 'EMPEROR' | 'OVERLORD';
+  planType: 'FREE' | 'CONQUEROR' | 'EMPEROR' | 'OVERLORD' | 'TRIAL';
+  billingCycle?: 'MONTHLY' | 'YEARLY';
+  billingEmail?: string;
   status: 'ACTIVE' | 'SUSPENDED' | 'CANCELLED' | 'TRIAL';
   maxUsers: number;
   maxAgents: number;
