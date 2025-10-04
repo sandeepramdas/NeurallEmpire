@@ -19,6 +19,9 @@ export const tenantResolver = async (
       if (hostname === 'localhost' || hostname.includes('127.0.0.1')) {
         // Local development - check for subdomain in header or query
         subdomain = req.headers['x-tenant'] as string || req.query.tenant as string;
+      } else if (hostname.includes('railway.app') || hostname.includes('neurallempire-production')) {
+        // Skip Railway and production deployment domains
+        subdomain = null;
       } else if (parts.length >= 3) {
         // Production subdomain: {tenant}.neurallempire.com
         const potentialSubdomain = parts[0];
