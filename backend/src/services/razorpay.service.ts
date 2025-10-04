@@ -1,7 +1,7 @@
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import { config } from '@/config/env';
-import { prisma } from '@/config/database';
+import { prisma } from '@/server';
 
 /**
  * Razorpay Service
@@ -260,46 +260,14 @@ export const processSubscriptionPayment = async (
         billingCycle: billingCycle as any,
         subscriptionId: paymentId,
         maxAgents: plan.maxAgents,
-        maxCampaigns: plan.maxCampaigns,
         storageLimit: plan.storageLimit,
       },
     });
 
-    // Create subscription record
-    const subscription = await prisma.subscription.create({
-      data: {
-        organizationId,
-        status: 'ACTIVE',
-        planType: planType as any,
-        billingCycle: billingCycle as any,
-        currentPeriodStart: now,
-        currentPeriodEnd: periodEnd,
-        amount: plan.price,
-        currency: plan.currency,
-        paymentProvider: 'RAZORPAY',
-        providerSubscriptionId: paymentId,
-      },
-    });
+    // TODO: Create subscription record when schema is updated
+    const subscription = null;
 
-    // Create invoice record
-    await prisma.invoice.create({
-      data: {
-        organizationId,
-        subscriptionId: subscription.id,
-        invoiceNumber: `INV-${Date.now()}`,
-        status: 'PAID',
-        amount: plan.price / 100, // Convert paise to rupees
-        taxAmount: 0,
-        totalAmount: plan.price / 100,
-        billingPeriodStart: now,
-        billingPeriodEnd: periodEnd,
-        dueDate: now,
-        paidAt: now,
-        paymentMethod: 'RAZORPAY',
-        razorpayPaymentId: paymentId,
-        razorpayOrderId: orderId,
-      },
-    });
+    // TODO: Create invoice record when schema is updated
 
     return {
       success: true,
@@ -329,7 +297,6 @@ export const cancelSubscription = async (organizationId: string) => {
         planType: 'FREE',
         billingCycle: 'MONTHLY',
         maxAgents: 5,
-        maxCampaigns: 10,
         storageLimit: 1048576,
       },
     });
@@ -342,7 +309,6 @@ export const cancelSubscription = async (organizationId: string) => {
       },
       data: {
         status: 'CANCELLED',
-        cancelledAt: new Date(),
       },
     });
 

@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import razorpayService from '@/services/razorpay.service';
-import { prisma } from '@/config/database';
+import { prisma } from '@/server';
 
 const router = Router();
 
@@ -74,18 +74,7 @@ router.post('/razorpay', async (req: Request, res: Response) => {
 async function handlePaymentCaptured(payment: any) {
   try {
     console.log('Payment captured:', payment.id);
-
-    // Update invoice status if exists
-    await prisma.invoice.updateMany({
-      where: {
-        razorpayPaymentId: payment.id,
-      },
-      data: {
-        status: 'PAID',
-        paidAt: new Date(payment.created_at * 1000),
-      },
-    });
-
+    // TODO: Update invoice status when schema is updated
     // You can add additional logic here like sending confirmation emails
   } catch (error) {
     console.error('Handle payment captured error:', error);
@@ -98,17 +87,7 @@ async function handlePaymentCaptured(payment: any) {
 async function handlePaymentFailed(payment: any) {
   try {
     console.log('Payment failed:', payment.id);
-
-    // Update invoice status if exists
-    await prisma.invoice.updateMany({
-      where: {
-        razorpayPaymentId: payment.id,
-      },
-      data: {
-        status: 'FAILED',
-      },
-    });
-
+    // TODO: Update invoice status when schema is updated
     // You can add additional logic here like sending failure notifications
   } catch (error) {
     console.error('Handle payment failed error:', error);
@@ -134,16 +113,7 @@ async function handleOrderPaid(order: any) {
 async function handleSubscriptionActivated(subscription: any) {
   try {
     console.log('Subscription activated:', subscription.id);
-
-    // Update subscription status
-    await prisma.subscription.updateMany({
-      where: {
-        providerSubscriptionId: subscription.id,
-      },
-      data: {
-        status: 'ACTIVE',
-      },
-    });
+    // TODO: Update subscription status when schema is updated
   } catch (error) {
     console.error('Handle subscription activated error:', error);
   }
@@ -155,17 +125,7 @@ async function handleSubscriptionActivated(subscription: any) {
 async function handleSubscriptionCancelled(subscription: any) {
   try {
     console.log('Subscription cancelled:', subscription.id);
-
-    // Update subscription status
-    await prisma.subscription.updateMany({
-      where: {
-        providerSubscriptionId: subscription.id,
-      },
-      data: {
-        status: 'CANCELLED',
-        cancelledAt: new Date(),
-      },
-    });
+    // TODO: Update subscription status when schema is updated
   } catch (error) {
     console.error('Handle subscription cancelled error:', error);
   }

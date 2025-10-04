@@ -213,7 +213,7 @@ router.get('/subscription', async (req: Request, res: Response) => {
       });
     }
 
-    const { prisma } = await import('@/config/database');
+    const { prisma } = await import('@/server');
 
     const organization = await prisma.organization.findUnique({
       where: { id: organizationId },
@@ -223,7 +223,6 @@ router.get('/subscription', async (req: Request, res: Response) => {
         planType: true,
         billingCycle: true,
         maxAgents: true,
-        maxCampaigns: true,
         storageLimit: true,
       },
     });
@@ -302,7 +301,7 @@ router.get('/invoices', async (req: Request, res: Response) => {
       });
     }
 
-    const { prisma } = await import('@/config/database');
+    const { prisma } = await import('@/server');
 
     const invoices = await prisma.invoice.findMany({
       where: { organizationId },
