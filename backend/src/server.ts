@@ -69,11 +69,21 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "https://checkout.razorpay.com"],
+      scriptSrc: [
+        "'self'",
+        "https://checkout.razorpay.com",
+        "https://static.cloudflareinsights.com"
+      ],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "https://www.neurallempire.com", "https://*.neurallempire.com", "https://api.razorpay.com"],
+      connectSrc: [
+        "'self'",
+        "https://www.neurallempire.com",
+        "https://*.neurallempire.com",
+        "https://api.razorpay.com",
+        "https://cloudflareinsights.com"
+      ],
       frameSrc: ["'self'", "https://api.razorpay.com"],
       objectSrc: ["'none'"],
       upgradeInsecureRequests: NODE_ENV === 'production' ? [] : null,
@@ -98,7 +108,7 @@ app.use(helmet({
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=()');
   next();
 });
 
