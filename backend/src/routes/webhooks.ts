@@ -74,8 +74,31 @@ router.post('/razorpay', async (req: Request, res: Response) => {
  * This is the backup mechanism if frontend callback fails
  */
 async function handlePaymentCaptured(payment: any) {
+  const webhookEventId = payment.event_id || `${payment.id}_${Date.now()}`;
+
   try {
     console.log('💰 Payment captured webhook:', payment.id, payment.order_id);
+
+    // Check for duplicate webhook event (replay attack prevention)
+    const existingEvent = await prisma.webhookEvent.findUnique({
+      where: { eventId: webhookEventId },
+    });
+
+    if (existingEvent) {
+      console.warn('⚠️ Duplicate webhook event detected:', webhookEventId);
+      return;
+    }
+
+    // Log webhook event for audit trail
+    const webhookEvent = await prisma.webhookEvent.create({
+      data: {
+        source: 'razorpay',
+        eventType: 'payment.captured',
+        eventId: webhookEventId,
+        payload: payment,
+        processed: false,
+      },
+    });
 
     // Get payment and order details
     const orderId = payment.order_id;
@@ -92,6 +115,15 @@ async function handlePaymentCaptured(payment: any) {
 
     if (existingInvoice) {
       console.log('✅ Invoice already exists for payment:', paymentId);
+
+      // Mark webhook as processed
+      await prisma.webhookEvent.update({
+        where: { id: webhookEvent.id },
+        data: {
+          processed: true,
+          processedAt: new Date(),
+        },
+      });
       return;
     }
 
@@ -104,8 +136,7 @@ async function handlePaymentCaptured(payment: any) {
     const billingCycle = notes.billingCycle;
 
     if (!organizationId) {
-      console.error('❌ No organizationId in payment notes');
-      return;
+      throw new Error('No organizationId in payment notes');
     }
 
     if (type === 'contribution') {
@@ -137,8 +168,32 @@ async function handlePaymentCaptured(payment: any) {
         paymentId
       );
     }
-  } catch (error) {
+
+    // Mark webhook as successfully processed
+    await prisma.webhookEvent.update({
+      where: { id: webhookEvent.id },
+      data: {
+        processed: true,
+        processedAt: new Date(),
+      },
+    });
+  } catch (error: any) {
     console.error('❌ Handle payment captured error:', error);
+
+    // Log error in webhook event
+    try {
+      await prisma.webhookEvent.updateMany({
+        where: { eventId: webhookEventId },
+        data: {
+          processingError: error.message || 'Unknown error',
+          retryCount: { increment: 1 },
+        },
+      });
+    } catch (updateError) {
+      console.error('Failed to update webhook event error:', updateError);
+    }
+
+    throw error; // Re-throw to return 500 to Razorpay for retry
   }
 }
 

@@ -126,10 +126,10 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
       <div className="px-6 py-3">
-        {/* Top Row - Actions Only */}
-        <div className="flex items-center justify-between">
+        {/* Top Row - Actions and User Menu */}
+        <div className="flex items-center justify-between mb-3">
 
-          {/* Right: Action Buttons */}
+          {/* Left: Quick Actions */}
           <div className="flex items-center space-x-2">
             {/* Search */}
             <div className="relative hidden md:block">
@@ -516,14 +516,40 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
           </div>
         </div>
 
-        {/* Bottom Row - Stats & Info */}
-        <div className="flex items-center justify-between text-xs">
+        {/* Bottom Row - Organization Info & Stats */}
+        <div className="flex items-center justify-between py-2 border-t border-gray-100">
+          {/* Left: Organization Name & Stats */}
           <div className="flex items-center space-x-6">
-            {/* Active Users */}
+            {/* Organization Name */}
             <div className="flex items-center space-x-2">
-              <Users className="w-4 h-4 text-gray-400" />
-              <span className="text-gray-600">
-                <span className="font-semibold text-gray-900">{organization?.maxUsers || 0}</span> max users
+              <div className="w-7 h-7 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <span className="text-white text-xs font-bold">
+                  {organization?.name?.charAt(0) || 'O'}
+                </span>
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-gray-900">{organization?.name || 'Organization'}</div>
+                <div className="text-xs text-gray-500">{organization?.slug}.neurallempire.com</div>
+              </div>
+            </div>
+
+            <div className="w-px h-6 bg-gray-200"></div>
+
+            {/* Plan Badge */}
+            <div className="flex items-center space-x-2">
+              <Crown className={`w-4 h-4 ${
+                organization?.planType === 'OVERLORD' ? 'text-yellow-600' :
+                organization?.planType === 'EMPEROR' ? 'text-purple-600' :
+                organization?.planType === 'CONQUEROR' ? 'text-blue-600' :
+                'text-gray-400'
+              }`} />
+              <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                organization?.planType === 'OVERLORD' ? 'bg-yellow-100 text-yellow-800' :
+                organization?.planType === 'EMPEROR' ? 'bg-purple-100 text-purple-800' :
+                organization?.planType === 'CONQUEROR' ? 'bg-blue-100 text-blue-800' :
+                'bg-gray-100 text-gray-800'
+              }`}>
+                {organization?.planType || 'FREE'}
               </span>
             </div>
 
@@ -536,44 +562,42 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
                   organization.status === 'SUSPENDED' ? 'bg-yellow-500' :
                   'bg-red-500'
                 }`}></div>
-                <span className="text-gray-600 capitalize">
+                <span className="text-xs text-gray-600 capitalize">
                   {organization.status.toLowerCase()}
                 </span>
               </div>
             )}
 
-            {/* Storage Used */}
-            <div className="flex items-center space-x-2">
-              <Database className="w-4 h-4 text-gray-400" />
-              <span className="text-gray-600">
-                <span className="font-semibold text-gray-900">0 MB</span> / 10 GB used
-              </span>
-            </div>
+            <div className="w-px h-6 bg-gray-200"></div>
 
-            {/* API Calls */}
-            <div className="flex items-center space-x-2">
-              <Zap className="w-4 h-4 text-gray-400" />
-              <span className="text-gray-600">
-                <span className="font-semibold text-gray-900">0</span> / 10,000 API calls
-              </span>
+            {/* Compact Stats */}
+            <div className="flex items-center space-x-4 text-xs text-gray-600">
+              <div className="flex items-center space-x-1">
+                <Users className="w-3.5 h-3.5 text-gray-400" />
+                <span><span className="font-semibold text-gray-900">{organization?.maxUsers || 0}</span> users</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <Database className="w-3.5 h-3.5 text-gray-400" />
+                <span><span className="font-semibold text-gray-900">0MB</span>/10GB</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <Zap className="w-3.5 h-3.5 text-gray-400" />
+                <span><span className="font-semibold text-gray-900">0</span>/10k calls</span>
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center space-x-4">
-            {/* Upgrade CTA for Free/Basic plans */}
-            {(organization?.planType === 'FREE' || !organization?.planType) && (
-              <a
-                href="/dashboard/settings/billing"
-                className="flex items-center space-x-2 px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all"
-              >
-                <Crown className="w-4 h-4" />
-                <span className="text-xs font-medium">Upgrade to Pro</span>
-                <ArrowUpCircle className="w-3 h-3" />
-              </a>
-            )}
-
-            <span className="text-gray-500">Last login: {new Date().toLocaleString()}</span>
-          </div>
+          {/* Right: Upgrade CTA */}
+          {(organization?.planType === 'FREE' || !organization?.planType) && (
+            <a
+              href="/dashboard/settings/billing"
+              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all shadow-sm"
+            >
+              <Crown className="w-4 h-4" />
+              <span className="text-xs font-semibold">Upgrade Now</span>
+              <ArrowUpCircle className="w-3.5 h-3.5" />
+            </a>
+          )}
         </div>
       </div>
 

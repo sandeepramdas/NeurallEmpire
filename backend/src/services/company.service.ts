@@ -7,6 +7,7 @@ import { prisma } from '@/server';
 import { Company, UserCompanyAccess, User } from '@prisma/client';
 import { rbacService } from './rbac.service';
 import jwt from 'jsonwebtoken';
+import { config } from '@/config/env';
 
 interface CreateCompanyDTO {
   companyCode: string;
@@ -605,8 +606,8 @@ class CompanyService {
           companyId: company.id,
           role: user.role,
         },
-        process.env.JWT_SECRET || 'your-secret-key',
-        { expiresIn: '7d' }
+        config.JWT_SECRET,
+        { expiresIn: config.JWT_EXPIRES_IN }
       );
 
       // Audit log

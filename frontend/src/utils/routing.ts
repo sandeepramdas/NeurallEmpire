@@ -21,17 +21,33 @@ const RESERVED_SUBDOMAINS = [
 /**
  * Get organization slug from current URL
  * Works in both development and production environments
+ * Supports: custom domains, subdomains, path-based, and query parameters
  */
 export const getOrganizationFromUrl = (): string | null => {
   const hostname = window.location.hostname;
+  const pathname = window.location.pathname;
 
-  // Development environment - use query parameters
+  // 1. Try path-based routing first (/org/acme-corp/dashboard)
+  const pathMatch = pathname.match(/^\/org\/([a-z0-9-]+)/);
+  if (pathMatch) {
+    return pathMatch[1];
+  }
+
+  // 2. Development environment - use query parameters
   if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.includes('localhost')) {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get('org') || urlParams.get('tenant');
   }
 
-  // Production subdomain detection
+  // 3. Check if custom domain (not neurallempire.com)
+  // Custom domains should have org slug in local storage or make API call
+  if (!hostname.includes('neurallempire.com')) {
+    // For custom domains, orgSlug should be fetched from API or stored
+    const storedOrgSlug = localStorage.getItem(`customDomain:${hostname}`);
+    return storedOrgSlug;
+  }
+
+  // 4. Production subdomain detection
   if (hostname.includes('neurallempire.com')) {
     const parts = hostname.split('.');
 
@@ -90,8 +106,13 @@ export const getSubdomainInfo = (): SubdomainInfo => {
 /**
  * Build URL for organization dashboard
  * Returns subdomain URL in production, query-based in development
+ * Supports optional path-based fallback
  */
-export const buildDashboardUrl = (orgSlug: string, path: string = '/dashboard'): string => {
+export const buildDashboardUrl = (
+  orgSlug: string,
+  path: string = '/dashboard',
+  options: { usePathBased?: boolean } = {}
+): string => {
   const hostname = window.location.hostname;
 
   // Development environment - use query parameters
@@ -102,7 +123,16 @@ export const buildDashboardUrl = (orgSlug: string, path: string = '/dashboard'):
     return currentUrl.toString();
   }
 
-  // Production - use subdomain
+  // Path-based routing (fallback option)
+  if (options.usePathBased) {
+    const protocol = window.location.protocol;
+    const host = hostname.includes('neurallempire.com') ? 'www.neurallempire.com' : hostname;
+    // Convert /dashboard to /org/acme-corp/dashboard
+    const pathWithOrg = path.replace(/^\//, `/org/${orgSlug}/`);
+    return `${protocol}//${host}${pathWithOrg}`;
+  }
+
+  // Production - use subdomain (default)
   const protocol = window.location.protocol;
   return `${protocol}//${orgSlug}.neurallempire.com${path}`;
 };

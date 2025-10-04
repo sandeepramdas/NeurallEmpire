@@ -124,8 +124,8 @@ const loadEnv = (): EnvConfig => {
     // JWT & Security
     JWT_SECRET: env.JWT_SECRET!,
     JWT_EXPIRES_IN: env.JWT_EXPIRES_IN || '7d',
-    COOKIE_SECRET: env.COOKIE_SECRET || 'your-cookie-secret-change-in-production',
-    ENCRYPTION_KEY: env.ENCRYPTION_KEY || 'your-encryption-key-32-chars-long',
+    COOKIE_SECRET: env.COOKIE_SECRET || env.JWT_SECRET!, // Use JWT_SECRET as fallback
+    ENCRYPTION_KEY: env.ENCRYPTION_KEY || env.JWT_SECRET!, // Use JWT_SECRET as fallback
 
     // CORS
     CORS_ORIGINS: parseCorsOrigins(env.CORS_ORIGINS),

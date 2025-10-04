@@ -327,6 +327,45 @@ const App: React.FC = () => {
           <Route path="activity" element={<ActivityLog />} />
         </Route>
 
+        {/* Path-based organization routes (Hybrid approach) */}
+        <Route
+          path="/org/:orgSlug"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }
+        >
+          {/* Same nested routes as subdomain */}
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="agents" element={<Agents />} />
+          <Route path="campaigns" element={<Campaigns />} />
+          <Route path="workflows" element={<Workflows />} />
+          <Route path="analytics" element={<Analytics />} />
+          <Route path="reports" element={<Reports />} />
+          <Route path="integrations" element={<Integrations />} />
+          <Route path="templates" element={<Templates />} />
+          <Route path="messages" element={<Messages />} />
+          <Route path="webhooks" element={<Webhooks />} />
+          <Route path="docs" element={<KnowledgeBase />} />
+          <Route path="api-playground" element={<APIPlayground />} />
+          <Route path="settings" element={<Settings />} />
+          <Route path="settings/organization" element={<OrganizationProfile />} />
+          <Route path="settings/team" element={<TeamMembers />} />
+          <Route path="settings/billing" element={<BillingSubscription />} />
+          <Route path="settings/api-keys" element={<APIKeys />} />
+          <Route path="settings/security" element={<SecurityCompliance />} />
+          <Route path="settings/branding" element={<BrandingTheme />} />
+          <Route path="settings/analytics" element={<UsageAnalytics />} />
+          <Route path="settings/domains" element={<DomainSettings />} />
+          <Route path="settings/data" element={<Settings />} />
+          <Route path="settings/emails" element={<Settings />} />
+          <Route path="profile" element={<UserProfile />} />
+          <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="activity" element={<ActivityLog />} />
+        </Route>
+
         {/* Legacy path-based routes for backwards compatibility */}
         <Route
           path="/dashboard/:orgSlug/*"

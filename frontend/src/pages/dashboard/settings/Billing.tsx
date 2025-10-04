@@ -48,7 +48,7 @@ const Billing: React.FC = () => {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [billingCycle, setBillingCycle] = useState<'MONTHLY' | 'YEARLY'>('MONTHLY');
   const [loading, setLoading] = useState(false);
-  const [contributionAmount, setContributionAmount] = useState<number>(500);
+  const [contributionAmount, setContributionAmount] = useState<number>(100);
   const [showContribution, setShowContribution] = useState(false);
 
   useEffect(() => {
@@ -216,9 +216,38 @@ const Billing: React.FC = () => {
     return monthlyPrice * 12 * 0.8; // 20% discount
   };
 
+  const handleDownloadInvoice = async (invoiceId: string) => {
+    try {
+      const url = `/api/payments/invoices/${invoiceId}/download`;
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to download invoice');
+      }
+
+      const html = await response.text();
+
+      // Open invoice in new window for viewing/printing
+      const newWindow = window.open('', '_blank');
+      if (newWindow) {
+        newWindow.document.write(html);
+        newWindow.document.close();
+      } else {
+        alert('Please allow popups to view the invoice');
+      }
+    } catch (error) {
+      console.error('Download invoice error:', error);
+      alert('Failed to download invoice. Please try again.');
+    }
+  };
+
   const handleContribution = async () => {
-    if (contributionAmount < 100) {
-      alert('Minimum contribution amount is ₹100');
+    if (contributionAmount < 1) {
+      alert('Minimum contribution amount is ₹1');
       return;
     }
 
@@ -279,7 +308,7 @@ const Billing: React.FC = () => {
             if (verifyData.success) {
               alert('Thank you for your contribution! 🙏 Invoice generated successfully.');
               setShowContribution(false);
-              setContributionAmount(500);
+              setContributionAmount(100);
               fetchInvoices();
             } else {
               alert('Payment verification failed. Please contact support.');
@@ -391,8 +420,8 @@ const Billing: React.FC = () => {
               <label className="block text-sm font-medium text-neutral-700 mb-2">
                 Contribution Amount (₹)
               </label>
-              <div className="flex gap-3 mb-4">
-                {[100, 500, 1000, 2000, 5000].map((amount) => (
+              <div className="flex gap-3 mb-4 flex-wrap">
+                {[1, 10, 50, 100, 500, 1000, 2000, 5000].map((amount) => (
                   <button
                     key={amount}
                     onClick={() => setContributionAmount(amount)}
@@ -409,21 +438,24 @@ const Billing: React.FC = () => {
               <div className="flex gap-3">
                 <input
                   type="number"
-                  min="100"
+                  min="1"
+                  step="1"
                   value={contributionAmount}
                   onChange={(e) => setContributionAmount(Number(e.target.value))}
                   className="flex-1 px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Enter custom amount"
+                  placeholder="Enter any amount (min ₹1)"
                 />
                 <button
                   onClick={handleContribution}
-                  disabled={loading || contributionAmount < 100}
+                  disabled={loading || contributionAmount < 1}
                   className="px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? 'Processing...' : 'Pay Now'}
                 </button>
               </div>
-              <p className="text-xs text-neutral-500 mt-2">Minimum contribution: ₹100</p>
+              <p className="text-xs text-neutral-500 mt-2">
+                💚 Every contribution helps! Minimum: ₹1 • No maximum limit
+              </p>
             </div>
           </div>
         )}
@@ -596,7 +628,10 @@ const Billing: React.FC = () => {
                       </span>
                     </td>
                     <td className="py-4 px-4 text-right">
-                      <button className="text-sm text-primary-600 hover:text-primary-700 font-medium inline-flex items-center gap-1">
+                      <button
+                        onClick={() => handleDownloadInvoice(invoice.id)}
+                        className="text-sm text-primary-600 hover:text-primary-700 font-medium inline-flex items-center gap-1"
+                      >
                         <Download className="w-4 h-4" />
                         Download
                       </button>

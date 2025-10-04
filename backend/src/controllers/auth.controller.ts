@@ -5,14 +5,23 @@ import { z } from 'zod';
 import { prisma } from '@/server';
 import { AuthenticatedRequest, RegisterData, LoginData, ApiResponse, AuthUser } from '@/types';
 import { createSubdomainDNS } from '@/services/cloudflare.service';
+import { config } from '@/config/env';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+const JWT_SECRET = config.JWT_SECRET;
+const JWT_EXPIRES_IN = config.JWT_EXPIRES_IN;
+
+// Strong password validation
+const strongPasswordSchema = z.string()
+  .min(12, 'Password must be at least 12 characters')
+  .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+  .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+  .regex(/[0-9]/, 'Password must contain at least one number')
+  .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character (!@#$%^&* etc.)');
 
 // Validation schemas
 const registerSchema = z.object({
   email: z.string().email('Invalid email format'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: strongPasswordSchema,
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
   organizationName: z.string().min(1, 'Organization name is required'),
@@ -136,6 +145,23 @@ export const register = async (
           role: true,
           organizationId: true,
         },
+      });
+
+      // Create UserOrganization membership entry for multi-org support
+      await tx.userOrganization.create({
+        data: {
+          userId: user.id,
+          organizationId: organization.id,
+          role: 'OWNER',
+          isOwner: true,
+          status: 'ACTIVE',
+        },
+      });
+
+      // Update organization's current users count
+      await tx.organization.update({
+        where: { id: organization.id },
+        data: { currentUsers: 1 },
       });
 
       return { user, organization };

@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import crypto from 'crypto';
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
+import { config } from '@/config/env';
 
 const prisma = new PrismaClient();
 
@@ -337,8 +338,8 @@ export class OAuthService {
         organizationId: user.organizationId,
         email: user.email
       },
-      process.env.JWT_SECRET || 'fallback-secret',
-      { expiresIn: '7d' }
+      config.JWT_SECRET,
+      { expiresIn: config.JWT_EXPIRES_IN }
     );
 
     // Log successful OAuth login

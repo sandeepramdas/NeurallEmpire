@@ -42,30 +42,67 @@ app.set('trust proxy', 1);
 
 // CRITICAL: Health check endpoint MUST be before CORS middleware
 // This allows Railway healthchecks and direct browser access without Origin header
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: NODE_ENV,
-  });
+app.get('/health', async (req, res) => {
+  try {
+    // Check database connection
+    await prisma.$queryRaw`SELECT 1`;
+
+    res.json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      environment: NODE_ENV,
+      database: 'connected',
+    });
+  } catch (error) {
+    console.error('Health check failed:', error);
+    res.status(503).json({
+      status: 'unhealthy',
+      timestamp: new Date().toISOString(),
+      error: 'Database connection failed',
+    });
+  }
 });
 
-// Security middleware
+// Security middleware - Comprehensive protection
 app.use(helmet({
-  contentSecurityPolicy: NODE_ENV === 'production' ? false : {
+  contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "https://checkout.razorpay.com"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://checkout.razorpay.com"],
-      connectSrc: ["'self'"],
+      connectSrc: ["'self'", "https://api.razorpay.com"],
+      frameSrc: ["'self'", "https://api.razorpay.com"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: NODE_ENV === 'production' ? [] : null,
     },
+  },
+  hsts: {
+    maxAge: 31536000, // 1 year
+    includeSubDomains: true,
+    preload: true,
+  },
+  frameguard: {
+    action: 'deny',
+  },
+  noSniff: true,
+  xssFilter: true,
+  referrerPolicy: {
+    policy: 'strict-origin-when-cross-origin',
   },
 }));
 
-// CORS configuration - Restrictive for production
+// Additional security headers
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+  next();
+});
+
+// CORS configuration - Strict for both development and production
 app.use(cors({
   origin: function (origin, callback) {
     const allowedOrigins = [
@@ -77,15 +114,14 @@ app.use(cors({
       'https://app.neurallempire.com',
     ];
 
-    // In development, allow any origin for testing
-    if (NODE_ENV === 'development') {
-      console.log('🌐 CORS Request from origin:', origin);
+    // Allow requests without origin (health checks, Postman, direct browser access)
+    if (!origin) {
       return callback(null, true);
     }
 
-    // Production: Allow requests without origin (health checks, direct browser access)
-    if (!origin) {
-      return callback(null, true);
+    // Log CORS requests in development for debugging
+    if (NODE_ENV === 'development') {
+      console.log('🌐 CORS Request from origin:', origin);
     }
 
     // Allow subdomain pattern *.neurallempire.com

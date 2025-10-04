@@ -3,8 +3,9 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '@/server';
 import { AuthenticatedRequest, JwtPayload, AuthUser } from '@/types';
 import { rbacService } from '@/services/rbac.service';
+import { config } from '@/config/env';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
+const JWT_SECRET = config.JWT_SECRET;
 
 export const authenticate = async (
   req: AuthenticatedRequest,

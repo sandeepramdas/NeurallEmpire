@@ -6,11 +6,13 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  extensions = [pgcrypto(map: "pgcrypto")]
 }
 
 // ==================== PLATFORM ADMINISTRATION ====================
@@ -63,6 +65,7 @@ model AdminAction {
 
 model Organization {
   id               String       @id @default(cuid())
+  uuid             String       @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid  // External API ID
   name             String
   slug             String       @unique
   domain           String?      @unique
@@ -137,6 +140,8 @@ model Organization {
 
   // Relations
   users            User[]
+  members          UserOrganization[]  @relation("OrganizationMembers") // NEW: Multi-org membership
+  invites          OrganizationInvite[] // NEW: Organization invites
   companies        Company[]                   // NEW: Multi-company support
   roles            Role[]                      // NEW: RBAC
   agents           Agent[]
@@ -152,6 +157,7 @@ model Organization {
   usageMetrics     UsageMetric[]
   notifications    Notification[]
   subdomainRecords SubdomainRecord[]
+  customDomains    CustomDomain[]  // NEW: Custom domain support (Enterprise)
   oauthConfigs     OAuthConfig[]
   socialAccounts   SocialAccount[]
   agentSwarms      AgentSwarm[]
@@ -401,6 +407,7 @@ model UserPreference {
 
 model User {
   id             String   @id @default(cuid())
+  uuid           String   @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid  // External API ID
   email          String   @unique
   passwordHash   String?  // Optional for OAuth-only users
   firstName      String?
@@ -456,6 +463,7 @@ model User {
 
   // Relations
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizations  UserOrganization[]   // NEW: Multi-organization membership
   companyAccess  UserCompanyAccess[]  // NEW: Multi-company access
   userPreference UserPreference?      // NEW: User preferences
   sessions       Session[]
@@ -466,12 +474,80 @@ model User {
   auditLogs      AuditLog[]
   notifications  Notification[]
   createdSwarms  AgentSwarm[]
+  sentInvites    OrganizationInvite[] @relation("InviteSender")
+  receivedInvites OrganizationInvite[] @relation("InviteRecipient")
 
   @@index([organizationId, status])
   @@index([email])
   @@index([lastLoginAt])
   @@index([isSuperAdmin])
   @@map("users")
+}
+
+// ==================== MULTI-ORGANIZATION MEMBERSHIP ====================
+
+model UserOrganization {
+  id              String   @id @default(cuid())
+  userId          String
+  organizationId  String
+
+  // Role in this organization
+  role            UserRole @default(MEMBER)
+  isOwner         Boolean  @default(false)
+
+  // Status
+  status          String   @default("ACTIVE") // ACTIVE, INACTIVE, SUSPENDED
+  joinedAt        DateTime @default(now())
+  lastAccessedAt  DateTime?
+
+  // Metadata
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization    Organization @relation("OrganizationMembers", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@index([userId])
+  @@index([organizationId])
+  @@index([status])
+  @@map("user_organizations")
+}
+
+model OrganizationInvite {
+  id              String   @id @default(cuid())
+  organizationId  String
+  invitedByUserId String
+
+  // Invite details
+  email           String
+  role            UserRole @default(MEMBER)
+  inviteToken     String   @unique
+
+  // Status
+  status          String   @default("PENDING") // PENDING, ACCEPTED, DECLINED, EXPIRED
+  expiresAt       DateTime
+  acceptedAt      DateTime?
+  declinedAt      DateTime?
+
+  // Recipient (if they accept)
+  acceptedByUserId String?
+
+  // Metadata
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invitedBy       User     @relation("InviteSender", fields: [invitedByUserId], references: [id], onDelete: Cascade)
+  acceptedBy      User?    @relation("InviteRecipient", fields: [acceptedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([email])
+  @@index([organizationId])
+  @@index([status])
+  @@index([inviteToken])
+  @@map("organization_invites")
 }
 
 // ==================== SUBDOMAIN MANAGEMENT ====================
@@ -518,6 +594,64 @@ model SubdomainRecord {
   @@index([status])
   @@index([organizationId])
   @@map("subdomain_records")
+}
+
+// Custom Domains (Enterprise Feature)
+model CustomDomain {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Domain Configuration
+  domain          String   @unique  // e.g., "platform.acme-corp.com"
+  isApex          Boolean  @default(false)  // true if using apex domain (acme-corp.com)
+
+  // Verification
+  verificationToken String  @unique
+  verificationMethod String @default("DNS_TXT")  // DNS_TXT, DNS_CNAME, or FILE
+  isVerified      Boolean  @default(false)
+  verifiedAt      DateTime?
+  verificationAttempts Int  @default(0)
+  lastVerificationAttempt DateTime?
+
+  // DNS Records (for user to configure)
+  txtRecordName   String?
+  txtRecordValue  String?
+  cnameRecordName String?
+  cnameRecordValue String?
+
+  // SSL/TLS Configuration
+  sslStatus       SSLStatus @default(PENDING)
+  sslProvider     String    @default("letsencrypt")
+  sslCertId       String?   // External certificate ID
+  sslIssuedAt     DateTime?
+  sslExpiresAt    DateTime?
+  autoRenewSsl    Boolean   @default(true)
+
+  // Status & Health
+  status          String    @default("PENDING")  // PENDING, ACTIVE, FAILED, DISABLED
+  isActive        Boolean   @default(false)
+  lastHealthCheck DateTime?
+  healthCheckStatus String? // "HEALTHY", "DEGRADED", "DOWN"
+
+  // CDN & Proxy
+  cdnEnabled      Boolean   @default(true)
+  proxied         Boolean   @default(true)  // Cloudflare proxy
+  externalRecordId String?  // Cloudflare/DNS provider record ID
+
+  // Metadata
+  createdBy       String?   // User ID who added the domain
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([domain])
+  @@index([organizationId])
+  @@index([status])
+  @@index([isVerified])
+  @@map("custom_domains")
 }
 
 // ==================== OAUTH & SOCIAL ACCOUNTS ====================
@@ -899,6 +1033,7 @@ model Vendor {
 
 model Agent {
   id              String   @id @default(cuid())
+  uuid            String   @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid  // External API ID
   organizationId  String
   creatorId       String
   ownerId         String
@@ -1007,6 +1142,7 @@ model AgentInteraction {
 
 model AgentWorkflow {
   id              String   @id @default(cuid())
+  uuid            String   @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid  // External API ID
   organizationId  String
   creatorId       String
 
@@ -1228,6 +1364,7 @@ model WorkflowTemplate {
 
 model Subscription {
   id              String   @id @default(cuid())
+  uuid            String   @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid  // External API ID
   organizationId  String
   paymentGatewaySubscriptionId String @unique
 
@@ -1338,6 +1475,7 @@ model Invoice {
 // NEW: Payment Transaction Model
 model Payment {
   id              String   @id @default(cuid())
+  uuid            String   @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid  // External API ID
   organizationId  String
   subscriptionId  String?
   invoiceId       String?
