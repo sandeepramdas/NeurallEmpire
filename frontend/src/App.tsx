@@ -4,7 +4,6 @@ import { toast } from 'react-hot-toast';
 import { useAuthStore } from '@/store/authStore';
 import {
   getOrganizationFromUrl,
-  getSubdomainInfo,
   isOnSubdomain,
   isOnMainDomain,
   redirectToOrganization,
@@ -123,8 +122,8 @@ const PublicRoute: React.FC<RouteGuardProps> = ({ children }) => {
   const orgFromUrl = getOrganizationFromUrl();
   const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-  // Authenticated user - redirect to dashboard
-  if (isAuthenticated && organization) {
+  // Authenticated user on login/register pages - redirect to dashboard
+  if (isAuthenticated && organization && (window.location.pathname === '/login' || window.location.pathname === '/register')) {
     // In development, just redirect to /dashboard with org query param
     if (isDev) {
       return <Navigate to={`/dashboard?org=${organization.slug}`} replace />;
@@ -135,16 +134,13 @@ const PublicRoute: React.FC<RouteGuardProps> = ({ children }) => {
       return <Navigate to="/dashboard" replace />;
     }
 
-    // Otherwise, redirect to user's organization subdomain (only once)
-    if (!window.location.href.includes('redirecting')) {
-      const targetUrl = `${window.location.protocol}//${organization.slug}.neurallempire.com/dashboard?redirecting=1`;
-      window.location.href = targetUrl;
-      return (
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full" />
-        </div>
-      );
-    }
+    // Otherwise, redirect to user's organization subdomain
+    redirectToOrganization(organization.slug);
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full" />
+      </div>
+    );
   }
 
   return <>{children}</>;
@@ -205,7 +201,6 @@ const App: React.FC = () => {
     if (!isInitialized || !isAuthenticated) return;
 
     const orgFromUrl = getOrganizationFromUrl();
-    const subdomainInfo = getSubdomainInfo();
     const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
     // Skip redirects in development
@@ -213,7 +208,7 @@ const App: React.FC = () => {
 
     // User is authenticated and we have organization context
     if (organization) {
-      // If on main domain, redirect to organization subdomain
+      // If on main domain, redirect to organization subdomain ONLY if trying to access dashboard
       if (isOnMainDomain() && window.location.pathname.startsWith('/dashboard')) {
         redirectToOrganization(organization.slug);
         return;
@@ -230,11 +225,8 @@ const App: React.FC = () => {
         return;
       }
 
-      // If on reserved subdomain, redirect to main site
-      if (subdomainInfo.isReserved) {
-        redirectToMainSite();
-        return;
-      }
+      // Don't redirect if on www subdomain and not accessing dashboard
+      // This allows www.neurallempire.com to work properly
     }
   }, [isInitialized, isAuthenticated, organization]);
 
