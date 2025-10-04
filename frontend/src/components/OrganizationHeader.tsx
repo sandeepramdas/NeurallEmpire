@@ -129,8 +129,8 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
         {/* Top Row - Actions and User Menu */}
         <div className="flex items-center justify-between mb-3">
 
-          {/* Left: Quick Actions */}
-          <div className="flex items-center space-x-2">
+          {/* Left: Search and Primary Actions */}
+          <div className="flex items-center space-x-3">
             {/* Search */}
             <div className="relative hidden md:block">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -181,6 +181,19 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
               )}
             </div>
 
+            {/* Command Palette */}
+            <button
+              onClick={() => setShowCommandPalette(true)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors hidden md:flex items-center space-x-1.5"
+              title="Command Palette (⌘K)"
+            >
+              <Command className="w-4 h-4 text-gray-600" />
+              <span className="text-xs text-gray-500 font-medium">⌘K</span>
+            </button>
+          </div>
+
+          {/* Center: Navigation */}
+          <div className="flex items-center space-x-1">
             {/* Resources Mega Menu */}
             <div className="relative">
               <button
@@ -302,6 +315,10 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
               )}
             </div>
 
+          </div>
+
+          {/* Right: Utility Actions & User Menu */}
+          <div className="flex items-center space-x-2">
             {/* Notifications */}
             <div className="relative">
               <button
@@ -349,16 +366,6 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
               )}
             </div>
 
-            {/* Command Palette */}
-            <button
-              onClick={() => setShowCommandPalette(true)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors hidden md:flex items-center space-x-1"
-              title="Command Palette (⌘K)"
-            >
-              <Command className="w-5 h-5 text-gray-600" />
-              <span className="text-xs text-gray-500">⌘K</span>
-            </button>
-
             {/* Activity Feed */}
             <div className="relative">
               <button
@@ -405,15 +412,6 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
               )}
             </div>
 
-            {/* Keyboard Shortcuts */}
-            <button
-              onClick={() => setShowKeyboardShortcuts(true)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors hidden lg:block"
-              title="Keyboard Shortcuts (⌘/)"
-            >
-              <Keyboard className="w-5 h-5 text-gray-600" />
-            </button>
-
             {/* Theme Toggle */}
             <button
               onClick={() => onThemeChange?.('dark')}
@@ -433,7 +431,7 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
             </a>
 
             {/* Divider */}
-            <div className="w-px h-6 bg-gray-300"></div>
+            <div className="w-px h-6 bg-gray-200"></div>
 
             {/* User Profile Menu */}
             <div className="relative">
