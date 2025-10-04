@@ -1239,7 +1239,7 @@ model Subscription {
 
   // Pricing
   amount          Float
-  currency        String @default("USD")
+  currency        String @default("INR")
   taxAmount       Float?
 
   // Usage Limits
@@ -1273,7 +1273,7 @@ model Invoice {
   invoiceNumber   String   @unique
   status          InvoiceStatus
   amount          Float
-  currency        String   @default("USD")
+  currency        String   @default("INR")
   taxAmount       Float?
   totalAmount     Float
 
