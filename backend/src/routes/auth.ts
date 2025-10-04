@@ -63,7 +63,7 @@ router.get('/profile', authenticate, getProfile);
  */
 router.get('/organizations', authenticate, async (req, res) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
 
     if (!userId) {
       return res.status(401).json({
@@ -75,7 +75,7 @@ router.get('/organizations', authenticate, async (req, res) => {
     const { prisma } = await import('@/server');
 
     // Get all organizations where user is a member
-    const memberships = await prisma.organizationMember.findMany({
+    const memberships = await prisma.userOrganization.findMany({
       where: { userId },
       include: {
         organization: {
