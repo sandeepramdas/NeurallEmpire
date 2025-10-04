@@ -11,7 +11,9 @@ import {
   Rocket,
   Calendar,
   FileText,
-  AlertCircle
+  AlertCircle,
+  Heart,
+  Gift
 } from 'lucide-react';
 
 interface Plan {
@@ -46,6 +48,8 @@ const Billing: React.FC = () => {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [billingCycle, setBillingCycle] = useState<'MONTHLY' | 'YEARLY'>('MONTHLY');
   const [loading, setLoading] = useState(false);
+  const [contributionAmount, setContributionAmount] = useState<number>(500);
+  const [showContribution, setShowContribution] = useState(false);
 
   useEffect(() => {
     fetchPlans();
@@ -209,6 +213,68 @@ const Billing: React.FC = () => {
     return monthlyPrice * 12 * 0.8; // 20% discount
   };
 
+  const handleContribution = async () => {
+    if (contributionAmount < 100) {
+      alert('Minimum contribution amount is ₹100');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Create contribution order
+      const orderResponse = await fetch('/api/payments/create-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          planType: 'CONTRIBUTION',
+          billingCycle: 'ONETIME',
+          amount: contributionAmount * 100, // Convert to paise
+        }),
+      });
+
+      const orderData = await orderResponse.json();
+
+      if (!orderData.success) {
+        throw new Error(orderData.message || 'Failed to create contribution order');
+      }
+
+      // Initialize Razorpay checkout
+      const options = {
+        key: orderData.data.keyId,
+        amount: contributionAmount * 100,
+        currency: 'INR',
+        name: 'NeurallEmpire',
+        description: 'Contribution to NeurallEmpire',
+        order_id: orderData.data.orderId,
+        handler: async function () {
+          alert('Thank you for your contribution! 🙏');
+          setShowContribution(false);
+          setContributionAmount(500);
+          fetchInvoices();
+        },
+        prefill: {
+          name: organization?.name || '',
+          email: organization?.billingEmail || '',
+        },
+        theme: {
+          color: '#10b981',
+        },
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    } catch (error: any) {
+      console.error('Contribution error:', error);
+      alert(error.message || 'Failed to process contribution');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const currentPlan = organization?.planType?.toLowerCase() || 'free';
 
   return (
@@ -259,6 +325,75 @@ const Billing: React.FC = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Contribute to NeurallEmpire Banner */}
+      <div className="mb-8 card bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 text-white">
+              <Heart className="w-8 h-8" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-neutral-900 mb-1">
+                Support NeurallEmpire
+              </h3>
+              <p className="text-sm text-neutral-600">
+                Love our platform? Contribute any amount to help us grow!
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowContribution(!showContribution)}
+            className="px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center gap-2"
+          >
+            <Gift className="w-5 h-5" />
+            Contribute Now
+          </button>
+        </div>
+
+        {showContribution && (
+          <div className="mt-6 pt-6 border-t border-green-200">
+            <div className="max-w-md">
+              <label className="block text-sm font-medium text-neutral-700 mb-2">
+                Contribution Amount (₹)
+              </label>
+              <div className="flex gap-3 mb-4">
+                {[100, 500, 1000, 2000, 5000].map((amount) => (
+                  <button
+                    key={amount}
+                    onClick={() => setContributionAmount(amount)}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                      contributionAmount === amount
+                        ? 'bg-green-600 text-white'
+                        : 'bg-white border border-green-300 text-green-700 hover:bg-green-50'
+                    }`}
+                  >
+                    ₹{amount}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-3">
+                <input
+                  type="number"
+                  min="100"
+                  value={contributionAmount}
+                  onChange={(e) => setContributionAmount(Number(e.target.value))}
+                  className="flex-1 px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="Enter custom amount"
+                />
+                <button
+                  onClick={handleContribution}
+                  disabled={loading || contributionAmount < 100}
+                  className="px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? 'Processing...' : 'Pay Now'}
+                </button>
+              </div>
+              <p className="text-xs text-neutral-500 mt-2">Minimum contribution: ₹100</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Billing Cycle Toggle */}

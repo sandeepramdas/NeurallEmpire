@@ -33,7 +33,7 @@ router.get('/plans', (req: Request, res: Response) => {
  */
 router.post('/create-order', async (req: Request, res: Response) => {
   try {
-    const { planType, billingCycle } = req.body;
+    const { planType, billingCycle, amount } = req.body;
     const organizationId = req.user?.organizationId;
 
     if (!organizationId) {
@@ -43,6 +43,41 @@ router.post('/create-order', async (req: Request, res: Response) => {
       });
     }
 
+    // Handle contributions (one-time payments)
+    if (planType === 'CONTRIBUTION') {
+      if (!amount || amount < 100) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid contribution amount (minimum ₹1)',
+        });
+      }
+
+      const result = await razorpayService.createOrder({
+        amount: amount, // Amount already in paise from frontend
+        currency: 'INR',
+        receipt: `contribution_${organizationId}_${Date.now()}`,
+        notes: {
+          organizationId,
+          type: 'contribution',
+        },
+      });
+
+      if (!result.success) {
+        return res.status(400).json(result);
+      }
+
+      return res.json({
+        success: true,
+        data: {
+          orderId: result.data.id,
+          amount: result.data.amount,
+          currency: result.data.currency,
+          keyId: process.env.RAZORPAY_KEY_ID,
+        },
+      });
+    }
+
+    // Handle subscription orders
     if (!planType || !billingCycle) {
       return res.status(400).json({
         success: false,
