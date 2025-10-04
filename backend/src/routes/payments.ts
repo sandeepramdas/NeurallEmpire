@@ -46,10 +46,10 @@ router.post('/create-order', async (req: Request, res: Response) => {
 
     // Handle contributions (one-time payments)
     if (planType === 'CONTRIBUTION') {
-      if (!amount || amount < 100) {
+      if (!amount || amount < 100) { // 100 paise = ₹1
         return res.status(400).json({
           success: false,
-          message: 'Invalid contribution amount (minimum ₹1)',
+          message: 'Minimum contribution amount is ₹1 (100 paise)',
         });
       }
 
