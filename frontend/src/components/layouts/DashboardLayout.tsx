@@ -43,6 +43,10 @@ const DashboardLayout: React.FC = () => {
   };
 
   const isActive = (path: string) => {
+    // Exact match for dashboard root to avoid highlighting when on sub-pages
+    if (path === '/dashboard') {
+      return location.pathname === '/dashboard';
+    }
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
