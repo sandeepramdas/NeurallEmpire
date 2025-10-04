@@ -116,7 +116,10 @@ const Billing: React.FC = () => {
       const orderData = await orderResponse.json();
 
       if (!orderData.success) {
-        throw new Error(orderData.message || 'Failed to create order');
+        const errorMsg = orderData.message || orderData.error || 'Failed to create order';
+        console.error('Order creation failed:', orderData);
+        alert(`Error: ${errorMsg}`);
+        throw new Error(errorMsg);
       }
 
       // Initialize Razorpay checkout
@@ -237,7 +240,10 @@ const Billing: React.FC = () => {
       const orderData = await orderResponse.json();
 
       if (!orderData.success) {
-        throw new Error(orderData.message || 'Failed to create contribution order');
+        const errorMsg = orderData.message || orderData.error || 'Failed to create contribution order';
+        console.error('Order creation failed:', orderData);
+        alert(`Error: ${errorMsg}`);
+        throw new Error(errorMsg);
       }
 
       // Initialize Razorpay checkout
