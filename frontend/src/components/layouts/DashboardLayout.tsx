@@ -24,7 +24,9 @@ import {
   Star,
   Clock,
   Menu,
-  X
+  X,
+  Building2,
+  LogOut
 } from 'lucide-react';
 
 const DashboardLayout: React.FC = () => {
@@ -80,53 +82,98 @@ const DashboardLayout: React.FC = () => {
         </button>
 
         {/* Sidebar */}
-        <div className={`${sidebarCollapsed ? 'w-20' : 'w-64'} bg-white shadow-sm border-r border-neutral-200 h-screen sticky top-0 transition-all duration-300 ${
+        <div className={`${sidebarCollapsed ? 'w-20' : 'w-64'} bg-white shadow-sm border-r border-neutral-200 h-screen sticky top-0 transition-all duration-300 flex flex-col ${
           mobileMenuOpen ? 'fixed inset-y-0 left-0 z-40' : 'hidden lg:block'
         }`}>
-          <div className="p-6 flex items-center justify-between">
-            {!sidebarCollapsed && (
-              <h2 className="text-2xl font-display font-bold text-neural-900">
-                🧠 Dashboard
-              </h2>
+          {/* Header: Organization Info */}
+          <div className="p-4 border-b border-neutral-200">
+            {!sidebarCollapsed ? (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3 min-w-0 flex-1">
+                  <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <span className="text-white font-bold text-lg">
+                      {user?.organization?.name?.charAt(0) || 'N'}
+                    </span>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-sm font-semibold text-gray-900 truncate">
+                      {user?.organization?.name || 'NeurallEmpire'}
+                    </h2>
+                    <p className="text-xs text-gray-500 truncate">
+                      {user?.organization?.planType || 'FREE'} Plan
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                  className="p-1.5 rounded-md hover:bg-gray-100 text-gray-600 flex-shrink-0"
+                  title="Collapse sidebar"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center space-y-2">
+                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">
+                    {user?.organization?.name?.charAt(0) || 'N'}
+                  </span>
+                </div>
+                <button
+                  onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                  className="p-1.5 rounded-md hover:bg-gray-100 text-gray-600"
+                  title="Expand sidebar"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
             )}
-            {sidebarCollapsed && (
-              <h2 className="text-2xl">🧠</h2>
-            )}
-            <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="p-1 rounded-md hover:bg-neutral-100 text-neutral-600"
-              title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            >
-              {sidebarCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
-            </button>
           </div>
 
-          {/* Recent & Favorites Section */}
+          {/* Quick Access Section */}
           {!sidebarCollapsed && (
-            <div className="px-3 mb-4">
-              <div className="text-xs font-semibold text-neutral-400 uppercase tracking-wider px-3 mb-2">
+            <div className="px-3 pt-4 pb-2">
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-2">
                 Quick Access
               </div>
               <div className="space-y-1">
-                <Link
-                  to="/dashboard"
-                  className="flex items-center px-3 py-2 rounded-md text-sm text-neutral-600 hover:bg-neutral-100"
+                <button
+                  className="w-full flex items-center px-3 py-2 rounded-md text-sm text-gray-600 hover:bg-gray-100 transition-colors"
+                  title="Favorites"
                 >
                   <Star className="w-4 h-4 mr-3 text-yellow-500" />
                   Favorites
-                </Link>
-                <Link
-                  to="/dashboard"
-                  className="flex items-center px-3 py-2 rounded-md text-sm text-neutral-600 hover:bg-neutral-100"
+                </button>
+                <button
+                  className="w-full flex items-center px-3 py-2 rounded-md text-sm text-gray-600 hover:bg-gray-100 transition-colors"
+                  title="Recent"
                 >
                   <Clock className="w-4 h-4 mr-3 text-blue-500" />
                   Recent
-                </Link>
+                </button>
               </div>
             </div>
           )}
 
-          <nav className="mt-6 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 300px)' }}>
+          {sidebarCollapsed && (
+            <div className="px-2 pt-4 pb-2 flex flex-col items-center space-y-2">
+              <button
+                className="p-2 rounded-md hover:bg-gray-100 transition-colors"
+                title="Favorites"
+              >
+                <Star className="w-5 h-5 text-yellow-500" />
+              </button>
+              <button
+                className="p-2 rounded-md hover:bg-gray-100 transition-colors"
+                title="Recent"
+              >
+                <Clock className="w-5 h-5 text-blue-500" />
+              </button>
+            </div>
+          )}
+
+          {/* Main Navigation */}
+          <nav className="flex-1 overflow-y-auto py-4">
             <div className="px-3 space-y-1">
               {navItems.map((item) => {
                 const Icon = item.icon;
@@ -154,11 +201,11 @@ const DashboardLayout: React.FC = () => {
             </div>
           </nav>
 
-          {/* User Profile & Organization Switcher */}
-          <div className={`absolute bottom-0 ${sidebarCollapsed ? 'w-20' : 'w-64'} p-4 border-t border-neutral-200 transition-all duration-300`}>
+          {/* Footer: User Profile & Actions */}
+          <div className="border-t border-gray-200 p-3 mt-auto">
             {!sidebarCollapsed ? (
-              <div className="space-y-3">
-                {/* Organization Switcher */}
+              <div className="space-y-2">
+                {/* Organization Switcher Button */}
                 <OrganizationSwitcher
                   currentOrganization={user?.organization ? {
                     id: user.organization.id,
@@ -167,36 +214,50 @@ const DashboardLayout: React.FC = () => {
                   } : undefined}
                 />
 
-                {/* User Profile */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-medium text-white">
-                        {user?.firstName?.charAt(0) || user?.email?.charAt(0) || 'U'}
-                      </span>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-sm font-medium text-gray-900 truncate">
-                        {user?.firstName || user?.email}
+                {/* User Profile Section */}
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-2 min-w-0 flex-1">
+                      <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-medium text-white">
+                          {user?.firstName?.charAt(0) || user?.email?.charAt(0) || 'U'}
+                        </span>
                       </div>
-                      <div className="text-xs text-gray-500 truncate">
-                        {user?.role}
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs font-medium text-gray-900 truncate">
+                          {user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.email}
+                        </div>
+                        <div className="text-xs text-gray-500 truncate capitalize">
+                          {user?.role?.toLowerCase()}
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <button
-                    onClick={logout}
-                    className="text-xs text-gray-500 hover:text-gray-700"
-                    title="Logout"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
-                  </button>
+                  <div className="flex items-center space-x-1">
+                    <Link
+                      to="/dashboard/profile"
+                      className="flex-1 px-2 py-1.5 text-xs text-center bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                    >
+                      Profile
+                    </Link>
+                    <button
+                      onClick={logout}
+                      className="flex-1 px-2 py-1.5 text-xs text-center text-red-600 bg-white border border-red-200 rounded-md hover:bg-red-50 transition-colors"
+                      title="Logout"
+                    >
+                      Logout
+                    </button>
+                  </div>
                 </div>
               </div>
             ) : (
               <div className="flex flex-col items-center space-y-3">
+                <button
+                  className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200 transition-colors"
+                  title="Switch Organization"
+                >
+                  <Building2 className="w-5 h-5 text-gray-600" />
+                </button>
                 <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center">
                   <span className="text-sm font-medium text-white">
                     {user?.firstName?.charAt(0) || user?.email?.charAt(0) || 'U'}
@@ -204,12 +265,10 @@ const DashboardLayout: React.FC = () => {
                 </div>
                 <button
                   onClick={logout}
-                  className="text-xs text-gray-500 hover:text-gray-700"
+                  className="p-2 rounded-md hover:bg-red-50 text-red-600 transition-colors"
                   title="Logout"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
+                  <LogOut className="w-5 h-5" />
                 </button>
               </div>
             )}

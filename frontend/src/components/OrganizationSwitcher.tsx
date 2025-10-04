@@ -61,23 +61,25 @@ const OrganizationSwitcher: React.FC<OrganizationSwitcherProps> = ({
   };
 
   return (
-    <div className="relative">
+    <div className="relative w-full">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2 px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+        className="w-full flex items-center justify-between px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
       >
-        <div className="flex items-center space-x-2">
-          <div className="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center">
+        <div className="flex items-center space-x-2 min-w-0 flex-1">
+          <div className="w-6 h-6 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-md flex items-center justify-center flex-shrink-0">
             <span className="text-xs font-medium text-white">
               {currentOrganization?.name?.charAt(0) || 'N'}
             </span>
           </div>
-          <span className="text-sm font-medium text-gray-900">
-            {currentOrganization?.name || 'Select Organization'}
-          </span>
+          <div className="min-w-0 flex-1">
+            <div className="text-xs font-medium text-gray-900 truncate">
+              {currentOrganization?.name || 'Switch Org'}
+            </div>
+          </div>
         </div>
         <svg
-          className={`w-4 h-4 text-gray-400 transition-transform ${
+          className={`w-4 h-4 text-gray-600 transition-transform flex-shrink-0 ${
             isOpen ? 'rotate-180' : ''
           }`}
           fill="none"
@@ -94,7 +96,7 @@ const OrganizationSwitcher: React.FC<OrganizationSwitcherProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+        <div className="absolute left-0 bottom-full mb-2 w-72 bg-white border border-gray-200 rounded-md shadow-xl z-50">
           <div className="py-1">
             {/* Current Organization */}
             {currentOrganization && (

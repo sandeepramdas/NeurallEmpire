@@ -6,18 +6,9 @@ import {
   Settings,
   Users,
   CreditCard,
-  Building2,
   ChevronDown,
-  Globe,
   Sun,
-  Palette,
-  Database,
-  Key,
-  Shield,
-  BarChart3,
   FileText,
-  Mail,
-  Zap,
   HelpCircle,
   User,
   LogOut,
@@ -35,6 +26,10 @@ import {
   CheckCircle,
   FileCode,
   GitBranch,
+  Mail,
+  Zap,
+  Building2,
+  Database,
 } from 'lucide-react';
 
 interface OrganizationHeaderProps {
@@ -43,7 +38,6 @@ interface OrganizationHeaderProps {
 
 const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }) => {
   const { user, organization, logout } = useAuthStore();
-  const [showOrgMenu, setShowOrgMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -54,7 +48,7 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
   const [showResourcesMenu, setShowResourcesMenu] = useState(false);
   const [showHelpMenu, setShowHelpMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [unreadCount] = useState(3); // Remove setUnreadCount if not used
+  const [unreadCount] = useState(3);
 
   // Mock data - replace with real data from your store/API
   const notifications = [
@@ -68,21 +62,6 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
     { icon: CreditCard, label: 'Billing', action: () => console.log('Billing') },
     { icon: FileText, label: 'Reports', action: () => console.log('Reports') },
     { icon: Settings, label: 'Settings', action: () => console.log('Settings') },
-  ];
-
-  const orgMenuItems = [
-    { icon: Building2, label: 'Organization Profile', href: '/dashboard/settings/organization' },
-    { icon: Users, label: 'Team Members', href: '/dashboard/settings/team' },
-    { icon: CreditCard, label: 'Billing & Subscription', href: '/dashboard/settings/billing' },
-    { icon: Database, label: 'Data Management', href: '/dashboard/settings/data' },
-    { icon: Key, label: 'API Keys', href: '/dashboard/settings/api-keys' },
-    { icon: Shield, label: 'Security & Compliance', href: '/dashboard/settings/security' },
-    { icon: Palette, label: 'Branding & Theme', href: '/dashboard/settings/branding' },
-    { icon: BarChart3, label: 'Usage & Analytics', href: '/dashboard/settings/analytics' },
-    { icon: Globe, label: 'Domain Settings', href: '/dashboard/settings/domains' },
-    { icon: Mail, label: 'Email Templates', href: '/dashboard/settings/emails' },
-    { icon: Zap, label: 'Integrations', href: '/dashboard/settings/integrations' },
-    { icon: HelpCircle, label: 'Help & Support', href: '/dashboard/support' },
   ];
 
   // Additional mock data
@@ -147,90 +126,8 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
       <div className="px-6 py-3">
-        {/* Top Row - Organization Info & Actions */}
-        <div className="flex items-center justify-between mb-3">
-          {/* Left: Organization Info */}
-          <div className="flex items-center space-x-4">
-            {/* Organization Logo/Avatar */}
-            <div className="relative">
-              <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center shadow-md">
-                <span className="text-white font-bold text-lg">
-                  {organization?.name?.charAt(0) || 'N'}
-                </span>
-              </div>
-              {organization?.planType === 'OVERLORD' && (
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full border-2 border-white" title="Overlord Plan">
-                  <svg className="w-full h-full text-yellow-800" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                </div>
-              )}
-            </div>
-
-            {/* Organization Details */}
-            <div className="flex items-center space-x-2">
-              <div>
-                <h1 className="text-lg font-bold text-gray-900 leading-tight">
-                  {organization?.name || 'Organization'}
-                </h1>
-                <div className="flex items-center space-x-2 text-xs text-gray-500">
-                  <span className="flex items-center">
-                    <Globe className="w-3 h-3 mr-1" />
-                    {organization?.slug || 'org'}.neurallempire.com
-                  </span>
-                  <span>•</span>
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                    organization?.planType === 'OVERLORD' ? 'bg-yellow-100 text-yellow-800' :
-                    organization?.planType === 'EMPEROR' ? 'bg-blue-100 text-blue-800' :
-                    organization?.planType === 'CONQUEROR' ? 'bg-purple-100 text-purple-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {organization?.planType || 'FREE'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Organization Menu Dropdown */}
-              <div className="relative">
-                <button
-                  onClick={() => setShowOrgMenu(!showOrgMenu)}
-                  className="p-1 hover:bg-gray-100 rounded-md transition-colors"
-                  title="Organization Settings"
-                >
-                  <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform ${showOrgMenu ? 'rotate-180' : ''}`} />
-                </button>
-
-                {showOrgMenu && (
-                  <>
-                    {/* Backdrop */}
-                    <div
-                      className="fixed inset-0 z-10"
-                      onClick={() => setShowOrgMenu(false)}
-                    />
-                    {/* Dropdown Menu */}
-                    <div className="absolute left-0 mt-2 w-72 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20">
-                      <div className="px-4 py-2 border-b border-gray-100">
-                        <p className="text-xs font-semibold text-gray-500 uppercase">Organization Settings</p>
-                      </div>
-                      <div className="max-h-96 overflow-y-auto">
-                        {orgMenuItems.map((item, index) => (
-                          <a
-                            key={index}
-                            href={item.href}
-                            className="flex items-center px-4 py-2.5 hover:bg-gray-50 transition-colors"
-                            onClick={() => setShowOrgMenu(false)}
-                          >
-                            <item.icon className="w-4 h-4 mr-3 text-gray-500" />
-                            <span className="text-sm text-gray-700">{item.label}</span>
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
+        {/* Top Row - Actions Only */}
+        <div className="flex items-center justify-between">
 
           {/* Right: Action Buttons */}
           <div className="flex items-center space-x-2">
