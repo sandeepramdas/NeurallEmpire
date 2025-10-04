@@ -57,6 +57,70 @@ router.post('/login', authLimiter, login);
 router.get('/profile', authenticate, getProfile);
 
 /**
+ * @route   GET /api/auth/organizations
+ * @desc    Get all organizations user belongs to
+ * @access  Private
+ */
+router.get('/organizations', authenticate, async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: 'User not authenticated',
+      });
+    }
+
+    const { prisma } = await import('@/server');
+
+    // Get all organizations where user is a member
+    const memberships = await prisma.organizationMember.findMany({
+      where: { userId },
+      include: {
+        organization: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            planType: true,
+            status: true,
+            createdAt: true,
+            _count: {
+              select: {
+                members: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const organizations = memberships.map((membership) => ({
+      id: membership.organization.id,
+      name: membership.organization.name,
+      slug: membership.organization.slug,
+      planType: membership.organization.planType,
+      status: membership.organization.status,
+      role: membership.role,
+      memberCount: membership.organization._count.members,
+      createdAt: membership.organization.createdAt,
+    }));
+
+    res.json({
+      success: true,
+      data: organizations,
+    });
+  } catch (error: any) {
+    console.error('Get organizations error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to fetch organizations',
+    });
+  }
+});
+
+/**
  * @route   POST /api/auth/logout
  * @desc    Logout user
  * @access  Private

@@ -30,25 +30,9 @@ const LoginPage: React.FC = () => {
       await login(data.email, data.password);
       toast.success('Welcome back!');
 
-      // Get the organization from auth store after login
-      const { organization } = useAuthStore.getState();
-
-      if (organization) {
-        // Check if we're in development (localhost)
-        const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
-        if (isDev) {
-          // In development, use query parameter
-          navigate(`/dashboard?org=${organization.slug}`);
-        } else {
-          // In production, redirect to organization subdomain
-          const protocol = window.location.protocol;
-          const subdomain = organization.slug;
-          window.location.href = `${protocol}//${subdomain}.neurallempire.com/dashboard`;
-        }
-      } else {
-        navigate('/dashboard');
-      }
+      // After successful login, redirect to organization selector
+      // This allows user to choose which organization to access
+      navigate('/select-organization');
     } catch (error: any) {
       toast.error(error.message || 'Login failed');
     }

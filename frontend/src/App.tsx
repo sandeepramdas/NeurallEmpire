@@ -15,6 +15,7 @@ import {
 import LandingPage from '@/pages/LandingPage';
 import LoginPage from '@/pages/LoginPage';
 import RegisterPage from '@/pages/RegisterPage';
+import OrganizationSelector from '@/pages/auth/OrganizationSelector';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import Dashboard from '@/pages/dashboard/Dashboard';
 import Agents from '@/pages/dashboard/Agents';
@@ -275,6 +276,16 @@ const App: React.FC = () => {
             <PublicRoute>
               <RegisterPage />
             </PublicRoute>
+          }
+        />
+
+        {/* Organization Selector - shown after login */}
+        <Route
+          path="/select-organization"
+          element={
+            <ProtectedRoute>
+              <OrganizationSelector />
+            </ProtectedRoute>
           }
         />
 
