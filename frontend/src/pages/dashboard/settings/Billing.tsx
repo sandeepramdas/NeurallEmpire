@@ -58,14 +58,12 @@ const Billing: React.FC = () => {
 
   const fetchPlans = async () => {
     try {
-      const response = await fetch('/api/payments/plans', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const response = await fetch('/api/payments/plans');
       const data = await response.json();
       if (data.success) {
         setPlans(data.data);
+      } else {
+        console.error('Failed to fetch plans:', data.message || data.error);
       }
     } catch (error) {
       console.error('Failed to fetch plans:', error);

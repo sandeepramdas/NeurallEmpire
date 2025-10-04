@@ -4,11 +4,8 @@ import razorpayService from '@/services/razorpay.service';
 
 const router = Router();
 
-// All routes require authentication except webhook
-router.use(authenticate);
-
 /**
- * Get available subscription plans
+ * Get available subscription plans (public endpoint)
  */
 router.get('/plans', (req: Request, res: Response) => {
   const plans = Object.values(razorpayService.SUBSCRIPTION_PLANS).map(plan => ({
@@ -27,6 +24,9 @@ router.get('/plans', (req: Request, res: Response) => {
     data: plans,
   });
 });
+
+// All routes below require authentication
+router.use(authenticate);
 
 /**
  * Create payment order for subscription
