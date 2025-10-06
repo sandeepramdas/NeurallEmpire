@@ -383,7 +383,11 @@ export const login = async (
 
     return res.json(response);
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Login error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      email: req.body?.email,
+    });
     return res.status(500).json({
       success: false,
       error: 'Internal Server Error',
