@@ -21,13 +21,28 @@ import {
   Webhook,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Star,
   Clock,
   Menu,
   X,
   Building2,
-  LogOut
+  LogOut,
+  Users,
+  CreditCard,
+  Key,
+  Shield,
+  Palette,
+  BarChart2,
+  Globe
 } from 'lucide-react';
+
+interface NavItem {
+  path: string;
+  label: string;
+  icon: any;
+  children?: NavItem[];
+}
 
 const DashboardLayout: React.FC = () => {
   const { user, logout } = useAuthStore();
@@ -35,6 +50,7 @@ const DashboardLayout: React.FC = () => {
   const [, setTheme] = useState<'light' | 'dark' | 'auto'>('light');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
 
   const handleThemeChange = (newTheme: 'light' | 'dark' | 'auto') => {
     setTheme(newTheme);
@@ -50,7 +66,7 @@ const DashboardLayout: React.FC = () => {
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
-  const navItems = [
+  const navItems: NavItem[] = [
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/dashboard/agents', label: 'AI Agents', icon: Bot },
     { path: '/dashboard/campaigns', label: 'Campaigns', icon: Megaphone },
@@ -63,8 +79,29 @@ const DashboardLayout: React.FC = () => {
     { path: '/dashboard/webhooks', label: 'Webhooks', icon: Webhook },
     { path: '/dashboard/docs', label: 'Knowledge Base', icon: BookOpen },
     { path: '/dashboard/api-playground', label: 'API Playground', icon: Code },
-    { path: '/dashboard/settings', label: 'Settings', icon: SettingsIcon },
+    {
+      path: '/dashboard/settings',
+      label: 'Settings',
+      icon: SettingsIcon,
+      children: [
+        { path: '/dashboard/settings/organization', label: 'Organization', icon: Building2 },
+        { path: '/dashboard/settings/team', label: 'Team Members', icon: Users },
+        { path: '/dashboard/settings/billing', label: 'Billing', icon: CreditCard },
+        { path: '/dashboard/settings/api-keys', label: 'API Keys', icon: Key },
+        { path: '/dashboard/settings/security', label: 'Security', icon: Shield },
+        { path: '/dashboard/settings/branding', label: 'Branding', icon: Palette },
+        { path: '/dashboard/settings/analytics', label: 'Usage Analytics', icon: BarChart2 },
+        { path: '/dashboard/settings/domains', label: 'Domains', icon: Globe },
+      ],
+    },
   ];
+
+  const toggleSubmenu = (path: string) => {
+    setExpandedMenus(prev => ({
+      ...prev,
+      [path]: !prev[path]
+    }));
+  };
 
   return (
     <div className="min-h-screen bg-neural-50">
@@ -182,6 +219,54 @@ const DashboardLayout: React.FC = () => {
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.path);
+                const hasChildren = item.children && item.children.length > 0;
+                const isExpanded = expandedMenus[item.path];
+
+                if (hasChildren) {
+                  return (
+                    <div key={item.path}>
+                      <button
+                        onClick={() => toggleSubmenu(item.path)}
+                        className={`w-full flex items-center px-3 py-2 rounded-md transition-colors ${
+                          active
+                            ? 'bg-indigo-50 text-indigo-700 font-medium'
+                            : 'text-neutral-700 hover:bg-neutral-100'
+                        }`}
+                        title={sidebarCollapsed ? item.label : undefined}
+                      >
+                        <Icon className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'} ${active ? 'text-indigo-600' : ''}`} />
+                        {!sidebarCollapsed && (
+                          <>
+                            <span className="flex-1 text-left">{item.label}</span>
+                            <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                          </>
+                        )}
+                      </button>
+                      {!sidebarCollapsed && isExpanded && (
+                        <div className="ml-6 mt-1 space-y-1">
+                          {item.children.map((child) => {
+                            const ChildIcon = child.icon;
+                            const childActive = isActive(child.path);
+                            return (
+                              <Link
+                                key={child.path}
+                                to={child.path}
+                                className={`flex items-center px-3 py-2 rounded-md transition-colors text-sm ${
+                                  childActive
+                                    ? 'bg-indigo-50 text-indigo-700 font-medium'
+                                    : 'text-neutral-600 hover:bg-neutral-100'
+                                }`}
+                              >
+                                <ChildIcon className={`w-4 h-4 mr-3 ${childActive ? 'text-indigo-600' : ''}`} />
+                                <span>{child.label}</span>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
 
                 return (
                   <Link
