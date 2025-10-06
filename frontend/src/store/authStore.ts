@@ -15,6 +15,7 @@ interface AuthState {
   register: (data: any) => Promise<void>;
   logout: () => void;
   setAuth: (auth: AuthResponse) => void;
+  setOrganization: (organization: Organization) => void;
   clearAuth: () => void;
   setLoading: (loading: boolean) => void;
   refreshProfile: () => Promise<void>;
@@ -35,10 +36,11 @@ export const useAuthStore = create<AuthState>()(
           const response = await authService.login(email, password);
 
           if (response.success && response.data) {
-            const { user, organization, token } = response.data;
+            const { user, token } = response.data;
+            // Don't set organization here - user will select it from OrganizationSelector
             set({
               user,
-              organization,
+              organization: null, // Don't auto-set, let user choose
               token,
               isAuthenticated: true,
               isLoading: false,
@@ -101,6 +103,10 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: true,
         });
         localStorage.setItem('authToken', token);
+      },
+
+      setOrganization: (organization: Organization) => {
+        set({ organization });
       },
 
       clearAuth: () => {

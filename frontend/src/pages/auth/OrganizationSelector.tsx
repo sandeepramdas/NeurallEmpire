@@ -15,7 +15,7 @@ interface Organization {
 
 const OrganizationSelector: React.FC = () => {
   const navigate = useNavigate();
-  const { user, token, logout } = useAuthStore();
+  const { user, token, logout, setOrganization } = useAuthStore();
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -49,6 +49,13 @@ const OrganizationSelector: React.FC = () => {
   };
 
   const handleSelectOrganization = (org: Organization) => {
+    // Set organization in auth store
+    setOrganization({
+      id: org.id,
+      name: org.name,
+      slug: org.slug,
+    } as any);
+
     // Store selected organization in localStorage
     localStorage.setItem('selectedOrganization', JSON.stringify(org));
 
