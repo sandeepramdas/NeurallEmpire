@@ -278,7 +278,7 @@ const DashboardLayout: React.FC = () => {
                           </>
                         )}
                       </button>
-                      {!sidebarCollapsed && isExpanded && (
+                      {!sidebarCollapsed && isExpanded && item.children && (
                         <div className="ml-6 mt-1 space-y-1">
                           {item.children.map((child) => {
                             const ChildIcon = child.icon;
