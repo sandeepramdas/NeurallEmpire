@@ -276,6 +276,14 @@ export const login = async (
       });
     }
 
+    // Check if organization exists
+    if (!user.organization) {
+      return res.status(403).json({
+        success: false,
+        error: 'No organization associated with this account',
+      });
+    }
+
     // Check organization status
     if (['SUSPENDED', 'BANNED', 'CANCELLED'].includes(user.organization.status)) {
       return res.status(403).json({
@@ -378,7 +386,7 @@ export const login = async (
     console.error('Login error:', error);
     return res.status(500).json({
       success: false,
-      error: 'Login failed',
+      error: 'Internal Server Error',
     });
   }
 };
