@@ -67,18 +67,54 @@ const DashboardLayout: React.FC = () => {
   };
 
   const navItems: NavItem[] = [
-    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/dashboard/agents', label: 'AI Agents', icon: Bot },
-    { path: '/dashboard/campaigns', label: 'Campaigns', icon: Megaphone },
-    { path: '/dashboard/workflows', label: 'Workflows', icon: Workflow },
-    { path: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
-    { path: '/dashboard/reports', label: 'Reports', icon: FileBarChart },
-    { path: '/dashboard/integrations', label: 'Integrations', icon: Puzzle },
-    { path: '/dashboard/templates', label: 'Templates', icon: FileText },
-    { path: '/dashboard/messages', label: 'Messages', icon: MessageSquare },
-    { path: '/dashboard/webhooks', label: 'Webhooks', icon: Webhook },
-    { path: '/dashboard/docs', label: 'Knowledge Base', icon: BookOpen },
-    { path: '/dashboard/api-playground', label: 'API Playground', icon: Code },
+    {
+      path: '/dashboard',
+      label: 'Dashboard',
+      icon: LayoutDashboard
+    },
+    {
+      path: '/dashboard/automation',
+      label: 'Automation',
+      icon: Workflow,
+      children: [
+        { path: '/dashboard/agents', label: 'AI Agents', icon: Bot },
+        { path: '/dashboard/workflows', label: 'Workflows', icon: Workflow },
+        { path: '/dashboard/templates', label: 'Templates', icon: FileText },
+      ],
+    },
+    {
+      path: '/dashboard/marketing',
+      label: 'Marketing',
+      icon: Megaphone,
+      children: [
+        { path: '/dashboard/campaigns', label: 'Campaigns', icon: Megaphone },
+        { path: '/dashboard/messages', label: 'Messages', icon: MessageSquare },
+      ],
+    },
+    {
+      path: '/dashboard/insights',
+      label: 'Analytics & Reports',
+      icon: BarChart3,
+      children: [
+        { path: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
+        { path: '/dashboard/reports', label: 'Reports', icon: FileBarChart },
+      ],
+    },
+    {
+      path: '/dashboard/developer',
+      label: 'Developer',
+      icon: Code,
+      children: [
+        { path: '/dashboard/api-playground', label: 'API Playground', icon: Code },
+        { path: '/dashboard/webhooks', label: 'Webhooks', icon: Webhook },
+        { path: '/dashboard/integrations', label: 'Integrations', icon: Puzzle },
+      ],
+    },
+    {
+      path: '/dashboard/docs',
+      label: 'Knowledge Base',
+      icon: BookOpen
+    },
     {
       path: '/dashboard/settings',
       label: 'Settings',
