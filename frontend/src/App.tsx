@@ -1,12 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { toast } from 'react-hot-toast';
 import { useAuthStore } from '@/store/authStore';
 import {
   getOrganizationFromUrl,
-  isOnSubdomain,
-  isOnMainDomain,
-  redirectToOrganization,
   redirectToMainSite
 } from '@/utils/routing';
 
@@ -76,18 +72,10 @@ const ProtectedRoute: React.FC<RouteGuardProps> = ({ children }) => {
     );
   }
 
-  // User authenticated but accessing wrong organization subdomain
+  // User authenticated but accessing wrong organization - redirect to correct path-based route
   if (orgFromUrl && organization && orgFromUrl !== organization.slug) {
-    // Redirect to correct organization subdomain
-    redirectToOrganization(organization.slug);
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-gray-600">Redirecting to your organization...</p>
-        </div>
-      </div>
-    );
+    // Redirect to correct organization path
+    return <Navigate to={`/org/${organization.slug}/dashboard`} replace />;
   }
 
   // On subdomain but no organization context - invalid subdomain
@@ -119,28 +107,11 @@ const ProtectedRoute: React.FC<RouteGuardProps> = ({ children }) => {
  */
 const PublicRoute: React.FC<RouteGuardProps> = ({ children }) => {
   const { isAuthenticated, organization } = useAuthStore();
-  const orgFromUrl = getOrganizationFromUrl();
-  const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
   // Authenticated user on login/register pages - redirect to dashboard
   if (isAuthenticated && organization && (window.location.pathname === '/login' || window.location.pathname === '/register')) {
-    // In development, just redirect to /dashboard with org query param
-    if (isDev) {
-      return <Navigate to={`/dashboard?org=${organization.slug}`} replace />;
-    }
-
-    // If on organization subdomain, go to that org's dashboard
-    if (orgFromUrl && orgFromUrl === organization.slug) {
-      return <Navigate to="/dashboard" replace />;
-    }
-
-    // Otherwise, redirect to user's organization subdomain
-    redirectToOrganization(organization.slug);
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full" />
-      </div>
-    );
+    // Redirect to path-based organization dashboard
+    return <Navigate to={`/org/${organization.slug}/dashboard`} replace />;
   }
 
   return <>{children}</>;
@@ -156,20 +127,25 @@ const OrganizationRouter: React.FC = () => {
     return <Navigate to="/login" replace />;
   }
 
-  // Redirect to organization's subdomain
-  redirectToOrganization(organization.slug);
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4" />
-        <p className="text-gray-600">Redirecting to {organization.name}...</p>
-      </div>
-    </div>
-  );
+  // Redirect to path-based organization dashboard
+  return <Navigate to={`/org/${organization.slug}/dashboard`} replace />;
+};
+
+/**
+ * Dashboard Redirect - Handles /dashboard route
+ */
+const DashboardRedirect: React.FC = () => {
+  const { organization } = useAuthStore();
+
+  if (!organization) {
+    return <Navigate to="/select-organization" replace />;
+  }
+
+  return <Navigate to={`/org/${organization.slug}/dashboard`} replace />;
 };
 
 const App: React.FC = () => {
-  const { refreshProfile, isAuthenticated, organization } = useAuthStore();
+  const { refreshProfile } = useAuthStore();
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Initialize auth state on app load
@@ -196,39 +172,12 @@ const App: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Run only once on mount
 
-  // Handle subdomain routing and organization validation
+  // DISABLED: Subdomain routing - using path-based routing instead
+  // This prevents redirect loops on www.neurallempire.com
   useEffect(() => {
-    if (!isInitialized || !isAuthenticated) return;
-
-    const orgFromUrl = getOrganizationFromUrl();
-    const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
-    // Skip redirects in development
-    if (isDev) return;
-
-    // User is authenticated and we have organization context
-    if (organization) {
-      // If on main domain, redirect to organization subdomain ONLY if trying to access dashboard
-      if (isOnMainDomain() && window.location.pathname.startsWith('/dashboard')) {
-        redirectToOrganization(organization.slug);
-        return;
-      }
-
-      // If on wrong organization subdomain, redirect to correct one
-      if (orgFromUrl && orgFromUrl !== organization.slug) {
-        toast.error(`Redirecting to ${organization.name}`, {
-          duration: 2000,
-        });
-        setTimeout(() => {
-          redirectToOrganization(organization.slug);
-        }, 1000);
-        return;
-      }
-
-      // Don't redirect if on www subdomain and not accessing dashboard
-      // This allows www.neurallempire.com to work properly
-    }
-  }, [isInitialized, isAuthenticated, organization]);
+    // Path-based routing is now used instead of subdomain routing
+    // to avoid redirect loops and compatibility issues on www.neurallempire.com
+  }, []);
 
   // Show loading screen while initializing
   if (!isInitialized) {
@@ -284,51 +233,15 @@ const App: React.FC = () => {
         {/* OAuth Callback Routes */}
         <Route path="/auth/:provider/callback" element={<OAuthCallback />} />
 
-        {/* Protected Dashboard Routes */}
+        {/* Protected Dashboard Routes - redirect to path-based org routing */}
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
-              {isOnSubdomain() ? (
-                <DashboardLayout />
-              ) : (
-                <OrganizationRouter />
-              )}
+              <DashboardRedirect />
             </ProtectedRoute>
           }
-        >
-          {/* Nested dashboard routes - only available on subdomains */}
-          <Route index element={<Dashboard />} />
-          <Route path="agents" element={<Agents />} />
-          <Route path="campaigns" element={<Campaigns />} />
-          <Route path="workflows" element={<Workflows />} />
-          <Route path="analytics" element={<Analytics />} />
-          <Route path="reports" element={<Reports />} />
-          <Route path="integrations" element={<Integrations />} />
-          <Route path="templates" element={<Templates />} />
-          <Route path="messages" element={<Messages />} />
-          <Route path="webhooks" element={<Webhooks />} />
-          <Route path="docs" element={<KnowledgeBase />} />
-          <Route path="api-playground" element={<APIPlayground />} />
-          <Route path="settings" element={<Settings />} />
-
-          {/* Settings routes */}
-          <Route path="settings/organization" element={<OrganizationProfile />} />
-          <Route path="settings/team" element={<TeamMembers />} />
-          <Route path="settings/billing" element={<BillingSubscription />} />
-          <Route path="settings/api-keys" element={<APIKeys />} />
-          <Route path="settings/security" element={<SecurityCompliance />} />
-          <Route path="settings/branding" element={<BrandingTheme />} />
-          <Route path="settings/analytics" element={<UsageAnalytics />} />
-          <Route path="settings/domains" element={<DomainSettings />} />
-          <Route path="settings/data" element={<Settings />} />
-          <Route path="settings/emails" element={<Settings />} />
-
-          {/* User-specific routes */}
-          <Route path="profile" element={<UserProfile />} />
-          <Route path="notifications" element={<NotificationsPage />} />
-          <Route path="activity" element={<ActivityLog />} />
-        </Route>
+        />
 
         {/* Path-based organization routes (Hybrid approach) */}
         <Route

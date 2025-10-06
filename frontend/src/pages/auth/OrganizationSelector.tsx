@@ -52,17 +52,15 @@ const OrganizationSelector: React.FC = () => {
     // Store selected organization in localStorage
     localStorage.setItem('selectedOrganization', JSON.stringify(org));
 
-    // Redirect to organization's subdomain
-    const subdomain = org.slug;
+    // Use path-based routing instead of subdomain routing
+    // This works on www.neurallempire.com without redirect loops
     const currentHost = window.location.host;
-    const domain = currentHost.includes('localhost')
-      ? 'localhost:3000'
-      : 'neurallempire.com';
+    const isDev = currentHost.includes('localhost');
 
-    // Construct the subdomain URL
-    const targetUrl = currentHost.includes('localhost')
-      ? `http://localhost:3000/dashboard?org=${subdomain}`
-      : `https://${subdomain}.${domain}/dashboard`;
+    // Construct the path-based URL
+    const targetUrl = isDev
+      ? `http://localhost:3000/dashboard?org=${org.slug}`
+      : `https://www.neurallempire.com/org/${org.slug}/dashboard`;
 
     // Redirect to the organization's dashboard
     window.location.href = targetUrl;
