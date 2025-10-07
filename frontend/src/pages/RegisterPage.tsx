@@ -9,10 +9,15 @@ import { RegisterForm } from '@/types';
 
 const registerSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: z.string()
+    .min(12, 'Password must be at least 12 characters')
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number')
+    .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character (!@#$%^&*)'),
   confirmPassword: z.string().min(1, 'Please confirm your password'),
   firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().optional(),
+  lastName: z.string().min(1, 'Last name is required'),
   organizationName: z.string().min(1, 'Organization name is required'),
   organizationSlug: z.string().optional(),
   acceptTerms: z.boolean().refine(val => val === true, 'You must accept the terms'),
@@ -109,7 +114,7 @@ const RegisterPage: React.FC = () => {
 
               <div>
                 <label htmlFor="lastName" className="block text-sm font-medium text-white">
-                  Last Name
+                  Last Name *
                 </label>
                 <div className="mt-1">
                   <input
@@ -118,6 +123,9 @@ const RegisterPage: React.FC = () => {
                     className="input-field bg-white/10 border-white/20 text-white placeholder-neutral-400"
                     placeholder="Doe"
                   />
+                  {errors.lastName && (
+                    <p className="mt-1 text-sm text-red-400">{errors.lastName.message}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -178,10 +186,20 @@ const RegisterPage: React.FC = () => {
                 >
                   {showPassword ? '🙈' : '👁️'}
                 </button>
-                {errors.password && (
-                  <p className="mt-1 text-sm text-red-400">{errors.password.message}</p>
-                )}
               </div>
+              <div className="mt-1 text-xs text-neutral-300 space-y-0.5">
+                <p>Password must contain:</p>
+                <ul className="list-disc list-inside ml-2">
+                  <li>At least 12 characters</li>
+                  <li>Uppercase letter (A-Z)</li>
+                  <li>Lowercase letter (a-z)</li>
+                  <li>Number (0-9)</li>
+                  <li>Special character (!@#$%^&*)</li>
+                </ul>
+              </div>
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-400">{errors.password.message}</p>
+              )}
             </div>
 
             {/* Confirm Password */}
