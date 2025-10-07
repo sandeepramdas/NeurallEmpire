@@ -44,22 +44,48 @@ app.set('trust proxy', 1);
 // This allows Railway healthchecks and direct browser access without Origin header
 app.get('/health', async (req, res) => {
   try {
-    // Check database connection
-    await prisma.$queryRaw`SELECT 1`;
-
-    res.json({
-      status: 'healthy',
+    const healthChecks: Record<string, any> = {
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       environment: NODE_ENV,
-      database: 'connected',
+      version: '2.0.0',
+    };
+
+    // Check database connection
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      healthChecks.database = 'connected';
+    } catch (error) {
+      healthChecks.database = 'disconnected';
+      healthChecks.database_error = error instanceof Error ? error.message : 'Unknown error';
+    }
+
+    // Check Sentry configuration
+    healthChecks.sentry = process.env.SENTRY_DSN ? 'configured' : 'not configured';
+
+    // Check SendGrid configuration
+    healthChecks.email = process.env.SENDGRID_API_KEY ? 'configured' : 'not configured';
+
+    // Check S3 configuration
+    const s3Configured = process.env.AWS_ACCESS_KEY_ID &&
+                         process.env.AWS_SECRET_ACCESS_KEY &&
+                         process.env.S3_BUCKET_NAME;
+    healthChecks.storage = s3Configured ? 'configured' : 'not configured';
+
+    // Determine overall health status
+    const isHealthy = healthChecks.database === 'connected';
+    const status = isHealthy ? 'healthy' : 'degraded';
+
+    res.status(isHealthy ? 200 : 503).json({
+      status,
+      ...healthChecks,
     });
   } catch (error) {
     console.error('Health check failed:', error);
     res.status(503).json({
       status: 'unhealthy',
       timestamp: new Date().toISOString(),
-      error: 'Database connection failed',
+      error: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });

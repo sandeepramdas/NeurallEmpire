@@ -19,6 +19,16 @@ import accountingRoutes from './accounting';
 import paymentsRoutes from './payments';
 import webhooksRoutes from './webhooks';
 
+// Import V2 feature routes
+import entitiesRoutes from './entities';
+import hierarchyRoutes from './hierarchy';
+import codeArtifactsRoutes from './code-artifacts';
+
+// Import infrastructure routes
+import settingsRoutes from '../modules/system-settings/routes/settings.routes';
+import filesRoutes from '../modules/files/routes/files.routes';
+import analyticsRoutes from '../modules/analytics/routes/analytics.routes';
+
 const router = Router();
 
 // Health check
@@ -53,12 +63,22 @@ router.use('/menus', menusRoutes);
 // Accounting routes
 router.use('/accounting', accountingRoutes);
 
+// V2 Feature routes (require authentication)
+router.use('/entities', authenticate, entitiesRoutes);
+router.use('/hierarchy', authenticate, hierarchyRoutes);
+router.use('/code-artifacts', authenticate, codeArtifactsRoutes);
+
 // Admin routes (require admin authentication)
 router.use('/admin', authenticate, adminRoutes);
 
 // Payment & webhook routes
 router.use('/payments', paymentsRoutes);
 router.use('/webhooks', webhooksRoutes);
+
+// Infrastructure routes (require authentication)
+router.use('/settings', settingsRoutes);
+router.use('/files', filesRoutes);
+router.use('/analytics', analyticsRoutes);
 
 // API documentation
 router.get('/', (req, res) => {
@@ -136,6 +156,98 @@ router.get('/', (req, res) => {
         },
         POST: {
           '/admin/admins': 'Create new admin'
+        }
+      },
+      entities: {
+        GET: {
+          '/entities': 'List all entity definitions',
+          '/entities/:id': 'Get entity definition details',
+          '/entities/:id/ddl': 'Get entity DDL/SQL'
+        },
+        POST: {
+          '/entities': 'Create new entity definition',
+          '/entities/:id/activate': 'Activate entity and create database table',
+          '/entities/validate-schema': 'Validate entity schema'
+        },
+        DELETE: {
+          '/entities/:id': 'Delete entity definition'
+        }
+      },
+      hierarchy: {
+        GET: {
+          '/hierarchy/tree/:orgId?': 'Get organization hierarchy tree',
+          '/hierarchy/descendants/:orgId?': 'Get organization descendants',
+          '/hierarchy/ancestors/:orgId?': 'Get organization ancestors',
+          '/hierarchy/children/:orgId?': 'Get direct children',
+          '/hierarchy/stats': 'Get hierarchy statistics',
+          '/hierarchy/check-access/:orgId': 'Check organization access'
+        },
+        POST: {
+          '/hierarchy/set-parent/:orgId?': 'Set parent organization'
+        }
+      },
+      codeArtifacts: {
+        GET: {
+          '/code-artifacts': 'List all code artifacts',
+          '/code-artifacts/:id': 'Get code artifact details',
+          '/code-artifacts/:id/versions': 'Get artifact version history',
+          '/code-artifacts/stats': 'Get code artifacts statistics'
+        },
+        POST: {
+          '/code-artifacts': 'Create new code artifact',
+          '/code-artifacts/:id/review': 'Review code artifact',
+          '/code-artifacts/:id/deploy': 'Deploy code artifact',
+          '/code-artifacts/:id/versions': 'Create new artifact version',
+          '/code-artifacts/validate-code': 'Validate code syntax'
+        }
+      },
+      settings: {
+        GET: {
+          '/settings': 'Get all settings',
+          '/settings/public': 'Get public settings',
+          '/settings/:key': 'Get specific setting',
+          '/settings/:key/details': 'Get setting details',
+          '/settings/category/:category': 'Get settings by category',
+          '/settings/features/:featureName': 'Check feature flag'
+        },
+        PUT: {
+          '/settings/:key': 'Create or update setting'
+        },
+        POST: {
+          '/settings/bulk-update': 'Bulk update settings',
+          '/settings/:key/reset': 'Reset setting to default',
+          '/settings/features/:featureName/enable': 'Enable feature',
+          '/settings/features/:featureName/disable': 'Disable feature'
+        },
+        DELETE: {
+          '/settings/:key': 'Delete setting'
+        }
+      },
+      files: {
+        GET: {
+          '/files': 'List all files',
+          '/files/:fileId': 'Get file details',
+          '/files/:fileId/download': 'Get download URL',
+          '/files/storage/usage': 'Get storage usage'
+        },
+        POST: {
+          '/files/upload': 'Upload file'
+        },
+        DELETE: {
+          '/files/:fileId': 'Delete file'
+        }
+      },
+      analytics: {
+        GET: {
+          '/analytics/dashboard': 'Get dashboard summary',
+          '/analytics/events': 'Get analytics events',
+          '/analytics/event-counts': 'Get event counts',
+          '/analytics/user-activity/:userId': 'Get user activity',
+          '/analytics/page-views': 'Get page views'
+        },
+        POST: {
+          '/analytics/track': 'Track analytics event',
+          '/analytics/funnel': 'Get funnel data'
         }
       }
     }

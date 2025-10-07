@@ -132,6 +132,16 @@ model Organization {
   setupWizardCompleted Boolean  @default(false)
   firstAgentCreated Boolean     @default(false)
 
+  // N-Level Organization Hierarchy (V2)
+  parentId         String?
+  parent           Organization? @relation("OrganizationHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children         Organization[] @relation("OrganizationHierarchy")
+  path             String?      // Materialized path: 'root.child.grandchild'
+  level            Int          @default(0) // 0 = root organization
+  ancestorIds      String[]     @default([]) // Array of all ancestor IDs for fast permission checks
+  hierarchyPosition Int?        // Position among siblings for ordering
+  type             String       @default("division") // 'holding', 'subsidiary', 'division', 'department', 'team', 'custom'
+
   // Metadata
   verifiedAt       DateTime?
   createdAt        DateTime     @default(now())
@@ -162,6 +172,11 @@ model Organization {
   socialAccounts   SocialAccount[]
   agentSwarms      AgentSwarm[]
   payments         Payment[]
+  entityDefinitions EntityDefinition[] @relation("EntityDefinitions") // V2: Dynamic entities
+  systemSettings   SystemSetting[]  @relation("OrganizationSettings") // NEW: System settings
+  files            File[]          @relation("OrganizationFiles") // NEW: File storage
+  emailNotifications EmailNotification[] @relation("OrgEmails") // NEW: Email notifications
+  analyticsEvents  AnalyticsEvent[] @relation("OrgEvents") // NEW: Analytics events
 
   @@index([status])
   @@index([planType])
@@ -476,6 +491,11 @@ model User {
   createdSwarms  AgentSwarm[]
   sentInvites    OrganizationInvite[] @relation("InviteSender")
   receivedInvites OrganizationInvite[] @relation("InviteRecipient")
+  createdEntities EntityDefinition[] @relation("CreatedEntities") // V2: Dynamic entities
+  updatedEntities EntityDefinition[] @relation("UpdatedEntities") // V2: Dynamic entities
+  entityVersions EntityVersionHistory[] @relation("EntityVersionCreator") // V2: Entity versions
+  uploadedFiles  File[]            @relation("UploadedFiles") // NEW: Uploaded files
+  analyticsEvents AnalyticsEvent[]  @relation("UserEvents") // NEW: Analytics events
 
   @@index([organizationId, status])
   @@index([email])
@@ -1701,6 +1721,343 @@ model Notification {
 
   @@index([organizationId, userId, isRead])
   @@map("notifications")
+}
+
+// ==================== DYNAMIC ENTITY SYSTEM (V2) ====================
+
+model EntityDefinition {
+  id               String   @id @default(cuid())
+  organizationId   String
+
+  // Entity Identity
+  entityName       String
+  displayName      String
+  tableName        String   @unique
+
+  // Classification
+  vertical         String?  // 'healthcare', 'manufacturing', 'retail'
+  module           String?  // 'sales', 'inventory', 'hr'
+  category         String?  // 'transactional', 'master', 'reference'
+
+  // JSON Schema Definition
+  schemaDefinition Json     // Column definitions, constraints, indexes
+
+  // Entity Behaviors
+  isOrganizationScoped Boolean @default(true)
+  enableAudit      Boolean  @default(true)
+  enableWorkflow   Boolean  @default(false)
+  enableVersioning Boolean  @default(false)
+  softDelete       Boolean  @default(true)
+
+  // UI Metadata
+  defaultUIConfig  Json     @default("{}")
+  listViewConfig   Json?
+  formViewConfig   Json?
+
+  // API Configuration
+  apiEnabled       Boolean  @default(true)
+  apiRateLimit     Int      @default(1000)
+
+  // Lifecycle
+  status           String   @default("active") // 'draft', 'active', 'deprecated'
+  version          Int      @default(1)
+  isSystemEntity   Boolean  @default(false)
+
+  // Metadata
+  description      String?
+  tags             String[] @default([])
+  documentationUrl String?
+
+  // Audit
+  createdBy        String
+  updatedBy        String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  deletedAt        DateTime?
+
+  // Relations
+  organization     Organization @relation("EntityDefinitions", fields: [organizationId], references: [id], onDelete: Cascade)
+  creator          User @relation("CreatedEntities", fields: [createdBy], references: [id])
+  updater          User? @relation("UpdatedEntities", fields: [updatedBy], references: [id])
+  sourceRelationships EntityRelationship[] @relation("SourceEntity")
+  targetRelationships EntityRelationship[] @relation("TargetEntity")
+  fieldValues      DynamicFieldValue[]
+  versionHistory   EntityVersionHistory[]
+
+  @@unique([organizationId, entityName])
+  @@index([organizationId, status])
+  @@index([vertical])
+  @@index([module])
+  @@map("EntityDefinition")
+}
+
+model EntityRelationship {
+  id               String   @id @default(cuid())
+
+  // Source entity
+  sourceEntityId   String
+  sourceEntity     EntityDefinition @relation("SourceEntity", fields: [sourceEntityId], references: [id], onDelete: Cascade)
+
+  // Target entity
+  targetEntityId   String
+  targetEntity     EntityDefinition @relation("TargetEntity", fields: [targetEntityId], references: [id], onDelete: Cascade)
+
+  // Relationship type
+  relationshipType String   // 'one_to_one', 'one_to_many', 'many_to_many', 'polymorphic'
+
+  // Foreign key details
+  sourceColumn     String
+  targetColumn     String   @default("id")
+
+  // On delete action
+  onDelete         String   @default("RESTRICT") // 'CASCADE', 'RESTRICT', 'SET NULL', 'SET DEFAULT'
+
+  // Display metadata
+  displayName      String?
+  reverseDisplayName String?
+
+  createdAt        DateTime @default(now())
+
+  @@unique([sourceEntityId, sourceColumn])
+  @@map("EntityRelationship")
+}
+
+model DynamicFieldValue {
+  id                 String   @id @default(cuid())
+  entityDefinitionId String
+  recordId           String   // ID of the record in the dynamic table
+
+  fieldName          String
+  fieldType          String   // 'string', 'number', 'boolean', 'date', 'json'
+
+  // Polymorphic value columns
+  stringValue        String?
+  numberValue        Decimal? @db.Decimal(20, 6)
+  booleanValue       Boolean?
+  dateValue          DateTime?
+  jsonValue          Json?
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  // Relations
+  entityDefinition   EntityDefinition @relation(fields: [entityDefinitionId], references: [id], onDelete: Cascade)
+
+  @@unique([entityDefinitionId, recordId, fieldName])
+  @@index([entityDefinitionId, recordId])
+  @@map("DynamicFieldValue")
+}
+
+model EntityVersionHistory {
+  id                 String   @id @default(cuid())
+  entityDefinitionId String
+
+  version            Int
+  schemaDefinition   Json
+  changeDescription  String?
+  migrationScript    String?  // SQL for data migration
+
+  createdBy          String
+  createdAt          DateTime @default(now())
+
+  // Relations
+  entityDefinition   EntityDefinition @relation(fields: [entityDefinitionId], references: [id], onDelete: Cascade)
+  creator            User @relation("EntityVersionCreator", fields: [createdBy], references: [id])
+
+  @@unique([entityDefinitionId, version])
+  @@map("EntityVersionHistory")
+}
+
+model MigrationLog {
+  id             String   @id @default(cuid())
+  migrationName  String
+  appliedAt      DateTime @default(now())
+  success        Boolean  @default(true)
+  errorMessage   String?
+
+  @@map("MigrationLog")
+}
+
+// ==================== 🎯 PLATFORM INFRASTRUCTURE (NEW) ====================
+
+model SystemSetting {
+  id              String   @id @default(cuid())
+  organizationId  String?
+  key             String
+  value           Json
+  type            String   // 'global', 'organization', 'user', 'feature_flag'
+  category        String   // 'general', 'security', 'billing', 'features', 'ui', 'integrations'
+  description     String?
+  isPublic        Boolean  @default(false)
+  isEditable      Boolean  @default(true)
+  validationRules Json?    // JSON schema for value validation
+  defaultValue    Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization    Organization? @relation("OrganizationSettings", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, key])
+  @@index([category])
+  @@index([type])
+  @@map("system_settings")
+}
+
+model File {
+  id              String   @id @default(cuid())
+  organizationId  String
+  uploadedBy      String
+
+  // File Identity
+  filename        String   // Generated filename (UUID-based)
+  originalName    String   // Original uploaded filename
+  mimeType        String
+  size            Int      // Bytes
+  extension       String?
+
+  // Storage
+  path            String   // S3/MinIO path
+  url             String   // Public or signed URL
+  thumbnailUrl    String?  // For images/videos
+  bucket          String   @default("neurallempire-files")
+  storageProvider String   @default("s3") // 's3', 'minio', 'local', 'cloudflare'
+
+  // Organization
+  folder          String?  // Virtual folder path
+  tags            String[] @default([])
+  category        String?  // 'document', 'image', 'video', 'audio', 'archive', 'other'
+
+  // Metadata
+  metadata        Json?    // EXIF, dimensions, duration, etc.
+  isPublic        Boolean  @default(false)
+  downloadCount   Int      @default(0)
+
+  // Lifecycle
+  expiresAt       DateTime?
+  lastAccessedAt  DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime? // Soft delete
+
+  // Relations
+  uploader        User     @relation("UploadedFiles", fields: [uploadedBy], references: [id], onDelete: Cascade)
+  organization    Organization @relation("OrganizationFiles", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, folder])
+  @@index([uploadedBy])
+  @@index([category])
+  @@index([createdAt])
+  @@map("files")
+}
+
+model EmailNotification {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Recipients
+  to              String[]
+  cc              String[] @default([])
+  bcc             String[] @default([])
+  from            String
+  replyTo         String?
+
+  // Content
+  subject         String
+  body            String   @db.Text
+  bodyHtml        String?  @db.Text
+  templateId      String?
+  templateData    Json?
+
+  // Attachments
+  attachments     Json?    // Array of file references
+
+  // Delivery Status
+  status          String   @default("queued") // 'queued', 'sending', 'sent', 'failed', 'bounced', 'delivered', 'opened', 'clicked'
+  provider        String   @default("sendgrid") // 'sendgrid', 'ses', 'smtp'
+  providerId      String?  // External provider message ID
+
+  // Tracking
+  sentAt          DateTime?
+  deliveredAt     DateTime?
+  openedAt        DateTime?
+  clickedAt       DateTime?
+  bouncedAt       DateTime?
+  openCount       Int      @default(0)
+  clickCount      Int      @default(0)
+
+  // Error Handling
+  error           String?
+  errorCode       String?
+  retryCount      Int      @default(0)
+  maxRetries      Int      @default(3)
+
+  // Metadata
+  priority        String   @default("normal") // 'low', 'normal', 'high', 'urgent'
+  tags            String[] @default([])
+  metadata        Json?
+  scheduledFor    DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  organization    Organization @relation("OrgEmails", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status])
+  @@index([status])
+  @@index([createdAt])
+  @@index([scheduledFor])
+  @@map("email_notifications")
+}
+
+model AnalyticsEvent {
+  id              String   @id @default(cuid())
+  userId          String?
+  organizationId  String
+  sessionId       String?
+
+  // Event Details
+  eventName       String   // 'page_view', 'button_click', 'form_submit', 'agent_created', etc.
+  eventType       String   // 'user_action', 'system_event', 'business_metric', 'error'
+  category        String?  // 'engagement', 'conversion', 'performance', 'error'
+  action          String?  // 'create', 'update', 'delete', 'view'
+  label           String?
+  value           Float?
+
+  // Context
+  properties      Json?    // Custom event properties
+  pageUrl         String?
+  pagePath        String?
+  pageTitle       String?
+  referrer        String?
+
+  // Technical Context
+  userAgent       String?
+  ipAddress       String?
+  country         String?
+  city            String?
+  device          String?  // 'desktop', 'mobile', 'tablet'
+  browser         String?
+  os              String?
+
+  // Timing
+  timestamp       DateTime @default(now())
+  duration        Int?     // Milliseconds (for timed events)
+
+  // Attribution
+  source          String?  // 'organic', 'paid', 'direct', 'referral'
+  medium          String?
+  campaign        String?
+
+  // Relations
+  user            User?    @relation("UserEvents", fields: [userId], references: [id], onDelete: SetNull)
+  organization    Organization @relation("OrgEvents", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, eventName])
+  @@index([userId])
+  @@index([eventType, category])
+  @@index([timestamp])
+  @@index([sessionId])
+  @@map("analytics_events")
 }
 
 // ==================== ENUMS ====================

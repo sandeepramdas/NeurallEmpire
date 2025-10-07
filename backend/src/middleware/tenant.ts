@@ -8,6 +8,11 @@ export const tenantResolver = async (
   next: NextFunction
 ): Promise<Response | void> => {
   try {
+    // Skip tenant resolution for authentication routes
+    if (req.path.startsWith('/api/auth/')) {
+      return next();
+    }
+
     const hostname = req.hostname;
     let subdomain: string | null = null;
 

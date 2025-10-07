@@ -4,7 +4,7 @@
 Run this whenever you start Claude Code to check all system connections:
 
 ```bash
-./claude-code-status.sh
+./scripts/claude-code-status.sh
 ```
 
 ## Key Information for Claude Code
@@ -20,7 +20,7 @@ Run this whenever you start Claude Code to check all system connections:
 ### Common Commands
 ```bash
 # Check system status
-./claude-code-status.sh
+./scripts/claude-code-status.sh
 
 # Start development
 cd backend && npm run dev          # Backend on :3001

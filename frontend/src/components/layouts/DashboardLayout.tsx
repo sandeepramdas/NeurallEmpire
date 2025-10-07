@@ -34,7 +34,10 @@ import {
   Shield,
   Palette,
   BarChart2,
-  Globe
+  Globe,
+  Database,
+  GitBranch,
+  Rocket
 } from 'lucide-react';
 
 interface NavItem {
@@ -50,7 +53,9 @@ const DashboardLayout: React.FC = () => {
   const [, setTheme] = useState<'light' | 'dark' | 'auto'>('light');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
+  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
+    'platform': true, // Expand Platform V2 by default
+  });
 
   const handleThemeChange = (newTheme: 'light' | 'dark' | 'auto') => {
     setTheme(newTheme);
@@ -59,75 +64,86 @@ const DashboardLayout: React.FC = () => {
   };
 
   const isActive = (path: string) => {
+    // For relative paths, check if current pathname ends with the path
     // Exact match for dashboard root to avoid highlighting when on sub-pages
-    if (path === '/dashboard') {
-      return location.pathname === '/dashboard';
+    if (path === 'dashboard') {
+      return location.pathname.endsWith('/dashboard');
     }
-    return location.pathname === path || location.pathname.startsWith(path + '/');
+    return location.pathname.includes(`/${path}`) || location.pathname.endsWith(`/${path}`);
   };
 
   const navItems: NavItem[] = [
     {
-      path: '/dashboard',
+      path: 'dashboard',
       label: 'Dashboard',
       icon: LayoutDashboard
     },
     {
-      path: '/dashboard/automation',
+      path: 'automation',
       label: 'Automation',
       icon: Workflow,
       children: [
-        { path: '/dashboard/agents', label: 'AI Agents', icon: Bot },
-        { path: '/dashboard/workflows', label: 'Workflows', icon: Workflow },
-        { path: '/dashboard/templates', label: 'Templates', icon: FileText },
+        { path: 'agents', label: 'AI Agents', icon: Bot },
+        { path: 'workflows', label: 'Workflows', icon: Workflow },
+        { path: 'templates', label: 'Templates', icon: FileText },
       ],
     },
     {
-      path: '/dashboard/marketing',
+      path: 'marketing',
       label: 'Marketing',
       icon: Megaphone,
       children: [
-        { path: '/dashboard/campaigns', label: 'Campaigns', icon: Megaphone },
-        { path: '/dashboard/messages', label: 'Messages', icon: MessageSquare },
+        { path: 'campaigns', label: 'Campaigns', icon: Megaphone },
+        { path: 'messages', label: 'Messages', icon: MessageSquare },
       ],
     },
     {
-      path: '/dashboard/insights',
+      path: 'insights',
       label: 'Analytics & Reports',
       icon: BarChart3,
       children: [
-        { path: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
-        { path: '/dashboard/reports', label: 'Reports', icon: FileBarChart },
+        { path: 'analytics', label: 'Analytics', icon: BarChart3 },
+        { path: 'reports', label: 'Reports', icon: FileBarChart },
       ],
     },
     {
-      path: '/dashboard/developer',
+      path: 'developer',
       label: 'Developer',
       icon: Code,
       children: [
-        { path: '/dashboard/api-playground', label: 'API Playground', icon: Code },
-        { path: '/dashboard/webhooks', label: 'Webhooks', icon: Webhook },
-        { path: '/dashboard/integrations', label: 'Integrations', icon: Puzzle },
+        { path: 'api-playground', label: 'API Playground', icon: Code },
+        { path: 'webhooks', label: 'Webhooks', icon: Webhook },
+        { path: 'integrations', label: 'Integrations', icon: Puzzle },
       ],
     },
     {
-      path: '/dashboard/docs',
+      path: 'docs',
       label: 'Knowledge Base',
       icon: BookOpen
     },
     {
-      path: '/dashboard/settings',
+      path: 'platform',
+      label: 'Platform V2',
+      icon: Rocket,
+      children: [
+        { path: 'entities', label: 'Entity Definitions', icon: Database },
+        { path: 'hierarchy', label: 'Org Hierarchy', icon: GitBranch },
+        { path: 'code-artifacts', label: 'Code Artifacts', icon: Code },
+      ],
+    },
+    {
+      path: 'settings',
       label: 'Settings',
       icon: SettingsIcon,
       children: [
-        { path: '/dashboard/settings/organization', label: 'Organization', icon: Building2 },
-        { path: '/dashboard/settings/team', label: 'Team Members', icon: Users },
-        { path: '/dashboard/settings/billing', label: 'Billing', icon: CreditCard },
-        { path: '/dashboard/settings/api-keys', label: 'API Keys', icon: Key },
-        { path: '/dashboard/settings/security', label: 'Security', icon: Shield },
-        { path: '/dashboard/settings/branding', label: 'Branding', icon: Palette },
-        { path: '/dashboard/settings/analytics', label: 'Usage Analytics', icon: BarChart2 },
-        { path: '/dashboard/settings/domains', label: 'Domains', icon: Globe },
+        { path: 'settings/organization', label: 'Organization', icon: Building2 },
+        { path: 'settings/team', label: 'Team Members', icon: Users },
+        { path: 'settings/billing', label: 'Billing', icon: CreditCard },
+        { path: 'settings/api-keys', label: 'API Keys', icon: Key },
+        { path: 'settings/security', label: 'Security', icon: Shield },
+        { path: 'settings/branding', label: 'Branding', icon: Palette },
+        { path: 'settings/analytics', label: 'Usage Analytics', icon: BarChart2 },
+        { path: 'settings/domains', label: 'Domains', icon: Globe },
       ],
     },
   ];
@@ -360,7 +376,7 @@ const DashboardLayout: React.FC = () => {
                   </div>
                   <div className="flex items-center space-x-1">
                     <Link
-                      to="/dashboard/profile"
+                      to="profile"
                       className="flex-1 px-2 py-1.5 text-xs text-center bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
                     >
                       Profile
@@ -415,25 +431,25 @@ const DashboardLayout: React.FC = () => {
                 <div>
                   <h3 className="text-sm font-semibold text-gray-900 mb-3">Product</h3>
                   <ul className="space-y-2">
-                    <li><Link to="/dashboard/agents" className="text-sm text-gray-600 hover:text-indigo-600">AI Agents</Link></li>
-                    <li><Link to="/dashboard/campaigns" className="text-sm text-gray-600 hover:text-indigo-600">Campaigns</Link></li>
-                    <li><Link to="/dashboard/workflows" className="text-sm text-gray-600 hover:text-indigo-600">Workflows</Link></li>
-                    <li><Link to="/dashboard/integrations" className="text-sm text-gray-600 hover:text-indigo-600">Integrations</Link></li>
+                    <li><Link to="agents" className="text-sm text-gray-600 hover:text-indigo-600">AI Agents</Link></li>
+                    <li><Link to="campaigns" className="text-sm text-gray-600 hover:text-indigo-600">Campaigns</Link></li>
+                    <li><Link to="workflows" className="text-sm text-gray-600 hover:text-indigo-600">Workflows</Link></li>
+                    <li><Link to="integrations" className="text-sm text-gray-600 hover:text-indigo-600">Integrations</Link></li>
                   </ul>
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-gray-900 mb-3">Resources</h3>
                   <ul className="space-y-2">
-                    <li><Link to="/dashboard/docs" className="text-sm text-gray-600 hover:text-indigo-600">Documentation</Link></li>
-                    <li><Link to="/dashboard/api-playground" className="text-sm text-gray-600 hover:text-indigo-600">API Reference</Link></li>
-                    <li><Link to="/dashboard/templates" className="text-sm text-gray-600 hover:text-indigo-600">Templates</Link></li>
+                    <li><Link to="docs" className="text-sm text-gray-600 hover:text-indigo-600">Documentation</Link></li>
+                    <li><Link to="api-playground" className="text-sm text-gray-600 hover:text-indigo-600">API Reference</Link></li>
+                    <li><Link to="templates" className="text-sm text-gray-600 hover:text-indigo-600">Templates</Link></li>
                     <li><a href="https://blog.neurallempire.com" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 hover:text-indigo-600">Blog</a></li>
                   </ul>
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-gray-900 mb-3">Support</h3>
                   <ul className="space-y-2">
-                    <li><Link to="/dashboard/support" className="text-sm text-gray-600 hover:text-indigo-600">Help Center</Link></li>
+                    <li><Link to="support" className="text-sm text-gray-600 hover:text-indigo-600">Help Center</Link></li>
                     <li><a href="https://status.neurallempire.com" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 hover:text-indigo-600">System Status</a></li>
                     <li><a href="https://community.neurallempire.com" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 hover:text-indigo-600">Community</a></li>
                     <li><a href="mailto:support@neurallempire.com" className="text-sm text-gray-600 hover:text-indigo-600">Contact Support</a></li>

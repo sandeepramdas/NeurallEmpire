@@ -23,7 +23,7 @@ import OAuthCallback from '@/pages/auth/OAuthCallback';
 // Import settings pages
 import OrganizationProfile from '@/pages/settings/OrganizationProfile';
 import TeamMembers from '@/pages/settings/TeamMembers';
-import BillingSubscription from '@/pages/dashboard/settings/Billing';
+import BillingSubscription from '@/pages/settings/Billing';
 import APIKeys from '@/pages/settings/APIKeys';
 import SecurityCompliance from '@/pages/settings/SecurityCompliance';
 import BrandingTheme from '@/pages/settings/BrandingTheme';
@@ -42,6 +42,11 @@ import APIPlayground from '@/pages/dashboard/APIPlayground';
 import Reports from '@/pages/dashboard/Reports';
 import Messages from '@/pages/dashboard/Messages';
 import Webhooks from '@/pages/dashboard/Webhooks';
+
+// Import V2 feature pages
+import EntityDefinitions from '@/pages/dashboard/EntityDefinitions';
+import OrganizationHierarchy from '@/pages/dashboard/OrganizationHierarchy';
+import CodeArtifacts from '@/pages/dashboard/CodeArtifacts';
 
 // OAuth buttons component available for login page
 
@@ -266,6 +271,10 @@ const App: React.FC = () => {
           <Route path="webhooks" element={<Webhooks />} />
           <Route path="docs" element={<KnowledgeBase />} />
           <Route path="api-playground" element={<APIPlayground />} />
+          {/* V2 Feature Routes */}
+          <Route path="entities" element={<EntityDefinitions />} />
+          <Route path="hierarchy" element={<OrganizationHierarchy />} />
+          <Route path="code-artifacts" element={<CodeArtifacts />} />
           <Route path="settings" element={<Settings />} />
           <Route path="settings/organization" element={<OrganizationProfile />} />
           <Route path="settings/team" element={<TeamMembers />} />

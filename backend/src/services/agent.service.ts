@@ -331,6 +331,245 @@ class AgentService extends EventEmitter {
       },
     });
   }
+
+  // ==================== RAG & CONTEXT METHODS (V2) ====================
+
+  /**
+   * Execute agent with RAG context
+   * Retrieves relevant knowledge, conversations, and code before execution
+   */
+  async executeWithRAGContext(
+    agentId: string,
+    userId: string,
+    userMessage: string,
+    options?: {
+      includeKnowledge?: boolean;
+      includeConversations?: boolean;
+      includeCode?: boolean;
+    }
+  ): Promise<ExecutionResult> {
+    try {
+      const agent = await prisma.agent.findUnique({
+        where: { id: agentId },
+      });
+
+      if (!agent) {
+        throw new Error('Agent not found');
+      }
+
+      // Import vector service dynamically to avoid circular dependencies
+      const { VectorService } = await import('./vector.service');
+
+      // Build RAG context from multiple sources
+      const ragContext = await VectorService.buildRAGContext(
+        agent.organizationId,
+        agentId,
+        userId,
+        userMessage
+      );
+
+      // Store this conversation for future RAG retrieval
+      const agentResponse = await this.executeAgent(agentId, {
+        userMessage,
+        context: ragContext.context,
+        sources: ragContext.sources
+      });
+
+      // Store conversation with embedding
+      await VectorService.storeConversation(
+        agent.organizationId,
+        agentId,
+        userId,
+        userMessage,
+        JSON.stringify(agentResponse),
+        {
+          ragSources: ragContext.sources,
+          timestamp: new Date().toISOString()
+        }
+      );
+
+      return agentResponse;
+    } catch (error: any) {
+      console.error('Execute with RAG context error:', error);
+      throw new Error(error.message || 'Failed to execute agent with RAG context');
+    }
+  }
+
+  /**
+   * Get relevant context for agent decision-making
+   */
+  async getAgentContext(
+    agentId: string,
+    query: string,
+    contextTypes: ('knowledge' | 'conversations' | 'code')[] = ['knowledge', 'conversations']
+  ) {
+    try {
+      const agent = await prisma.agent.findUnique({
+        where: { id: agentId },
+        select: { organizationId: true }
+      });
+
+      if (!agent) {
+        throw new Error('Agent not found');
+      }
+
+      const { VectorService } = await import('./vector.service');
+      const context: any = {};
+
+      if (contextTypes.includes('knowledge')) {
+        context.knowledge = await VectorService.searchKnowledge({
+          organizationId: agent.organizationId,
+          query,
+          limit: 5,
+          minSimilarity: 0.7
+        });
+      }
+
+      if (contextTypes.includes('conversations')) {
+        context.conversations = await VectorService.getRelevantConversations(
+          agent.organizationId,
+          agentId,
+          query,
+          3
+        );
+      }
+
+      if (contextTypes.includes('code')) {
+        context.codeSnippets = await VectorService.searchCodeSnippets(
+          agent.organizationId,
+          query,
+          undefined,
+          3
+        );
+      }
+
+      return context;
+    } catch (error: any) {
+      console.error('Get agent context error:', error);
+      throw new Error('Failed to get agent context');
+    }
+  }
+
+  /**
+   * Store knowledge in agent's knowledge base
+   */
+  async addAgentKnowledge(
+    agentId: string,
+    content: string,
+    type: 'document' | 'code' | 'conversation' | 'entity' | 'custom',
+    metadata?: Record<string, any>,
+    createdBy?: string
+  ) {
+    try {
+      const agent = await prisma.agent.findUnique({
+        where: { id: agentId },
+        select: { organizationId: true }
+      });
+
+      if (!agent) {
+        throw new Error('Agent not found');
+      }
+
+      const { VectorService } = await import('./vector.service');
+
+      return await VectorService.createKnowledge({
+        organizationId: agent.organizationId,
+        content,
+        type,
+        metadata: {
+          ...metadata,
+          agentId
+        },
+        source: `agent:${agentId}`,
+        tags: metadata?.tags || [],
+        createdBy: createdBy || agentId
+      });
+    } catch (error: any) {
+      console.error('Add agent knowledge error:', error);
+      throw new Error('Failed to add agent knowledge');
+    }
+  }
+
+  /**
+   * Search agent's knowledge base
+   */
+  async searchAgentKnowledge(
+    agentId: string,
+    query: string,
+    limit: number = 10
+  ) {
+    try {
+      const agent = await prisma.agent.findUnique({
+        where: { id: agentId },
+        select: { organizationId: true }
+      });
+
+      if (!agent) {
+        throw new Error('Agent not found');
+      }
+
+      const { VectorService } = await import('./vector.service');
+
+      return await VectorService.searchKnowledge({
+        organizationId: agent.organizationId,
+        query,
+        limit,
+        minSimilarity: 0.6
+      });
+    } catch (error: any) {
+      console.error('Search agent knowledge error:', error);
+      throw new Error('Failed to search agent knowledge');
+    }
+  }
+
+  /**
+   * Get agent conversation history with semantic search
+   */
+  async getAgentConversationHistory(
+    agentId: string,
+    query?: string,
+    limit: number = 20
+  ) {
+    try {
+      const agent = await prisma.agent.findUnique({
+        where: { id: agentId },
+        select: { organizationId: true }
+      });
+
+      if (!agent) {
+        throw new Error('Agent not found');
+      }
+
+      if (query) {
+        // Use vector search for relevant conversations
+        const { VectorService } = await import('./vector.service');
+        return await VectorService.getRelevantConversations(
+          agent.organizationId,
+          agentId,
+          query,
+          limit
+        );
+      } else {
+        // Return recent conversations chronologically
+        return await prisma.$queryRaw`
+          SELECT
+            id,
+            "userMessage",
+            "agentResponse",
+            metadata,
+            "createdAt"
+          FROM "ConversationHistory"
+          WHERE "agentId" = ${agentId}
+            AND "deletedAt" IS NULL
+          ORDER BY "createdAt" DESC
+          LIMIT ${limit}
+        `;
+      }
+    } catch (error: any) {
+      console.error('Get conversation history error:', error);
+      throw new Error('Failed to get conversation history');
+    }
+  }
 }
 
 export const agentService = new AgentService();

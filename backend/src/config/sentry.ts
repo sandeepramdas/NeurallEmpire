@@ -1,9 +1,10 @@
 import * as Sentry from '@sentry/node';
-import { Application } from 'express';
+import { nodeProfilingIntegration } from '@sentry/profiling-node';
+import { Application, Express } from 'express';
 
 /**
- * Sentry Error Monitoring Configuration (Simplified)
- * Compatible with latest @sentry/node
+ * Sentry Error Monitoring Configuration
+ * Complete integration with Express, profiling, and error tracking
  */
 
 const SENTRY_DSN = process.env.SENTRY_DSN;
@@ -11,10 +12,9 @@ const NODE_ENV = process.env.NODE_ENV || 'development';
 const APP_VERSION = process.env.npm_package_version || '1.0.0';
 
 /**
- * Initialize Sentry
+ * Initialize Sentry with full Express integration
  */
-export const initSentry = (app?: Application): void => {
-  // Only enable Sentry in production or if DSN is explicitly provided
+export const initSentry = (app: Express): void => {
   if (!SENTRY_DSN) {
     console.log('ℹ️  Sentry DSN not configured, skipping error monitoring setup');
     return;
@@ -27,6 +27,16 @@ export const initSentry = (app?: Application): void => {
 
     // Performance Monitoring
     tracesSampleRate: NODE_ENV === 'production' ? 0.1 : 1.0,
+    profilesSampleRate: NODE_ENV === 'production' ? 0.1 : 1.0,
+
+    // Integrations
+    integrations: [
+      // Express integration with tracing
+      new Sentry.Integrations.Http({ tracing: true }),
+      new Sentry.Integrations.Express({ app }),
+      // Performance profiling
+      nodeProfilingIntegration(),
+    ],
 
     // Filter out sensitive data
     beforeSend(event) {
@@ -34,6 +44,18 @@ export const initSentry = (app?: Application): void => {
       if (event.request?.headers) {
         delete event.request.headers.authorization;
         delete event.request.headers.cookie;
+      }
+
+      // Remove password fields from request data
+      if (event.request?.data) {
+        const data = event.request.data;
+        if (typeof data === 'object') {
+          Object.keys(data).forEach(key => {
+            if (key.toLowerCase().includes('password') || key.toLowerCase().includes('secret')) {
+              data[key] = '[Filtered]';
+            }
+          });
+        }
       }
 
       // Remove sensitive data from breadcrumbs
@@ -61,6 +83,8 @@ export const initSentry = (app?: Application): void => {
       'Network request failed',
       'ValidationError',
       'Invalid input',
+      'ResizeObserver loop limit exceeded',
+      'Can\'t find variable: gtag',
     ],
   });
 
@@ -68,9 +92,23 @@ export const initSentry = (app?: Application): void => {
 };
 
 /**
- * Manually capture error
+ * Express middleware handlers
  */
-export const captureError = (
+export const sentryRequestHandler = () => Sentry.Handlers.requestHandler();
+export const sentryTracingHandler = () => Sentry.Handlers.tracingHandler();
+
+export const sentryErrorHandler = () => Sentry.Handlers.errorHandler({
+  shouldHandleError(error) {
+    // Capture 4xx and 5xx errors
+    return error.status >= 400;
+  },
+});
+
+/**
+ * Manual error capture with context
+ * Alias for backward compatibility
+ */
+export const captureException = (
   error: Error,
   context?: {
     userId?: string;
@@ -78,7 +116,7 @@ export const captureError = (
     companyId?: string;
     tags?: Record<string, string>;
     extra?: Record<string, any>;
-  }
+  } | Record<string, any>
 ): void => {
   Sentry.withScope(scope => {
     if (context?.userId) {
@@ -99,11 +137,17 @@ export const captureError = (
     }
     if (context?.extra) {
       scope.setExtras(context.extra);
+    } else if (context && !context.userId && !context.tags && !context.organizationId && !context.companyId) {
+      // If context is just extra data
+      scope.setExtras(context);
     }
 
     Sentry.captureException(error);
   });
 };
+
+// Backward compatibility alias
+export const captureError = captureException;
 
 /**
  * Capture message (for non-error events)
@@ -133,12 +177,34 @@ export const captureMessage = (
   });
 };
 
-// Export basic error handler middleware
-export const sentryErrorHandler = (err: any, req: any, res: any, next: any) => {
-  if (SENTRY_DSN && err.status >= 500) {
-    Sentry.captureException(err);
-  }
-  next(err);
+/**
+ * Set user context
+ */
+export const setUser = (user: { id: string; email?: string; organizationId?: string }) => {
+  Sentry.setUser({
+    id: user.id,
+    email: user.email,
+    organizationId: user.organizationId,
+  });
+};
+
+/**
+ * Clear user context
+ */
+export const clearUser = () => {
+  Sentry.setUser(null);
+};
+
+/**
+ * Add breadcrumb for debugging
+ */
+export const addBreadcrumb = (message: string, category: string, data?: Record<string, any>) => {
+  Sentry.addBreadcrumb({
+    message,
+    category,
+    data,
+    level: 'info',
+  });
 };
 
 export default Sentry;

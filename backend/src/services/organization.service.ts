@@ -650,6 +650,308 @@ export async function leaveOrganization(userId: string, organizationId: string) 
   }
 }
 
+// ==================== HIERARCHY METHODS (V2) ====================
+
+/**
+ * Get all descendants of an organization (children, grandchildren, etc.)
+ */
+export async function getOrganizationDescendants(
+  organizationId: string,
+  maxDepth?: number
+): Promise<any[]> {
+  try {
+    const results = await prisma.$queryRaw<Array<{
+      id: string;
+      name: string;
+      slug: string;
+      level: number;
+      depth_from_parent: number;
+      type: string;
+    }>>`
+      SELECT
+        o.id,
+        o.name,
+        o.slug,
+        o.level,
+        oc.depth as depth_from_parent,
+        o.type
+      FROM "OrganizationClosure" oc
+      JOIN organizations o ON o.id = oc."descendantId"
+      WHERE oc."ancestorId" = ${organizationId}
+        AND oc."descendantId" != ${organizationId}
+        ${maxDepth ? prisma.$queryRaw`AND oc.depth <= ${maxDepth}` : prisma.$queryRaw``}
+        AND o."deletedAt" IS NULL
+      ORDER BY oc.depth, o.name
+    `;
+
+    return results;
+  } catch (error: any) {
+    console.error('Get descendants error:', error);
+    throw new Error('Failed to get organization descendants');
+  }
+}
+
+/**
+ * Get all ancestors of an organization (parent, grandparent, etc.)
+ */
+export async function getOrganizationAncestors(
+  organizationId: string
+): Promise<any[]> {
+  try {
+    const results = await prisma.$queryRaw<Array<{
+      id: string;
+      name: string;
+      slug: string;
+      level: number;
+      depth_to_child: number;
+      type: string;
+    }>>`
+      SELECT
+        o.id,
+        o.name,
+        o.slug,
+        o.level,
+        oc.depth as depth_to_child,
+        o.type
+      FROM "OrganizationClosure" oc
+      JOIN organizations o ON o.id = oc."ancestorId"
+      WHERE oc."descendantId" = ${organizationId}
+        AND oc."ancestorId" != ${organizationId}
+        AND o."deletedAt" IS NULL
+      ORDER BY oc.depth DESC
+    `;
+
+    return results;
+  } catch (error: any) {
+    console.error('Get ancestors error:', error);
+    throw new Error('Failed to get organization ancestors');
+  }
+}
+
+/**
+ * Get direct children of an organization
+ */
+export async function getOrganizationChildren(
+  organizationId: string
+): Promise<any[]> {
+  try {
+    const children = await prisma.organization.findMany({
+      where: {
+        parentId: organizationId,
+        deletedAt: null
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        level: true,
+        type: true,
+        hierarchyPosition: true
+      },
+      orderBy: [
+        { hierarchyPosition: 'asc' },
+        { name: 'asc' }
+      ]
+    });
+
+    return children;
+  } catch (error: any) {
+    console.error('Get children error:', error);
+    throw new Error('Failed to get organization children');
+  }
+}
+
+/**
+ * Set parent organization (create hierarchy relationship)
+ */
+export async function setOrganizationParent(
+  organizationId: string,
+  parentId: string | null,
+  userId: string
+): Promise<void> {
+  try {
+    // Prevent circular references
+    if (parentId) {
+      const descendants = await getOrganizationDescendants(organizationId);
+      if (descendants.some(d => d.id === parentId)) {
+        throw new Error('Cannot set parent: would create circular reference');
+      }
+    }
+
+    // Calculate new level and path
+    let newLevel = 0;
+    let newPath = organizationId;
+    let ancestorIds: string[] = [];
+
+    if (parentId) {
+      const parent = await prisma.organization.findUnique({
+        where: { id: parentId },
+        select: { level: true, path: true, ancestorIds: true }
+      });
+
+      if (!parent) {
+        throw new Error('Parent organization not found');
+      }
+
+      newLevel = parent.level + 1;
+      newPath = parent.path ? `${parent.path}.${organizationId}` : `${parentId}.${organizationId}`;
+      ancestorIds = [...(parent.ancestorIds || []), parentId];
+    }
+
+    // Update organization
+    await prisma.organization.update({
+      where: { id: organizationId },
+      data: {
+        parentId,
+        level: newLevel,
+        path: newPath,
+        ancestorIds,
+        updatedAt: new Date()
+      }
+    });
+
+    // Refresh the closure table
+    await prisma.$executeRaw`REFRESH MATERIALIZED VIEW CONCURRENTLY "OrganizationClosure"`;
+
+    // Update all descendants' levels and paths recursively
+    await updateDescendantHierarchy(organizationId);
+
+  } catch (error: any) {
+    console.error('Set parent error:', error);
+    throw new Error(error.message || 'Failed to set organization parent');
+  }
+}
+
+/**
+ * Update hierarchy info for all descendants (recursive)
+ */
+async function updateDescendantHierarchy(organizationId: string): Promise<void> {
+  const children = await prisma.organization.findMany({
+    where: { parentId: organizationId }
+  });
+
+  for (const child of children) {
+    const parent = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { level: true, path: true, ancestorIds: true }
+    });
+
+    if (parent) {
+      await prisma.organization.update({
+        where: { id: child.id },
+        data: {
+          level: parent.level + 1,
+          path: parent.path ? `${parent.path}.${child.id}` : `${organizationId}.${child.id}`,
+          ancestorIds: [...(parent.ancestorIds || []), organizationId]
+        }
+      });
+
+      // Recursive update for grandchildren
+      await updateDescendantHierarchy(child.id);
+    }
+  }
+}
+
+/**
+ * Check if user has access to organization (including via hierarchy)
+ */
+export async function userHasOrganizationAccess(
+  userId: string,
+  organizationId: string,
+  inheritAccess: boolean = true
+): Promise<boolean> {
+  try {
+    if (!inheritAccess) {
+      // Direct access only
+      const access = await prisma.userOrganization.findFirst({
+        where: {
+          userId,
+          organizationId,
+          status: 'ACTIVE'
+        }
+      });
+      return !!access;
+    } else {
+      // Check access to org or any ancestor
+      const result = await prisma.$queryRaw<Array<{ has_access: boolean }>>`
+        SELECT EXISTS(
+          SELECT 1
+          FROM "user_organizations" uo
+          JOIN "OrganizationClosure" oc
+            ON oc."ancestorId" = uo."organizationId"
+          WHERE uo."userId" = ${userId}
+            AND oc."descendantId" = ${organizationId}
+            AND uo.status = 'ACTIVE'
+        ) as has_access
+      `;
+
+      return result[0]?.has_access || false;
+    }
+  } catch (error: any) {
+    console.error('Check access error:', error);
+    return false;
+  }
+}
+
+/**
+ * Get organization hierarchy tree (for visualization)
+ */
+export async function getOrganizationHierarchyTree(
+  rootOrganizationId: string
+): Promise<any> {
+  try {
+    const root = await prisma.organization.findUnique({
+      where: { id: rootOrganizationId },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        level: true,
+        type: true
+      }
+    });
+
+    if (!root) {
+      throw new Error('Root organization not found');
+    }
+
+    // Build tree recursively
+    const buildTree = async (orgId: string): Promise<any> => {
+      const org = await prisma.organization.findUnique({
+        where: { id: orgId },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          level: true,
+          type: true
+        }
+      });
+
+      const children = await prisma.organization.findMany({
+        where: {
+          parentId: orgId,
+          deletedAt: null
+        },
+        orderBy: [
+          { hierarchyPosition: 'asc' },
+          { name: 'asc' }
+        ]
+      });
+
+      return {
+        ...org,
+        children: await Promise.all(children.map(child => buildTree(child.id)))
+      };
+    };
+
+    return buildTree(rootOrganizationId);
+  } catch (error: any) {
+    console.error('Get hierarchy tree error:', error);
+    throw new Error('Failed to get organization hierarchy tree');
+  }
+}
+
 export default {
   createOrganization,
   getUserOrganizations,
@@ -658,4 +960,11 @@ export default {
   acceptOrganizationInvite,
   getUserPendingInvites,
   leaveOrganization,
+  // V2: Hierarchy methods
+  getOrganizationDescendants,
+  getOrganizationAncestors,
+  getOrganizationChildren,
+  setOrganizationParent,
+  userHasOrganizationAccess,
+  getOrganizationHierarchyTree,
 };
