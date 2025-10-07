@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/node';
+import { httpIntegration, expressIntegration } from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import { Application, Express } from 'express';
 
@@ -32,8 +33,8 @@ export const initSentry = (app: Express): void => {
     // Integrations
     integrations: [
       // Express integration with tracing
-      new Sentry.Integrations.Http({ tracing: true }),
-      new Sentry.Integrations.Express({ app }),
+      httpIntegration(),
+      expressIntegration({ app }),
       // Performance profiling
       nodeProfilingIntegration(),
     ],
