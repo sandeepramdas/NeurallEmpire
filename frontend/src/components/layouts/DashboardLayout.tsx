@@ -40,7 +40,9 @@ import {
   Rocket,
   ShoppingCart,
   Receipt,
-  DollarSign
+  DollarSign,
+  Apple,
+  Heart
 } from 'lucide-react';
 
 interface NavItem {
@@ -107,6 +109,14 @@ const DashboardLayout: React.FC = () => {
       children: [
         { path: 'sales-order', label: 'Sales Order', icon: ShoppingCart },
         { path: 'sales-invoice', label: 'Sales Invoice', icon: Receipt },
+      ],
+    },
+    {
+      path: 'healthcare',
+      label: 'Healthcare',
+      icon: Heart,
+      children: [
+        { path: 'patient-diet-plan', label: 'Patient Diet Plan', icon: Apple },
       ],
     },
     {

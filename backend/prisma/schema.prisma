@@ -177,6 +177,7 @@ model Organization {
   files            File[]          @relation("OrganizationFiles") // NEW: File storage
   emailNotifications EmailNotification[] @relation("OrgEmails") // NEW: Email notifications
   analyticsEvents  AnalyticsEvent[] @relation("OrgEvents") // NEW: Analytics events
+  patientDietPlans PatientDietPlan[] @relation("OrgDietPlans") // NEW: Patient diet plans
 
   @@index([status])
   @@index([planType])
@@ -236,6 +237,7 @@ model Company {
   transactions    Transaction[]        // Accounting: Transactions
   customers       Customer[]           // Accounting: Customers
   vendors         Vendor[]             // Accounting: Vendors
+  patientDietPlans PatientDietPlan[]   // Healthcare: Patient diet plans
 
   @@unique([organizationId, companyCode])
   @@index([organizationId])
@@ -2342,4 +2344,58 @@ enum TransactionStatus {
   POSTED
   VOID
   REVERSED
+}
+
+// ==================== PATIENT DIET PLAN (HEALTHCARE) ====================
+
+model PatientDietPlan {
+  id              String   @id @default(cuid())
+  organizationId  String
+  companyId       String?
+
+  // Patient Information
+  patientName     String
+  patientAge      Int?
+  patientGender   String?
+
+  // Medical Information
+  disease         String   // Primary disease/condition
+  allergies       String[] @default([])
+  medications     String[] @default([])
+  dietaryRestrictions String[] @default([])
+
+  // Plan Configuration
+  timespan        String   @default("weekly") // "weekly", "monthly", "custom"
+  customDays      Int?     // For custom timespan
+  mealsPerDay     Int      @default(3) // Number of meals per day
+
+  // Generated Diet Plan (JSON)
+  dietPlan        Json     // Structured diet plan with meals, recipes, nutrition info
+
+  // Additional Information
+  notes           String?
+  specialInstructions String?
+
+  // AI Generation Metadata
+  model           String   @default("gpt-4")
+  generatedBy     String   // User ID who requested the plan
+  generationTokens Json?   // Token usage stats
+
+  // Status
+  status          String   @default("active") // "active", "completed", "archived"
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  validUntil      DateTime? // Expiry date for the plan
+
+  // Relations
+  organization    Organization @relation("OrgDietPlans", fields: [organizationId], references: [id], onDelete: Cascade)
+  company         Company?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([companyId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("patient_diet_plans")
 }

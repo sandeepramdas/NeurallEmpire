@@ -52,6 +52,9 @@ import CodeArtifacts from '@/pages/dashboard/CodeArtifacts';
 import SalesOrder from '@/pages/dashboard/SalesOrder';
 import SalesInvoice from '@/pages/dashboard/SalesInvoice';
 
+// Import Healthcare pages
+import PatientDietPlan from '@/pages/dashboard/PatientDietPlan';
+
 // OAuth buttons component available for login page
 
 // Subdomain-aware components
@@ -278,6 +281,8 @@ const App: React.FC = () => {
           {/* Sales Routes */}
           <Route path="sales-order" element={<SalesOrder />} />
           <Route path="sales-invoice" element={<SalesInvoice />} />
+          {/* Healthcare Routes */}
+          <Route path="patient-diet-plan" element={<PatientDietPlan />} />
           {/* V2 Feature Routes */}
           <Route path="entities" element={<EntityDefinitions />} />
           <Route path="hierarchy" element={<OrganizationHierarchy />} />

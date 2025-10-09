@@ -24,6 +24,9 @@ import entitiesRoutes from './entities';
 import hierarchyRoutes from './hierarchy';
 import codeArtifactsRoutes from './code-artifacts';
 
+// Import healthcare routes
+import dietPlansRoutes from './diet-plans';
+
 // Import infrastructure routes
 import settingsRoutes from '../modules/system-settings/routes/settings.routes';
 import filesRoutes from '../modules/files/routes/files.routes';
@@ -67,6 +70,9 @@ router.use('/accounting', accountingRoutes);
 router.use('/entities', authenticate, entitiesRoutes);
 router.use('/hierarchy', authenticate, hierarchyRoutes);
 router.use('/code-artifacts', authenticate, codeArtifactsRoutes);
+
+// Healthcare routes (require authentication)
+router.use('/diet-plans', authenticate, dietPlansRoutes);
 
 // Admin routes (require admin authentication)
 router.use('/admin', authenticate, adminRoutes);
