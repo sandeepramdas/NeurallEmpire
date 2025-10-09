@@ -48,6 +48,10 @@ import EntityDefinitions from '@/pages/dashboard/EntityDefinitions';
 import OrganizationHierarchy from '@/pages/dashboard/OrganizationHierarchy';
 import CodeArtifacts from '@/pages/dashboard/CodeArtifacts';
 
+// Import Sales pages
+import SalesOrder from '@/pages/dashboard/SalesOrder';
+import SalesInvoice from '@/pages/dashboard/SalesInvoice';
+
 // OAuth buttons component available for login page
 
 // Subdomain-aware components
@@ -271,6 +275,9 @@ const App: React.FC = () => {
           <Route path="webhooks" element={<Webhooks />} />
           <Route path="docs" element={<KnowledgeBase />} />
           <Route path="api-playground" element={<APIPlayground />} />
+          {/* Sales Routes */}
+          <Route path="sales-order" element={<SalesOrder />} />
+          <Route path="sales-invoice" element={<SalesInvoice />} />
           {/* V2 Feature Routes */}
           <Route path="entities" element={<EntityDefinitions />} />
           <Route path="hierarchy" element={<OrganizationHierarchy />} />

@@ -37,7 +37,10 @@ import {
   Globe,
   Database,
   GitBranch,
-  Rocket
+  Rocket,
+  ShoppingCart,
+  Receipt,
+  DollarSign
 } from 'lucide-react';
 
 interface NavItem {
@@ -95,6 +98,15 @@ const DashboardLayout: React.FC = () => {
       children: [
         { path: 'campaigns', label: 'Campaigns', icon: Megaphone },
         { path: 'messages', label: 'Messages', icon: MessageSquare },
+      ],
+    },
+    {
+      path: 'sales',
+      label: 'Sales',
+      icon: DollarSign,
+      children: [
+        { path: 'sales-order', label: 'Sales Order', icon: ShoppingCart },
+        { path: 'sales-invoice', label: 'Sales Invoice', icon: Receipt },
       ],
     },
     {

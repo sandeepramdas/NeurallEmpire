@@ -264,11 +264,10 @@ class AgentService extends EventEmitter {
   }
 
   private async executeAgentLogic(agent: any, input?: any): Promise<any> {
-    // Use the new AgentFactory to create specialized agent instances
+    // Try real AI execution first
     try {
-      const { AgentFactory } = await import('@/agents');
-      const agentInstance = AgentFactory.createAgent(agent.id, agent.type, agent);
-      const result = await agentInstance.execute(input);
+      const { agentExecutor } = await import('./agent-executor.service');
+      const result = await agentExecutor.execute(agent, input);
 
       if (result.success) {
         return {
@@ -279,7 +278,23 @@ class AgentService extends EventEmitter {
         throw new Error(result.error || 'Agent execution failed');
       }
     } catch (error) {
-      // Fallback to simple simulation if specialized agents fail
+      // Try AgentFactory for specialized agents
+      try {
+        const { AgentFactory } = await import('@/agents');
+        const agentInstance = AgentFactory.createAgent(agent.id, agent.type, agent);
+        const result = await agentInstance.execute(input);
+
+        if (result.success) {
+          return {
+            output: result.output,
+            metrics: result.metrics,
+          };
+        }
+      } catch (factoryError) {
+        console.warn(`AgentFactory failed, using simulation:`, factoryError);
+      }
+
+      // Final fallback to simulation
       console.warn(`Falling back to simulation for agent ${agent.type}:`, error);
       return this.executeSimpleAgent(agent, input);
     }
