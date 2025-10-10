@@ -493,8 +493,7 @@ router.get('/invoices/:invoiceId/download', async (req: Request, res: Response) 
         <div class="party-title">Bill To</div>
         <div class="party-details">
           <div class="company-name">${invoice.organization.name}</div>
-          <div>${invoice.organization.billingEmail || invoice.organization.email || 'No email'}</div>
-          ${invoice.organization.billingAddress ? `<div>${invoice.organization.billingAddress}</div>` : ''}
+          <div>${invoice.organization.billingEmail || 'No email'}</div>
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/node';
 import { httpIntegration, expressIntegration } from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
-import { Application, Express } from 'express';
+import { Application } from 'express';
 
 /**
  * Sentry Error Monitoring Configuration
@@ -15,7 +15,7 @@ const APP_VERSION = process.env.npm_package_version || '1.0.0';
 /**
  * Initialize Sentry with full Express integration
  */
-export const initSentry = (app: Express): void => {
+export const initSentry = (app: Application): void => {
   if (!SENTRY_DSN) {
     console.log('ℹ️  Sentry DSN not configured, skipping error monitoring setup');
     return;
@@ -34,7 +34,7 @@ export const initSentry = (app: Express): void => {
     integrations: [
       // Express integration with tracing
       httpIntegration(),
-      expressIntegration({ app }),
+      expressIntegration(),
       // Performance profiling
       nodeProfilingIntegration(),
     ],
@@ -94,16 +94,17 @@ export const initSentry = (app: Express): void => {
 
 /**
  * Express middleware handlers
+ * Note: In Sentry v10+, middleware is automatically set up via integrations
+ * These exports are kept for backward compatibility
  */
-export const sentryRequestHandler = () => Sentry.Handlers.requestHandler();
-export const sentryTracingHandler = () => Sentry.Handlers.tracingHandler();
+export const sentryRequestHandler = () => (req: any, res: any, next: any) => next();
+export const sentryTracingHandler = () => (req: any, res: any, next: any) => next();
 
-export const sentryErrorHandler = () => Sentry.Handlers.errorHandler({
-  shouldHandleError(error) {
-    // Capture 4xx and 5xx errors
-    return error.status >= 400;
-  },
-});
+export const sentryErrorHandler = () => (err: any, req: any, res: any, next: any) => {
+  // Capture error in Sentry
+  Sentry.captureException(err);
+  next(err);
+};
 
 /**
  * Manual error capture with context
@@ -126,7 +127,7 @@ export const captureException = (
 
     if (context?.tags) {
       Object.entries(context.tags).forEach(([key, value]) => {
-        scope.setTag(key, value);
+        scope.setTag(key, String(value));
       });
     }
 
@@ -166,7 +167,7 @@ export const captureMessage = (
 
     if (context?.tags) {
       Object.entries(context.tags).forEach(([key, value]) => {
-        scope.setTag(key, value);
+        scope.setTag(key, String(value));
       });
     }
 

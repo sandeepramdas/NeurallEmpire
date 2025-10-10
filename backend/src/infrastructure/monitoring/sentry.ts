@@ -1,8 +1,9 @@
 import * as Sentry from '@sentry/node';
+import { httpIntegration, expressIntegration } from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
-import { Express } from 'express';
+import { Application } from 'express';
 
-export const initSentry = (app: Express) => {
+export const initSentry = (app: Application) => {
   const SENTRY_DSN = process.env.SENTRY_DSN;
   const NODE_ENV = process.env.NODE_ENV || 'development';
 
@@ -22,8 +23,8 @@ export const initSentry = (app: Express) => {
     // Integrations
     integrations: [
       // Express integration
-      new Sentry.Integrations.Http({ tracing: true }),
-      new Sentry.Integrations.Express({ app }),
+      httpIntegration(),
+      expressIntegration(),
       // Profiling
       nodeProfilingIntegration(),
     ],
@@ -65,14 +66,12 @@ export const initSentry = (app: Express) => {
   console.log('✅ Sentry error monitoring initialized');
 };
 
-export const sentryRequestHandler = () => Sentry.Handlers.requestHandler();
-export const sentryTracingHandler = () => Sentry.Handlers.tracingHandler();
-export const sentryErrorHandler = () => Sentry.Handlers.errorHandler({
-  shouldHandleError(error) {
-    // Capture 4xx and 5xx errors
-    return error.status >= 400;
-  },
-});
+export const sentryRequestHandler = () => (req: any, res: any, next: any) => next();
+export const sentryTracingHandler = () => (req: any, res: any, next: any) => next();
+export const sentryErrorHandler = () => (err: any, req: any, res: any, next: any) => {
+  Sentry.captureException(err);
+  next(err);
+};
 
 // Manual error capture
 export const captureException = (error: Error, context?: Record<string, any>) => {

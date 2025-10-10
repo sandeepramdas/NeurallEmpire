@@ -1,7 +1,9 @@
 import { Request, Response } from 'express';
-import { prisma } from '@/config/database';
+import { prisma } from '@/server';
 import { dietPlanService } from '@/services/diet-plan.service';
-import { AuthRequest } from '@/middleware/auth';
+import { AuthenticatedRequest } from '@/types';
+
+type AuthRequest = AuthenticatedRequest;
 
 /**
  * Diet Plan Controller

@@ -339,7 +339,7 @@ export class OAuthService {
         email: user.email
       },
       config.JWT_SECRET,
-      { expiresIn: config.JWT_EXPIRES_IN }
+      { expiresIn: config.JWT_EXPIRES_IN as any }
     );
 
     // Log successful OAuth login
