@@ -32,6 +32,9 @@ import settingsRoutes from '../modules/system-settings/routes/settings.routes';
 import filesRoutes from '../modules/files/routes/files.routes';
 import analyticsRoutes from '../modules/analytics/routes/analytics.routes';
 
+// Import orchestrator routes
+import orchestratorRoutes from './orchestrator.routes';
+
 const router = Router();
 
 // Health check
@@ -85,6 +88,9 @@ router.use('/webhooks', webhooksRoutes);
 router.use('/settings', settingsRoutes);
 router.use('/files', filesRoutes);
 router.use('/analytics', analyticsRoutes);
+
+// Orchestrator routes (require authentication)
+router.use('/orchestrator', authenticate, orchestratorRoutes);
 
 // API documentation
 router.get('/', (req, res) => {

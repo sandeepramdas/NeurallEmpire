@@ -2346,6 +2346,317 @@ enum TransactionStatus {
   REVERSED
 }
 
+// ==================== ORCHESTRATOR SYSTEM ====================
+
+// Tool Permissions
+model ToolPermission {
+  id              String   @id @default(cuid())
+  toolId          String
+  organizationId  String
+  userId          String?
+  roleId          String?
+
+  actions         Json     // Array of actions: execute, view, configure, approve, admin
+  conditions      Json?    // maxExecutionsPerDay, allowedDays, allowedHours, requiresApproval
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([toolId, organizationId])
+  @@index([userId])
+  @@index([roleId])
+  @@map("tool_permissions")
+}
+
+// Tool Execution Tracking
+model ToolExecution {
+  id              String   @id @default(cuid())
+  toolId          String
+  userId          String
+  organizationId  String
+  agentId         String
+  sessionId       String?
+
+  success         Boolean
+  duration        Int      // milliseconds
+  retryCount      Int      @default(0)
+  errorMessage    String?
+
+  executedAt      DateTime @default(now())
+
+  @@index([toolId, organizationId])
+  @@index([userId])
+  @@index([executedAt])
+  @@map("tool_executions")
+}
+
+// Workflows
+model Workflow {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  version         String
+  organizationId  String
+
+  definition      Json     // Full workflow definition
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  executions      OrchestratorWorkflowExecution[]
+
+  @@index([organizationId])
+  @@index([isActive])
+  @@map("workflows")
+}
+
+// Orchestrator Workflow Executions
+model OrchestratorWorkflowExecution {
+  id              String   @id @default(cuid())
+  workflowId      String
+  executionId     String   @unique
+  userId          String
+  organizationId  String
+  agentId         String
+
+  status          String   // started, completed, failed
+  duration        Int      @default(0)
+  errorMessage    String?
+
+  executedAt      DateTime @default(now())
+
+  workflow        Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([workflowId])
+  @@index([organizationId])
+  @@index([executionId])
+  @@map("orchestrator_workflow_executions")
+}
+
+// Multi-Agent Collaborations
+model AgentCollaboration {
+  id              String   @id @default(cuid())
+  organizationId  String
+  pattern         String   // sequential, parallel, hierarchical, consensus, debate
+  name            String
+  description     String?
+
+  definition      Json     // Full collaboration definition
+  status          String   @default("pending")
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([pattern])
+  @@map("agent_collaborations")
+}
+
+// Schedules
+model Schedule {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  organizationId  String
+  agentId         String
+  type            String   // one-time, recurring, cron
+
+  definition      Json     // Full schedule definition
+  isActive        Boolean  @default(true)
+  nextExecutionAt DateTime?
+  lastExecutedAt  DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  executions      ScheduleExecution[]
+
+  @@index([organizationId])
+  @@index([agentId])
+  @@index([isActive])
+  @@index([nextExecutionAt])
+  @@map("schedules")
+}
+
+// Schedule Executions
+model ScheduleExecution {
+  id              String   @id @default(cuid())
+  scheduleId      String
+  scheduledFor    DateTime
+  executedAt      DateTime?
+
+  status          String   // pending, running, completed, failed, skipped
+  result          Json?
+  error           String?
+  duration        Int?
+  attempts        Int      @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  schedule        Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+
+  @@index([scheduleId])
+  @@index([status])
+  @@index([scheduledFor])
+  @@map("schedule_executions")
+}
+
+// Marketplace Items
+model MarketplaceItem {
+  id                  String   @id @default(cuid())
+  type                String   // agent, tool, integration, workflow
+  name                String
+  description         String
+  longDescription     String?
+  version             String
+  author              String
+  authorOrganizationId String?
+
+  isPublic            Boolean  @default(true)
+  isOfficial          Boolean  @default(false)
+
+  category            String
+  tags                String[] @default([])
+  pricing             Json     // type, price, trialDays
+
+  icon                String?
+  screenshots         String[] @default([])
+  demoVideo           String?
+
+  definition          Json     // Tool/agent/workflow definition
+  requirements        Json?    // minVersion, permissions, dependencies
+  documentation       String?
+  changelog           String?
+
+  installCount        Int      @default(0)
+  activeInstallCount  Int      @default(0)
+  rating              Float    @default(0)
+  reviewCount         Int      @default(0)
+
+  publishedAt         DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  verifiedAt          DateTime?
+
+  installations       MarketplaceInstallation[]
+  reviews             MarketplaceReview[]
+
+  @@index([type])
+  @@index([category])
+  @@index([isPublic])
+  @@index([isOfficial])
+  @@map("marketplace_items")
+}
+
+// Marketplace Installations
+model MarketplaceInstallation {
+  id                  String   @id @default(cuid())
+  marketplaceItemId   String
+  organizationId      String
+  installedBy         String
+  version             String
+
+  status              String   // active, inactive, failed
+  usageCount          Int      @default(0)
+  config              Json?
+  metadata            Json?
+
+  installedAt         DateTime @default(now())
+  lastUsedAt          DateTime?
+  updatedAt           DateTime @updatedAt
+
+  marketplaceItem     MarketplaceItem @relation(fields: [marketplaceItemId], references: [id], onDelete: Cascade)
+
+  @@index([marketplaceItemId])
+  @@index([organizationId])
+  @@index([status])
+  @@map("marketplace_installations")
+}
+
+// Marketplace Reviews
+model MarketplaceReview {
+  id                  String   @id @default(cuid())
+  marketplaceItemId   String
+  userId              String
+  organizationId      String
+
+  rating              Int      // 1-5
+  title               String?
+  comment             String?
+  helpful             Int      @default(0)
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  marketplaceItem     MarketplaceItem @relation(fields: [marketplaceItemId], references: [id], onDelete: Cascade)
+
+  @@index([marketplaceItemId])
+  @@index([userId])
+  @@map("marketplace_reviews")
+}
+
+// Connectors
+model Connector {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  type            String   // database, api, file, etc.
+  organizationId  String
+
+  config          Json     // Connection configuration
+  credentials     String?  // Encrypted credentials
+  isActive        Boolean  @default(true)
+
+  lastTestedAt    DateTime?
+  lastTestResult  String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([type])
+  @@map("connectors")
+}
+
+// Knowledge Base Entries (RAG System)
+model KnowledgeBaseEntry {
+  id              String   @id @default(cuid())
+  organizationId  String
+  content         String   @db.Text
+  type            String   // document, code, conversation, entity, custom
+  title           String?
+  source          String?
+  tags            String[] @default([])
+  metadata        Json?
+
+  createdBy       String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("knowledge_base_entries")
+}
+
+// Role Assignments (for RBAC)
+model RoleAssignment {
+  id              String   @id @default(cuid())
+  userId          String
+  organizationId  String
+  roleId          String
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId, organizationId, roleId])
+  @@index([userId])
+  @@index([organizationId])
+  @@index([roleId])
+  @@map("role_assignments")
+}
+
 // ==================== PATIENT DIET PLAN (HEALTHCARE) ====================
 
 model PatientDietPlan {
