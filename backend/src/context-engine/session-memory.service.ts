@@ -1,0 +1,459 @@
+/**
+ * ==================== SESSION MEMORY SERVICE ====================
+ *
+ * Manages conversation sessions and message history
+ *
+ * Features:
+ * - Session lifecycle management
+ * - Message history (last N messages)
+ * - Context accumulation
+ * - Token counting
+ * - Auto-expiration
+ *
+ * @module context-engine/session-memory
+ */
+
+import { PrismaClient } from '@prisma/client';
+import { redis } from './redis.client';
+import { logger } from '../infrastructure/logger';
+import { v4 as uuidv4 } from 'uuid';
+
+const prisma = new PrismaClient();
+
+export interface Message {
+  id: string;
+  role: 'user' | 'assistant' | 'system' | 'tool';
+  content: string;
+  timestamp: Date;
+  metadata?: {
+    model?: string;
+    tokens?: number;
+    cost?: number;
+    toolCalls?: any[];
+    components?: any[];
+  };
+}
+
+export interface SessionData {
+  sessionId: string;
+  userId: string;
+  organizationId: string;
+  agentId?: string;
+  context: Record<string, any>;
+  messages: Message[];
+  metadata: {
+    totalMessages: number;
+    totalTokens: number;
+    totalCost: number;
+    lastActivity: Date;
+    createdAt: Date;
+  };
+}
+
+export class SessionMemoryService {
+  private readonly SESSION_TTL = 60 * 60 * 24; // 24 hours
+  private readonly MAX_MESSAGES = 50; // Keep last 50 messages in memory
+
+  /**
+   * Create a new session
+   */
+  async createSession(
+    userId: string,
+    organizationId: string,
+    agentId?: string
+  ): Promise<string> {
+    const sessionId = uuidv4();
+
+    const sessionData: SessionData = {
+      sessionId,
+      userId,
+      organizationId,
+      agentId,
+      context: {},
+      messages: [],
+      metadata: {
+        totalMessages: 0,
+        totalTokens: 0,
+        totalCost: 0,
+        lastActivity: new Date(),
+        createdAt: new Date(),
+      },
+    };
+
+    // Store in Redis
+    await redis.setJSON(
+      this.getSessionKey(sessionId),
+      sessionData,
+      this.SESSION_TTL
+    );
+
+    // Store in database for persistence
+    await prisma.sessionMemory.create({
+      data: {
+        sessionId,
+        userId,
+        organizationId,
+        context: {},
+        preferences: {},
+        messageCount: 0,
+        totalTokens: 0,
+        totalCost: 0,
+        lastActivity: new Date(),
+        expiresAt: new Date(Date.now() + this.SESSION_TTL * 1000),
+      },
+    });
+
+    logger.info('Session created', {
+      sessionId,
+      userId,
+      organizationId,
+      agentId,
+    });
+
+    return sessionId;
+  }
+
+  /**
+   * Get session data
+   */
+  async getSession(sessionId: string): Promise<SessionData | null> {
+    // Try Redis first (fast)
+    const cached = await redis.getJSON<SessionData>(
+      this.getSessionKey(sessionId)
+    );
+
+    if (cached) {
+      return cached;
+    }
+
+    // Fallback to database
+    const dbSession = await prisma.sessionMemory.findUnique({
+      where: { sessionId },
+    });
+
+    if (!dbSession) {
+      return null;
+    }
+
+    // Reconstruct session data
+    const messages = await prisma.conversationMessage.findMany({
+      where: { sessionId },
+      orderBy: { createdAt: 'asc' },
+      take: this.MAX_MESSAGES,
+    });
+
+    const sessionData: SessionData = {
+      sessionId: dbSession.sessionId,
+      userId: dbSession.userId,
+      organizationId: dbSession.organizationId,
+      context: dbSession.context as Record<string, any>,
+      messages: messages.map((m) => ({
+        id: m.id,
+        role: m.role as any,
+        content: m.content,
+        timestamp: m.createdAt,
+        metadata: {
+          model: m.model || undefined,
+          tokens: m.tokens || undefined,
+          cost: m.cost || undefined,
+          toolCalls: m.toolCalls as any,
+          components: m.components as any,
+        },
+      })),
+      metadata: {
+        totalMessages: dbSession.messageCount,
+        totalTokens: dbSession.totalTokens,
+        totalCost: dbSession.totalCost,
+        lastActivity: dbSession.lastActivity,
+        createdAt: dbSession.createdAt,
+      },
+    };
+
+    // Cache in Redis
+    await redis.setJSON(
+      this.getSessionKey(sessionId),
+      sessionData,
+      this.SESSION_TTL
+    );
+
+    return sessionData;
+  }
+
+  /**
+   * Add message to session
+   */
+  async addMessage(
+    sessionId: string,
+    message: Omit<Message, 'id' | 'timestamp'>
+  ): Promise<void> {
+    const session = await this.getSession(sessionId);
+
+    if (!session) {
+      throw new Error(`Session ${sessionId} not found`);
+    }
+
+    const fullMessage: Message = {
+      id: uuidv4(),
+      ...message,
+      timestamp: new Date(),
+    };
+
+    // Add to messages array
+    session.messages.push(fullMessage);
+
+    // Keep only last N messages in memory
+    if (session.messages.length > this.MAX_MESSAGES) {
+      session.messages = session.messages.slice(-this.MAX_MESSAGES);
+    }
+
+    // Update metadata
+    session.metadata.totalMessages++;
+    session.metadata.totalTokens += message.metadata?.tokens || 0;
+    session.metadata.totalCost += message.metadata?.cost || 0;
+    session.metadata.lastActivity = new Date();
+
+    // Update Redis
+    await redis.setJSON(
+      this.getSessionKey(sessionId),
+      session,
+      this.SESSION_TTL
+    );
+
+    // Save to database
+    await prisma.conversationMessage.create({
+      data: {
+        sessionId,
+        role: message.role,
+        content: message.content,
+        components: message.metadata?.components as any,
+        toolCalls: message.metadata?.toolCalls as any,
+        contextUsed: {},
+        model: message.metadata?.model,
+        tokens: message.metadata?.tokens,
+        cost: message.metadata?.cost,
+      },
+    });
+
+    // Update session memory stats
+    await prisma.sessionMemory.update({
+      where: { sessionId },
+      data: {
+        messageCount: session.metadata.totalMessages,
+        totalTokens: session.metadata.totalTokens,
+        totalCost: session.metadata.totalCost,
+        lastActivity: new Date(),
+        lastMessage: message.content.substring(0, 100),
+      },
+    });
+
+    logger.debug('Message added to session', {
+      sessionId,
+      role: message.role,
+      messageLength: message.content.length,
+    });
+  }
+
+  /**
+   * Get conversation history
+   */
+  async getHistory(sessionId: string, limit: number = 10): Promise<Message[]> {
+    const session = await this.getSession(sessionId);
+
+    if (!session) {
+      return [];
+    }
+
+    return session.messages.slice(-limit);
+  }
+
+  /**
+   * Update session context
+   */
+  async updateContext(
+    sessionId: string,
+    context: Record<string, any>
+  ): Promise<void> {
+    const session = await this.getSession(sessionId);
+
+    if (!session) {
+      throw new Error(`Session ${sessionId} not found`);
+    }
+
+    // Merge context
+    session.context = {
+      ...session.context,
+      ...context,
+    };
+
+    session.metadata.lastActivity = new Date();
+
+    // Update Redis
+    await redis.setJSON(
+      this.getSessionKey(sessionId),
+      session,
+      this.SESSION_TTL
+    );
+
+    // Update database
+    await prisma.sessionMemory.update({
+      where: { sessionId },
+      data: {
+        context: session.context,
+        lastActivity: new Date(),
+      },
+    });
+
+    logger.debug('Session context updated', {
+      sessionId,
+      contextKeys: Object.keys(context),
+    });
+  }
+
+  /**
+   * Get session context
+   */
+  async getContext(sessionId: string): Promise<Record<string, any>> {
+    const session = await this.getSession(sessionId);
+    return session?.context || {};
+  }
+
+  /**
+   * Refresh session TTL
+   */
+  async refreshSession(sessionId: string): Promise<void> {
+    const key = this.getSessionKey(sessionId);
+    const exists = await redis.exists(key);
+
+    if (exists) {
+      await redis.expire(key, this.SESSION_TTL);
+    }
+
+    // Update database
+    await prisma.sessionMemory.updateMany({
+      where: { sessionId },
+      data: {
+        lastActivity: new Date(),
+        expiresAt: new Date(Date.now() + this.SESSION_TTL * 1000),
+      },
+    });
+  }
+
+  /**
+   * Delete session
+   */
+  async deleteSession(sessionId: string): Promise<void> {
+    // Delete from Redis
+    await redis.delete(this.getSessionKey(sessionId));
+
+    // Mark as expired in database (don't delete for audit)
+    await prisma.sessionMemory.updateMany({
+      where: { sessionId },
+      data: {
+        expiresAt: new Date(), // Expired now
+      },
+    });
+
+    logger.info('Session deleted', { sessionId });
+  }
+
+  /**
+   * Get user's active sessions
+   */
+  async getUserSessions(
+    userId: string,
+    organizationId: string,
+    limit: number = 10
+  ): Promise<SessionData[]> {
+    const dbSessions = await prisma.sessionMemory.findMany({
+      where: {
+        userId,
+        organizationId,
+        expiresAt: {
+          gt: new Date(),
+        },
+      },
+      orderBy: { lastActivity: 'desc' },
+      take: limit,
+    });
+
+    const sessions: SessionData[] = [];
+
+    for (const dbSession of dbSessions) {
+      const session = await this.getSession(dbSession.sessionId);
+      if (session) {
+        sessions.push(session);
+      }
+    }
+
+    return sessions;
+  }
+
+  /**
+   * Clean up expired sessions
+   */
+  async cleanupExpiredSessions(): Promise<number> {
+    // Find expired sessions
+    const expired = await prisma.sessionMemory.findMany({
+      where: {
+        expiresAt: {
+          lt: new Date(),
+        },
+      },
+      select: { sessionId: true },
+    });
+
+    // Delete from Redis
+    const keys = expired.map((s) => this.getSessionKey(s.sessionId));
+    if (keys.length > 0) {
+      await redis.deleteMany(keys);
+    }
+
+    logger.info('Cleaned up expired sessions', { count: expired.length });
+
+    return expired.length;
+  }
+
+  /**
+   * Get session statistics
+   */
+  async getSessionStats(sessionId: string): Promise<{
+    messageCount: number;
+    totalTokens: number;
+    totalCost: number;
+    duration: number;
+    avgMessageLength: number;
+  }> {
+    const session = await this.getSession(sessionId);
+
+    if (!session) {
+      throw new Error(`Session ${sessionId} not found`);
+    }
+
+    const duration =
+      new Date().getTime() - session.metadata.createdAt.getTime();
+
+    const avgMessageLength =
+      session.messages.length > 0
+        ? session.messages.reduce((sum, m) => sum + m.content.length, 0) /
+          session.messages.length
+        : 0;
+
+    return {
+      messageCount: session.metadata.totalMessages,
+      totalTokens: session.metadata.totalTokens,
+      totalCost: session.metadata.totalCost,
+      duration,
+      avgMessageLength: Math.round(avgMessageLength),
+    };
+  }
+
+  /**
+   * Helper: Get Redis key for session
+   */
+  private getSessionKey(sessionId: string): string {
+    return `session:${sessionId}`;
+  }
+}
+
+// Singleton instance
+export const sessionMemoryService = new SessionMemoryService();

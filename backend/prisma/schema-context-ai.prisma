@@ -1,0 +1,750 @@
+// ==================== NEURALLEMPIRE V3.0 - CONTEXT AI INTEGRATION ====================
+// Production-Ready Schema with Context AI Capabilities
+// Created: 2025-10-12
+// Version: 3.0.0
+//
+// NEW FEATURES:
+// - Connector System (Database, API, SaaS integrations)
+// - Context Engine (Session memory, user preferences)
+// - Canvas System (Dynamic UI generation, adaptive learning)
+// - RAG System (Vector search, knowledge base)
+// - Workflow System (Multi-step automation)
+// - Enhanced Analytics (Usage tracking, performance metrics)
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  extensions = [pgcrypto(map: "pgcrypto")]
+}
+
+// ==================== EXISTING MODELS (Keep as-is) ====================
+// Note: Include all existing models from current schema.prisma
+// We're adding NEW models below, not modifying existing ones
+
+// ==================== CONNECTOR SYSTEM ====================
+
+model Connector {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Identity
+  name           String
+  slug           String   // URL-friendly name
+  description    String?
+  type           ConnectorType
+  provider       String?  // "postgresql", "mysql", "salesforce", "hubspot", etc.
+
+  // Configuration
+  config         Json     // Non-sensitive config (base URLs, options)
+  credentials    String   // ENCRYPTED credentials (AES-256)
+
+  // Connection Management
+  status         ConnectorStatus @default(PENDING)
+  enabled        Boolean  @default(true)
+  lastTestedAt   DateTime?
+  lastSyncAt     DateTime?
+  testResult     Json?    // Last test result details
+
+  // Schema Discovery
+  schema         Json?    // Discovered tables/endpoints/resources
+  schemaVersion  String?  // Track schema changes
+  schemaUpdatedAt DateTime?
+
+  // Usage & Performance
+  requestCount   Int      @default(0)
+  errorCount     Int      @default(0)
+  avgResponseTime Float?  // milliseconds
+
+  // Rate Limiting
+  rateLimitEnabled Boolean @default(true)
+  rateLimitRequests Int?   // requests per window
+  rateLimitWindow   Int?   // milliseconds
+
+  // Relations
+  agentConnectors AgentConnector[]
+  queries        ConnectorQuery[]
+  workflows      WorkflowConnector[]
+  auditLogs      ConnectorAuditLog[]
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  createdBy      String?
+
+  @@unique([organizationId, slug])
+  @@index([organizationId, type])
+  @@index([organizationId, status])
+  @@index([status])
+  @@map("connectors")
+}
+
+model AgentConnector {
+  id          String   @id @default(cuid())
+  agentId     String
+  connectorId String
+
+  // Permissions (granular access control)
+  permissions Json     // { read: ["customers", "orders"], write: ["notes"], execute: ["send_email"] }
+  constraints Json?    // Row-level filters, column restrictions
+
+  // Configuration
+  priority    Int      @default(0)  // Order of connector preference
+  enabled     Boolean  @default(true)
+
+  agent       Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  connector   Connector @relation(fields: [connectorId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([agentId, connectorId])
+  @@index([agentId])
+  @@index([connectorId])
+  @@map("agent_connectors")
+}
+
+model ConnectorQuery {
+  id          String   @id @default(cuid())
+  connectorId String
+  connector   Connector @relation(fields: [connectorId], references: [id], onDelete: Cascade)
+
+  // Query Details
+  operation   String   // "read", "write", "search", "execute"
+  resource    String   // table name, endpoint, etc.
+  query       Json     // The actual query/request
+  result      Json?    // Query result (for caching)
+
+  // Performance
+  durationMs  Int?
+  rowsAffected Int?
+
+  // Context
+  agentId     String?
+  userId      String?
+  sessionId   String?
+
+  // Status
+  status      QueryStatus @default(PENDING)
+  error       String?
+
+  createdAt   DateTime @default(now())
+
+  @@index([connectorId, createdAt])
+  @@index([agentId, createdAt])
+  @@index([status])
+  @@map("connector_queries")
+}
+
+model ConnectorAuditLog {
+  id          String   @id @default(cuid())
+  connectorId String
+  connector   Connector @relation(fields: [connectorId], references: [id], onDelete: Cascade)
+
+  // Action Details
+  action      String   // "test", "query", "execute", "update_config", etc.
+  status      String   // "success", "failure"
+
+  // Context
+  userId      String?
+  agentId     String?
+  ipAddress   String?
+
+  // Details
+  input       Json?
+  output      Json?
+  error       String?
+
+  createdAt   DateTime @default(now())
+
+  @@index([connectorId, createdAt])
+  @@index([userId, createdAt])
+  @@map("connector_audit_logs")
+}
+
+// ==================== CONTEXT ENGINE ====================
+
+model SessionMemory {
+  id             String   @id @default(cuid())
+  sessionId      String   @unique
+  userId         String
+  organizationId String
+
+  // Context
+  context        Json     // Current conversation context
+  preferences    Json     // User preferences (UI mode, theme, etc.)
+
+  // Message History
+  messageCount   Int      @default(0)
+  lastMessage    String?
+  lastActivity   DateTime @default(now())
+
+  // Performance
+  totalTokens    Int      @default(0)
+  totalCost      Float    @default(0)
+
+  // Metadata
+  userAgent      String?
+  ipAddress      String?
+
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId])
+  @@index([sessionId])
+  @@index([expiresAt])
+  @@map("session_memory")
+}
+
+model ConversationMessage {
+  id        String   @id @default(cuid())
+  sessionId String
+
+  // Message Content
+  role      MessageRole
+  content   String   @db.Text
+
+  // UI Components
+  components Json?   // Generated UI components
+
+  // Tool Calls
+  toolCalls Json?   // Tools used in this message
+
+  // Context
+  contextUsed Json? // Context from connectors, knowledge base
+
+  // Metadata
+  model     String?
+  tokens    Int?
+  cost      Float?
+  durationMs Int?
+
+  createdAt DateTime @default(now())
+
+  @@index([sessionId, createdAt])
+  @@map("conversation_messages")
+}
+
+model UserPreference {
+  id             String   @id @default(cuid())
+  userId         String
+  organizationId String
+
+  // UI Preferences
+  uiMode         UIMode   @default(COMFORTABLE)
+  theme          Theme    @default(LIGHT)
+  language       String   @default("en")
+  timezone       String   @default("UTC")
+
+  // Behavior Preferences
+  favoriteViews  Json?    // Array of saved views
+  shortcuts      Json?    // Custom shortcuts
+  notifications  Json?    // Notification settings
+
+  // Agent Preferences
+  defaultAgent   String?
+  preferredComponents Json? // Preferred component types (table vs chart)
+
+  // Analytics
+  interactionCount Int    @default(0)
+  lastInteraction  DateTime?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([userId, organizationId])
+  @@index([userId])
+  @@map("user_preferences")
+}
+
+model UserInteraction {
+  id             String   @id @default(cuid())
+  userId         String
+  sessionId      String?
+  organizationId String
+
+  // Interaction Details
+  componentType  String   // "table", "chart", "button", etc.
+  action         String   // "click", "sort", "filter", etc.
+  target         String?  // Element ID or description
+
+  // Context
+  agentId        String?
+  page           String?
+
+  // Metadata
+  metadata       Json?
+  timestamp      DateTime @default(now())
+
+  @@index([userId, timestamp])
+  @@index([organizationId, timestamp])
+  @@index([componentType])
+  @@map("user_interactions")
+}
+
+// ==================== CANVAS SYSTEM ====================
+
+model GeneratedUI {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String
+  agentId        String?
+  sessionId      String?
+
+  // UI Definition
+  intent         String   // Original user intent
+  components     Json     // Array of ComponentSchema
+  layout         Json?    // Layout configuration
+  theme          Json?    // Theme overrides
+
+  // Metadata
+  model          String   // AI model used
+  prompt         String   @db.Text // Prompt used
+  confidence     Float?   // Generation confidence
+
+  // Performance
+  generationTime Int?     // milliseconds
+  renderTime     Int?     // milliseconds (if tracked)
+
+  // Analytics
+  viewCount      Int      @default(0)
+  interactionCount Int    @default(0)
+  lastViewed     DateTime?
+
+  // Versioning
+  version        Int      @default(1)
+  parentId       String?  // For tracking iterations
+
+  createdAt      DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([agentId, createdAt])
+  @@index([sessionId])
+  @@map("generated_uis")
+}
+
+model AdaptiveRule {
+  id             String   @id @default(cuid())
+  organizationId String
+
+  // Rule Definition
+  name           String
+  description    String?
+  priority       Int      @default(50)
+  enabled        Boolean  @default(true)
+
+  // Condition (JSON Schema)
+  condition      Json     // { user: { interactionCount: { gt: 100 } } }
+
+  // Transformation (code or config)
+  transformation Json     // How to modify UI
+
+  // Scope
+  scope          RuleScope @default(ORGANIZATION) // GLOBAL, ORGANIZATION, USER
+  targetUsers    String[]  @default([])
+
+  // Analytics
+  appliedCount   Int      @default(0)
+  successRate    Float?
+  lastApplied    DateTime?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  createdBy      String?
+
+  @@index([organizationId, enabled])
+  @@index([priority])
+  @@map("adaptive_rules")
+}
+
+// ==================== RAG SYSTEM ====================
+
+model KnowledgeBase {
+  id             String   @id @default(cuid())
+  organizationId String
+
+  // Identity
+  name           String
+  description    String?
+  type           KnowledgeType @default(DOCUMENT)
+
+  // Configuration
+  embeddingModel String   @default("text-embedding-3-large")
+  chunkSize      Int      @default(1000)
+  chunkOverlap   Int      @default(200)
+
+  // Status
+  status         KnowledgeStatus @default(ACTIVE)
+  documentCount  Int      @default(0)
+  chunkCount     Int      @default(0)
+  totalTokens    Int      @default(0)
+
+  // Vector Store
+  vectorNamespace String  // Pinecone namespace
+
+  // Relations
+  documents      Document[]
+  agentKnowledge AgentKnowledge[]
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([organizationId])
+  @@map("knowledge_bases")
+}
+
+model Document {
+  id              String   @id @default(cuid())
+  knowledgeBaseId String
+  knowledgeBase   KnowledgeBase @relation(fields: [knowledgeBaseId], references: [id], onDelete: Cascade)
+
+  // Document Details
+  name            String
+  type            String   // "pdf", "docx", "txt", "url", "api"
+  content         String   @db.Text
+  metadata        Json?
+
+  // Processing
+  status          DocumentStatus @default(PENDING)
+  chunkCount      Int      @default(0)
+  tokenCount      Int      @default(0)
+
+  // Source
+  sourceUrl       String?
+  sourceHash      String?  // For detecting duplicates
+
+  // Processing Details
+  processedAt     DateTime?
+  error           String?
+
+  // Relations
+  chunks          DocumentChunk[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  uploadedBy      String?
+
+  @@index([knowledgeBaseId, status])
+  @@index([sourceHash])
+  @@map("documents")
+}
+
+model DocumentChunk {
+  id         String   @id @default(cuid())
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  // Chunk Details
+  content    String   @db.Text
+  chunkIndex Int      // Position in document
+  tokenCount Int
+
+  // Vector
+  vectorId   String   // ID in Pinecone
+  embedding  Float[]? // Optional local storage
+
+  // Metadata
+  metadata   Json?
+
+  createdAt  DateTime @default(now())
+
+  @@index([documentId, chunkIndex])
+  @@index([vectorId])
+  @@map("document_chunks")
+}
+
+model AgentKnowledge {
+  id              String   @id @default(cuid())
+  agentId         String
+  knowledgeBaseId String
+
+  agent           Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  knowledgeBase   KnowledgeBase @relation(fields: [knowledgeBaseId], references: [id], onDelete: Cascade)
+
+  // Configuration
+  enabled         Boolean  @default(true)
+  priority        Int      @default(0)
+  maxResults      Int      @default(5) // Top K results to use
+  similarityThreshold Float @default(0.7)
+
+  createdAt       DateTime @default(now())
+
+  @@unique([agentId, knowledgeBaseId])
+  @@index([agentId])
+  @@map("agent_knowledge")
+}
+
+model VectorSearchLog {
+  id             String   @id @default(cuid())
+  organizationId String
+
+  // Query
+  query          String
+  embedding      Float[]?
+
+  // Results
+  topK           Int
+  results        Json     // Array of results with scores
+
+  // Context
+  userId         String?
+  agentId        String?
+  sessionId      String?
+
+  // Performance
+  durationMs     Int?
+
+  createdAt      DateTime @default(now())
+
+  @@index([organizationId, createdAt])
+  @@index([agentId, createdAt])
+  @@map("vector_search_logs")
+}
+
+// ==================== WORKFLOW SYSTEM ====================
+
+model Workflow {
+  id             String   @id @default(cuid())
+  organizationId String
+
+  // Identity
+  name           String
+  description    String?
+
+  // Definition
+  steps          Json     // Array of workflow steps
+  triggers       Json?    // Trigger configuration
+
+  // Status
+  status         WorkflowStatus @default(DRAFT)
+  enabled        Boolean  @default(false)
+
+  // Analytics
+  executionCount Int      @default(0)
+  successCount   Int      @default(0)
+  failureCount   Int      @default(0)
+  avgDuration    Float?
+
+  // Relations
+  executions     WorkflowExecution[]
+  connectors     WorkflowConnector[]
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  createdBy      String?
+
+  @@index([organizationId, status])
+  @@map("workflows")
+}
+
+model WorkflowConnector {
+  id          String   @id @default(cuid())
+  workflowId  String
+  connectorId String
+
+  workflow    Workflow  @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  connector   Connector @relation(fields: [connectorId], references: [id], onDelete: Cascade)
+
+  // Configuration
+  permissions Json
+  priority    Int      @default(0)
+
+  @@unique([workflowId, connectorId])
+  @@map("workflow_connectors")
+}
+
+model WorkflowExecution {
+  id         String   @id @default(cuid())
+  workflowId String
+  workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  // Execution Details
+  status     ExecutionStatus @default(RUNNING)
+  input      Json?
+  output     Json?
+  error      String?
+
+  // Steps
+  currentStep Int     @default(0)
+  totalSteps  Int
+  stepResults Json?   // Results of each step
+
+  // Performance
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+  durationMs  Int?
+
+  // Context
+  userId      String?
+  triggeredBy String  // "manual", "webhook", "schedule", "agent"
+
+  @@index([workflowId, status])
+  @@index([status, startedAt])
+  @@map("workflow_executions")
+}
+
+// ==================== ENHANCED ANALYTICS ====================
+
+model UsageMetric {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String?
+
+  // Metric Type
+  metricType     MetricType
+  category       String   // "agent", "connector", "ui", "workflow", "api"
+
+  // Measurement
+  value          Float
+  unit           String   // "count", "ms", "bytes", "tokens", "dollars"
+
+  // Dimensions
+  dimensions     Json?    // Additional context
+
+  // Aggregation
+  period         Period   @default(HOURLY)
+  periodStart    DateTime
+  periodEnd      DateTime
+
+  createdAt      DateTime @default(now())
+
+  @@index([organizationId, metricType, periodStart])
+  @@index([userId, metricType, periodStart])
+  @@index([category, periodStart])
+  @@map("usage_metrics")
+}
+
+model PerformanceLog {
+  id             String   @id @default(cuid())
+  organizationId String
+
+  // Request Details
+  endpoint       String
+  method         String
+  statusCode     Int
+
+  // Performance
+  durationMs     Int
+  cpuMs          Float?
+  memoryMB       Float?
+
+  // Context
+  userId         String?
+  agentId        String?
+
+  // Errors
+  error          String?
+  stackTrace     String?  @db.Text
+
+  timestamp      DateTime @default(now())
+
+  @@index([organizationId, timestamp])
+  @@index([endpoint, timestamp])
+  @@index([statusCode, timestamp])
+  @@map("performance_logs")
+}
+
+// ==================== ENUMS ====================
+
+enum ConnectorType {
+  DATABASE
+  API
+  SAAS
+  FILE
+}
+
+enum ConnectorStatus {
+  PENDING
+  ACTIVE
+  ERROR
+  DISABLED
+  TESTING
+}
+
+enum QueryStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  FAILED
+  TIMEOUT
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+  TOOL
+}
+
+enum UIMode {
+  COMPACT
+  COMFORTABLE
+  SPACIOUS
+}
+
+enum Theme {
+  LIGHT
+  DARK
+  AUTO
+}
+
+enum RuleScope {
+  GLOBAL
+  ORGANIZATION
+  USER
+}
+
+enum KnowledgeType {
+  DOCUMENT
+  URL
+  API
+  DATABASE
+}
+
+enum KnowledgeStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum DocumentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum WorkflowStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum ExecutionStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum MetricType {
+  USAGE
+  PERFORMANCE
+  COST
+  ERROR
+}
+
+enum Period {
+  MINUTELY
+  HOURLY
+  DAILY
+  WEEKLY
+  MONTHLY
+}
