@@ -8,7 +8,6 @@ import {
   Users,
   CreditCard,
   ChevronDown,
-  Sun,
   FileText,
   HelpCircle,
   User,
@@ -37,7 +36,7 @@ interface OrganizationHeaderProps {
   onThemeChange?: (theme: 'light' | 'dark' | 'auto') => void;
 }
 
-const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }) => {
+const OrganizationHeader: React.FC<OrganizationHeaderProps> = () => {
   const { user, organization, logout } = useAuthStore();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);

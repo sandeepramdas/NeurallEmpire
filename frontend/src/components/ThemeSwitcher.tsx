@@ -21,14 +21,14 @@ export function ThemeSwitcher() {
     { value: 'system', label: 'System', icon: ComputerDesktopIcon },
   ];
 
-  const currentModeIcon = modeOptions.find((m) => m.value === theme.mode)?.icon || SunIcon;
+  const CurrentModeIcon = modeOptions.find((m) => m.value === theme.mode)?.icon || SunIcon;
 
   return (
     <div className="flex items-center gap-2">
       {/* Mode Switcher */}
       <Menu as="div" className="relative">
         <Menu.Button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-          <currentModeIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+          <CurrentModeIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
         </Menu.Button>
 
         <Transition

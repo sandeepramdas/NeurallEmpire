@@ -4,7 +4,7 @@
  * Main dashboard for 7-layer options trading system
  */
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { zerodhaService, DashboardMetrics } from '@/services/zerodha.service';
 import toast from 'react-hot-toast';
 

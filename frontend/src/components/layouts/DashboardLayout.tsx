@@ -43,8 +43,7 @@ import {
   DollarSign,
   Apple,
   Heart,
-  TrendingUp,
-  LineChart
+  TrendingUp
 } from 'lucide-react';
 
 interface NavItem {
