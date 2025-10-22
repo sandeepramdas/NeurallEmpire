@@ -35,6 +35,9 @@ import analyticsRoutes from '../modules/analytics/routes/analytics.routes';
 // Import orchestrator routes
 import orchestratorRoutes from './orchestrator.routes';
 
+// Import Zerodha trading routes
+import zerodhaRoutes from './zerodha';
+
 const router = Router();
 
 // Health check
@@ -91,6 +94,9 @@ router.use('/analytics', analyticsRoutes);
 
 // Orchestrator routes (require authentication)
 router.use('/orchestrator', authenticate, orchestratorRoutes);
+
+// Zerodha trading routes (require authentication)
+router.use('/zerodha', authenticate, zerodhaRoutes);
 
 // API documentation
 router.get('/', (req, res) => {
@@ -260,6 +266,23 @@ router.get('/', (req, res) => {
         POST: {
           '/analytics/track': 'Track analytics event',
           '/analytics/funnel': 'Get funnel data'
+        }
+      },
+      zerodha: {
+        GET: {
+          '/zerodha/signals': 'List all trading signals',
+          '/zerodha/signals/:id': 'Get signal details',
+          '/zerodha/positions': 'List all positions',
+          '/zerodha/trades': 'Get trade history',
+          '/zerodha/dashboard': 'Get trading dashboard metrics',
+          '/zerodha/writer-ratio/:symbol/:strike': 'Get writer ratio snapshot'
+        },
+        POST: {
+          '/zerodha/signals': 'Generate new trading signal (7-layer analysis)',
+          '/zerodha/positions': 'Open new trading position'
+        },
+        PUT: {
+          '/zerodha/positions/:id/close': 'Close a position'
         }
       }
     }

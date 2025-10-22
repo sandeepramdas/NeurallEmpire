@@ -55,6 +55,9 @@ import SalesInvoice from '@/pages/dashboard/SalesInvoice';
 // Import Healthcare pages
 import PatientDietPlan from '@/pages/dashboard/PatientDietPlan';
 
+// Import Zerodha Trading pages
+import ZerodhaDashboard from '@/pages/dashboard/Zerodha';
+
 // OAuth buttons component available for login page
 
 // Subdomain-aware components
@@ -283,6 +286,8 @@ const App: React.FC = () => {
           <Route path="sales-invoice" element={<SalesInvoice />} />
           {/* Healthcare Routes */}
           <Route path="patient-diet-plan" element={<PatientDietPlan />} />
+          {/* Zerodha Trading Routes */}
+          <Route path="zerodha" element={<ZerodhaDashboard />} />
           {/* V2 Feature Routes */}
           <Route path="entities" element={<EntityDefinitions />} />
           <Route path="hierarchy" element={<OrganizationHierarchy />} />

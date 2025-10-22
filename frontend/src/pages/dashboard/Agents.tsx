@@ -1,5 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
+import { agentService, Agent as AgentType, CreateAgentRequest } from '@/services/agent.service';
+import toast from 'react-hot-toast';
 import {
   Bot,
   Plus,
@@ -21,22 +23,12 @@ import {
   MessageSquare,
 } from 'lucide-react';
 
-// Types
-interface Agent {
-  id: string;
-  name: string;
-  description: string;
-  model: 'gpt-4' | 'gpt-3.5-turbo' | 'claude-3-opus' | 'claude-3-sonnet' | 'gemini-pro' | 'gemini-ultra';
-  status: 'active' | 'paused' | 'draft';
-  temperature: number;
-  maxTokens: number;
-  systemPrompt: string;
-  tools: string[];
-  avatar?: string;
+// Types (extend from service)
+interface Agent extends Omit<AgentType, 'capabilities'> {
+  tools: string[];  // Alias for capabilities for UI compatibility
   totalRuns: number;
-  successRate: number;
+  avatar?: string;
   lastRunAt?: string;
-  createdAt: string;
 }
 
 interface AgentRun {
@@ -48,159 +40,7 @@ interface AgentRun {
   timestamp: string;
 }
 
-// Mock Data
-const mockAgents: Agent[] = [
-  {
-    id: '1',
-    name: 'Lead Qualifier',
-    description: 'Qualifies inbound leads based on industry, company size, and budget',
-    model: 'gpt-4',
-    status: 'active',
-    temperature: 0.7,
-    maxTokens: 2000,
-    systemPrompt: 'You are a professional lead qualification specialist...',
-    tools: ['web_search', 'database_query', 'email_send'],
-    totalRuns: 1247,
-    successRate: 94.5,
-    lastRunAt: '2025-10-04T10:30:00Z',
-    createdAt: '2025-09-15T08:00:00Z',
-  },
-  {
-    id: '2',
-    name: 'Email Responder',
-    description: 'Automatically responds to customer emails with personalized messages',
-    model: 'claude-3-sonnet',
-    status: 'active',
-    temperature: 0.8,
-    maxTokens: 1500,
-    systemPrompt: 'You are a friendly customer service representative...',
-    tools: ['email_send', 'sentiment_analysis'],
-    totalRuns: 3892,
-    successRate: 97.2,
-    lastRunAt: '2025-10-04T11:15:00Z',
-    createdAt: '2025-08-20T14:30:00Z',
-  },
-  {
-    id: '3',
-    name: 'Content Generator',
-    description: 'Creates blog posts, social media content, and marketing copy',
-    model: 'gpt-4',
-    status: 'paused',
-    temperature: 0.9,
-    maxTokens: 3000,
-    systemPrompt: 'You are a creative content writer specialized in marketing...',
-    tools: ['web_search', 'image_generation'],
-    totalRuns: 567,
-    successRate: 89.3,
-    lastRunAt: '2025-10-03T16:45:00Z',
-    createdAt: '2025-09-01T10:00:00Z',
-  },
-  {
-    id: '4',
-    name: 'Sales Assistant',
-    description: 'Helps sales team with prospect research and outreach templates',
-    model: 'claude-3-opus',
-    status: 'active',
-    temperature: 0.6,
-    maxTokens: 2500,
-    systemPrompt: 'You are an experienced sales development representative...',
-    tools: ['web_search', 'linkedin_search', 'email_send'],
-    totalRuns: 892,
-    successRate: 92.8,
-    lastRunAt: '2025-10-04T09:20:00Z',
-    createdAt: '2025-09-10T12:00:00Z',
-  },
-  {
-    id: '5',
-    name: 'Meeting Scheduler',
-    description: 'Coordinates meetings and manages calendar availability',
-    model: 'gpt-3.5-turbo',
-    status: 'active',
-    temperature: 0.5,
-    maxTokens: 1000,
-    systemPrompt: 'You are a professional scheduling assistant...',
-    tools: ['calendar_integration', 'email_send'],
-    totalRuns: 2145,
-    successRate: 96.1,
-    lastRunAt: '2025-10-04T10:45:00Z',
-    createdAt: '2025-08-25T09:00:00Z',
-  },
-  {
-    id: '6',
-    name: 'Data Analyst',
-    description: 'Analyzes campaign performance and generates insights',
-    model: 'gpt-4',
-    status: 'active',
-    temperature: 0.3,
-    maxTokens: 2000,
-    systemPrompt: 'You are a data analyst specialized in marketing analytics...',
-    tools: ['database_query', 'chart_generation'],
-    totalRuns: 445,
-    successRate: 91.7,
-    lastRunAt: '2025-10-04T08:30:00Z',
-    createdAt: '2025-09-20T11:00:00Z',
-  },
-  {
-    id: '7',
-    name: 'Social Media Manager',
-    description: 'Manages social media posts and engagement across platforms',
-    model: 'gemini-pro',
-    status: 'draft',
-    temperature: 0.85,
-    maxTokens: 1800,
-    systemPrompt: 'You are a social media marketing expert...',
-    tools: ['social_post', 'image_generation', 'sentiment_analysis'],
-    totalRuns: 0,
-    successRate: 0,
-    createdAt: '2025-10-02T15:00:00Z',
-  },
-  {
-    id: '8',
-    name: 'Customer Support',
-    description: 'Provides 24/7 customer support and troubleshooting assistance',
-    model: 'claude-3-sonnet',
-    status: 'active',
-    temperature: 0.7,
-    maxTokens: 2000,
-    systemPrompt: 'You are a helpful customer support specialist...',
-    tools: ['knowledge_base', 'ticket_creation', 'email_send'],
-    totalRuns: 5234,
-    successRate: 95.8,
-    lastRunAt: '2025-10-04T11:30:00Z',
-    createdAt: '2025-08-15T10:00:00Z',
-  },
-  {
-    id: '9',
-    name: 'Product Recommender',
-    description: 'Recommends products based on customer preferences and history',
-    model: 'gpt-4',
-    status: 'active',
-    temperature: 0.75,
-    maxTokens: 1500,
-    systemPrompt: 'You are a product recommendation specialist...',
-    tools: ['database_query', 'user_profiling'],
-    totalRuns: 1678,
-    successRate: 93.4,
-    lastRunAt: '2025-10-04T10:00:00Z',
-    createdAt: '2025-09-05T13:00:00Z',
-  },
-  {
-    id: '10',
-    name: 'Research Assistant',
-    description: 'Conducts market research and competitive analysis',
-    model: 'claude-3-opus',
-    status: 'paused',
-    temperature: 0.6,
-    maxTokens: 3500,
-    systemPrompt: 'You are a market research analyst...',
-    tools: ['web_search', 'web_scraping', 'report_generation'],
-    totalRuns: 234,
-    successRate: 88.9,
-    lastRunAt: '2025-10-01T14:20:00Z',
-    createdAt: '2025-09-25T16:00:00Z',
-  },
-];
-
+// Mock data for run history (TODO: Connect to backend API)
 const mockRuns: AgentRun[] = [
   {
     id: '1',
@@ -239,8 +79,18 @@ const modelColors: Record<string, string> = {
 
 const statusColors: Record<string, string> = {
   active: 'bg-green-100 text-green-800',
+  ACTIVE: 'bg-green-100 text-green-800',
   paused: 'bg-yellow-100 text-yellow-800',
+  PAUSED: 'bg-yellow-100 text-yellow-800',
   draft: 'bg-gray-100 text-gray-800',
+  DRAFT: 'bg-gray-100 text-gray-800',
+  READY: 'bg-blue-100 text-blue-800',
+  TESTING: 'bg-purple-100 text-purple-800',
+  ERROR: 'bg-red-100 text-red-800',
+  RUNNING: 'bg-green-100 text-green-800',
+  MAINTENANCE: 'bg-orange-100 text-orange-800',
+  DEPRECATED: 'bg-gray-100 text-gray-800',
+  ARCHIVED: 'bg-gray-100 text-gray-800',
 };
 
 const Agents: React.FC = () => {
@@ -254,31 +104,80 @@ const Agents: React.FC = () => {
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [detailTab, setDetailTab] = useState<'overview' | 'runs' | 'settings'>('overview');
   const [selectedAgents, setSelectedAgents] = useState<string[]>([]);
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [newAgentData, setNewAgentData] = useState<Partial<CreateAgentRequest>>({
+    name: '',
+    description: '',
+    type: 'LEAD_GENERATOR',
+    category: 'Business',
+    config: {
+      model: 'gpt-4',
+      temperature: 0.7,
+      maxTokens: 2000,
+      systemPrompt: 'You are a helpful AI assistant.',
+    },
+    capabilities: [],
+  });
+
+  // Load agents on mount
+  useEffect(() => {
+    loadAgents();
+  }, [statusFilter]);
+
+  const loadAgents = async () => {
+    try {
+      setLoading(true);
+      const params: any = {};
+      if (statusFilter !== 'all') params.status = statusFilter.toUpperCase();
+
+      const response = await agentService.getAgents(params);
+      // Transform backend response to match frontend interface
+      const transformedAgents: Agent[] = response.data.map((agent) => ({
+        ...agent,
+        tools: agent.capabilities || [],
+        totalRuns: agent.usageCount,
+        lastRunAt: agent.lastUsedAt,
+      }));
+      setAgents(transformedAgents);
+    } catch (error) {
+      console.error('Error loading agents:', error);
+      toast.error('Failed to load agents');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Helper function to normalize status display
+  const getStatusDisplay = (status: string) => {
+    return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+  };
 
   // Filter agents
   const filteredAgents = useMemo(() => {
-    return mockAgents.filter((agent) => {
+    return agents.filter((agent) => {
       const matchesSearch =
         agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        agent.description.toLowerCase().includes(searchQuery.toLowerCase());
+        (agent.description?.toLowerCase() || '').includes(searchQuery.toLowerCase());
       const matchesStatus = statusFilter === 'all' || agent.status === statusFilter;
       const matchesModel = modelFilter === 'all' || agent.model === modelFilter;
       return matchesSearch && matchesStatus && matchesModel;
     });
-  }, [searchQuery, statusFilter, modelFilter]);
+  }, [agents, searchQuery, statusFilter, modelFilter]);
 
   // Calculate stats
   const stats = useMemo(() => {
-    const total = mockAgents.length;
-    const active = mockAgents.filter((a) => a.status === 'active').length;
-    const totalRunsToday = mockAgents.reduce((sum, a) => {
+    const total = agents.length;
+    const active = agents.filter((a) => a.status === 'ACTIVE' || a.status === 'RUNNING').length;
+    const totalRunsToday = agents.reduce((sum, a) => {
       if (a.lastRunAt && new Date(a.lastRunAt).toDateString() === new Date().toDateString()) {
         return sum + a.totalRuns;
       }
       return sum;
     }, 0);
-    const avgSuccessRate =
-      mockAgents.reduce((sum, a) => sum + a.successRate, 0) / mockAgents.length;
+    const avgSuccessRate = agents.length > 0
+      ? agents.reduce((sum, a) => sum + a.successRate, 0) / agents.length
+      : 0;
 
     return {
       total,
@@ -286,7 +185,7 @@ const Agents: React.FC = () => {
       totalRunsToday,
       avgSuccessRate: avgSuccessRate.toFixed(1),
     };
-  }, []);
+  }, [agents]);
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'Never';
@@ -309,32 +208,114 @@ const Agents: React.FC = () => {
     setDetailTab('overview');
   };
 
-  const handleToggleStatus = (agentId: string) => {
-    // In real app, this would call an API
-    console.log('Toggle status for agent:', agentId);
-  };
+  const handleToggleStatus = async (agentId: string) => {
+    const agent = agents.find((a) => a.id === agentId);
+    if (!agent) return;
 
-  const handleDelete = (agentId: string) => {
-    if (window.confirm('Are you sure you want to delete this agent?')) {
-      console.log('Delete agent:', agentId);
+    const newStatus = agent.status === 'ACTIVE' || agent.status === 'RUNNING' ? 'PAUSED' : 'ACTIVE';
+
+    try {
+      await agentService.updateAgentStatus(agentId, newStatus);
+      toast.success(`Agent ${newStatus === 'ACTIVE' ? 'activated' : 'paused'}`);
+      loadAgents();
+    } catch (error) {
+      console.error('Error toggling agent status:', error);
+      toast.error('Failed to update agent status');
     }
   };
 
-  const handleClone = (agentId: string) => {
-    console.log('Clone agent:', agentId);
+  const handleDelete = async (agentId: string) => {
+    if (!window.confirm('Are you sure you want to delete this agent?')) return;
+
+    try {
+      await agentService.deleteAgent(agentId);
+      toast.success('Agent deleted successfully');
+      loadAgents();
+    } catch (error) {
+      console.error('Error deleting agent:', error);
+      toast.error('Failed to delete agent');
+    }
   };
 
-  const handleBulkAction = (action: 'activate' | 'deactivate' | 'delete') => {
+  const handleClone = async (agentId: string) => {
+    try {
+      await agentService.cloneAgent(agentId);
+      toast.success('Agent cloned successfully');
+      loadAgents();
+    } catch (error) {
+      console.error('Error cloning agent:', error);
+      toast.error('Failed to clone agent');
+    }
+  };
+
+  const handleBulkAction = async (action: 'activate' | 'deactivate' | 'delete') => {
     if (selectedAgents.length === 0) return;
 
     if (action === 'delete') {
-      if (window.confirm(`Delete ${selectedAgents.length} agent(s)?`)) {
-        console.log('Bulk delete:', selectedAgents);
+      if (!window.confirm(`Delete ${selectedAgents.length} agent(s)?`)) return;
+
+      try {
+        await Promise.all(selectedAgents.map((id) => agentService.deleteAgent(id)));
+        toast.success(`${selectedAgents.length} agent(s) deleted`);
         setSelectedAgents([]);
+        loadAgents();
+      } catch (error) {
+        toast.error('Failed to delete agents');
       }
     } else {
-      console.log(`Bulk ${action}:`, selectedAgents);
-      setSelectedAgents([]);
+      const newStatus = action === 'activate' ? 'ACTIVE' : 'PAUSED';
+      try {
+        await Promise.all(selectedAgents.map((id) => agentService.updateAgentStatus(id, newStatus)));
+        toast.success(`${selectedAgents.length} agent(s) ${action}d`);
+        setSelectedAgents([]);
+        loadAgents();
+      } catch (error) {
+        toast.error(`Failed to ${action} agents`);
+      }
+    }
+  };
+
+  const handleCreateAgent = async () => {
+    if (!newAgentData.name || !newAgentData.type) {
+      toast.error('Please fill in required fields');
+      return;
+    }
+
+    try {
+      const createData: CreateAgentRequest = {
+        name: newAgentData.name,
+        type: newAgentData.type,
+        category: newAgentData.category || 'General',
+        description: newAgentData.description,
+        config: newAgentData.config || {
+          model: 'gpt-4',
+          temperature: 0.7,
+          maxTokens: 2000,
+          systemPrompt: 'You are a helpful AI assistant.',
+        },
+        capabilities: newAgentData.capabilities || [],
+      };
+
+      await agentService.createAgent(createData);
+      toast.success('Agent created successfully!');
+      setShowCreateModal(false);
+      setNewAgentData({
+        name: '',
+        description: '',
+        type: 'LEAD_GENERATOR',
+        category: 'Business',
+        config: {
+          model: 'gpt-4',
+          temperature: 0.7,
+          maxTokens: 2000,
+          systemPrompt: 'You are a helpful AI assistant.',
+        },
+        capabilities: [],
+      });
+      loadAgents();
+    } catch (error: any) {
+      console.error('Error creating agent:', error);
+      toast.error(error.response?.data?.error || 'Failed to create agent');
     }
   };
 
@@ -433,9 +414,11 @@ const Agents: React.FC = () => {
                 className="px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               >
                 <option value="all">All Status</option>
-                <option value="active">Active</option>
-                <option value="paused">Paused</option>
-                <option value="draft">Draft</option>
+                <option value="ACTIVE">Active</option>
+                <option value="PAUSED">Paused</option>
+                <option value="DRAFT">Draft</option>
+                <option value="READY">Ready</option>
+                <option value="TESTING">Testing</option>
               </select>
 
               <select
@@ -523,7 +506,13 @@ const Agents: React.FC = () => {
       </div>
 
       {/* Agent List/Grid */}
-      {filteredAgents.length === 0 ? (
+      {loading ? (
+        <div className="card text-center py-12">
+          <Activity className="w-16 h-16 text-primary-600 mx-auto mb-4 animate-spin" />
+          <h3 className="text-lg font-semibold text-neutral-900 mb-2">Loading agents...</h3>
+          <p className="text-neutral-600">Please wait while we fetch your agents</p>
+        </div>
+      ) : filteredAgents.length === 0 ? (
         <div className="card text-center py-12">
           <Brain className="w-16 h-16 text-neutral-400 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-neutral-900 mb-2">No agents found</h3>
@@ -557,10 +546,10 @@ const Agents: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      statusColors[agent.status]
+                      statusColors[agent.status] || 'bg-gray-100 text-gray-800'
                     }`}
                   >
-                    {agent.status}
+                    {getStatusDisplay(agent.status)}
                   </span>
                 </div>
               </div>
@@ -621,7 +610,7 @@ const Agents: React.FC = () => {
                   onClick={() => handleToggleStatus(agent.id)}
                   className="flex-1 btn btn-sm btn-outline flex items-center justify-center gap-1"
                 >
-                  {agent.status === 'active' ? (
+                  {agent.status === 'ACTIVE' || agent.status === 'RUNNING' ? (
                     <>
                       <Pause className="w-3 h-3" />
                       Pause
@@ -735,10 +724,10 @@ const Agents: React.FC = () => {
                     <td className="px-4 py-4">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          statusColors[agent.status]
+                          statusColors[agent.status] || 'bg-gray-100 text-gray-800'
                         }`}
                       >
-                        {agent.status}
+                        {getStatusDisplay(agent.status)}
                       </span>
                     </td>
                     <td className="px-4 py-4 font-medium">
@@ -757,9 +746,9 @@ const Agents: React.FC = () => {
                         <button
                           onClick={() => handleToggleStatus(agent.id)}
                           className="p-1 hover:bg-neutral-200 rounded"
-                          title={agent.status === 'active' ? 'Pause' : 'Activate'}
+                          title={agent.status === 'ACTIVE' || agent.status === 'RUNNING' ? 'Pause' : 'Activate'}
                         >
-                          {agent.status === 'active' ? (
+                          {agent.status === 'ACTIVE' || agent.status === 'RUNNING' ? (
                             <Pause className="w-4 h-4" />
                           ) : (
                             <Play className="w-4 h-4" />
@@ -808,13 +797,40 @@ const Agents: React.FC = () => {
                 {/* Basic Info */}
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-2">
-                    Agent Name
+                    Agent Name *
                   </label>
                   <input
                     type="text"
                     placeholder="e.g., Lead Qualifier"
+                    value={newAgentData.name || ''}
+                    onChange={(e) => setNewAgentData({ ...newAgentData, name: e.target.value })}
                     className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    required
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                    Agent Type *
+                  </label>
+                  <select
+                    value={newAgentData.type || 'LEAD_GENERATOR'}
+                    onChange={(e) => setNewAgentData({ ...newAgentData, type: e.target.value })}
+                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="LEAD_GENERATOR">Lead Generator</option>
+                    <option value="EMAIL_MARKETER">Email Marketer</option>
+                    <option value="SOCIAL_MEDIA">Social Media Manager</option>
+                    <option value="CONTENT_CREATOR">Content Creator</option>
+                    <option value="ANALYTICS">Analytics Agent</option>
+                    <option value="CUSTOMER_SERVICE">Customer Service</option>
+                    <option value="SALES">Sales Assistant</option>
+                    <option value="SEO_OPTIMIZER">SEO Optimizer</option>
+                    <option value="CONVERSATIONAL">Conversational Agent</option>
+                    <option value="TASK_AUTOMATION">Task Automation</option>
+                    <option value="DATA_PROCESSOR">Data Processor</option>
+                  </select>
                 </div>
 
                 <div>
@@ -824,6 +840,8 @@ const Agents: React.FC = () => {
                   <textarea
                     placeholder="Describe what this agent does..."
                     rows={3}
+                    value={newAgentData.description || ''}
+                    onChange={(e) => setNewAgentData({ ...newAgentData, description: e.target.value })}
                     className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   />
                 </div>
@@ -833,7 +851,16 @@ const Agents: React.FC = () => {
                   <label className="block text-sm font-medium text-neutral-700 mb-2">
                     Model
                   </label>
-                  <select className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                  <select
+                    value={newAgentData.config?.model || 'gpt-4'}
+                    onChange={(e) =>
+                      setNewAgentData({
+                        ...newAgentData,
+                        config: { ...newAgentData.config!, model: e.target.value },
+                      })
+                    }
+                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  >
                     <option value="gpt-4">GPT-4 (Most capable)</option>
                     <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Fast & efficient)</option>
                     <option value="claude-3-opus">Claude 3 Opus (Best reasoning)</option>
@@ -854,7 +881,13 @@ const Agents: React.FC = () => {
                       min="0"
                       max="2"
                       step="0.1"
-                      defaultValue="0.7"
+                      value={newAgentData.config?.temperature || 0.7}
+                      onChange={(e) =>
+                        setNewAgentData({
+                          ...newAgentData,
+                          config: { ...newAgentData.config!, temperature: parseFloat(e.target.value) },
+                        })
+                      }
                       className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     />
                     <p className="text-xs text-neutral-500 mt-1">0 = Focused, 2 = Creative</p>
@@ -869,7 +902,13 @@ const Agents: React.FC = () => {
                       min="100"
                       max="4000"
                       step="100"
-                      defaultValue="2000"
+                      value={newAgentData.config?.maxTokens || 2000}
+                      onChange={(e) =>
+                        setNewAgentData({
+                          ...newAgentData,
+                          config: { ...newAgentData.config!, maxTokens: parseInt(e.target.value) },
+                        })
+                      }
                       className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     />
                     <p className="text-xs text-neutral-500 mt-1">Max response length</p>
@@ -884,6 +923,13 @@ const Agents: React.FC = () => {
                   <textarea
                     placeholder="You are a helpful assistant that..."
                     rows={6}
+                    value={newAgentData.config?.systemPrompt || ''}
+                    onChange={(e) =>
+                      setNewAgentData({
+                        ...newAgentData,
+                        config: { ...newAgentData.config!, systemPrompt: e.target.value },
+                      })
+                    }
                     className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono text-sm"
                   />
                 </div>
@@ -891,7 +937,7 @@ const Agents: React.FC = () => {
                 {/* Tools */}
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-2">
-                    Tools & Functions
+                    Tools & Capabilities
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     {[
@@ -903,7 +949,25 @@ const Agents: React.FC = () => {
                       'image_generation',
                     ].map((tool) => (
                       <label key={tool} className="flex items-center gap-2">
-                        <input type="checkbox" className="rounded" />
+                        <input
+                          type="checkbox"
+                          className="rounded"
+                          checked={newAgentData.capabilities?.includes(tool) || false}
+                          onChange={(e) => {
+                            const capabilities = newAgentData.capabilities || [];
+                            if (e.target.checked) {
+                              setNewAgentData({
+                                ...newAgentData,
+                                capabilities: [...capabilities, tool],
+                              });
+                            } else {
+                              setNewAgentData({
+                                ...newAgentData,
+                                capabilities: capabilities.filter((c) => c !== tool),
+                              });
+                            }
+                          }}
+                        />
                         <span className="text-sm text-neutral-700">
                           {tool.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
                         </span>
@@ -915,18 +979,27 @@ const Agents: React.FC = () => {
 
               <div className="mt-8 flex items-center justify-end gap-3">
                 <button
-                  onClick={() => setShowCreateModal(false)}
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    setNewAgentData({
+                      name: '',
+                      description: '',
+                      type: 'LEAD_GENERATOR',
+                      category: 'Business',
+                      config: {
+                        model: 'gpt-4',
+                        temperature: 0.7,
+                        maxTokens: 2000,
+                        systemPrompt: 'You are a helpful AI assistant.',
+                      },
+                      capabilities: [],
+                    });
+                  }}
                   className="btn btn-outline"
                 >
                   Cancel
                 </button>
-                <button
-                  onClick={() => {
-                    // Handle create
-                    setShowCreateModal(false);
-                  }}
-                  className="btn btn-primary"
-                >
+                <button onClick={handleCreateAgent} className="btn btn-primary">
                   Create Agent
                 </button>
               </div>

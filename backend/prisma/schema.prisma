@@ -343,7 +343,7 @@ model MenuItem {
   parentId        String?
 
   // Menu Details
-  name            String
+  name            String   @unique
   label           String   // Display label
   icon            String?  // Icon name/class
   route           String?  // Frontend route
@@ -2709,4 +2709,497 @@ model PatientDietPlan {
   @@index([status])
   @@index([createdAt])
   @@map("patient_diet_plans")
+}
+
+// ==================== ZERODHA TRADING SYSTEM ====================
+
+// Trading Signals with 7-Layer Strategy Analysis
+model TradingSignal {
+  id              String   @id @default(cuid())
+  organizationId  String
+  userId          String
+
+  // Market & Instrument Details
+  symbol          String   // NIFTY, BANKNIFTY, FINNIFTY
+  strike          Float    // Strike price
+  expiry          DateTime // Option expiry date
+  optionType      OptionType // CE or PE
+
+  // Signal Details
+  signalType      SignalType // BUY_CALL, BUY_PUT, SELL_CALL, SELL_PUT, HOLD, EXIT
+  signalStrength  Float    @default(0) // 0-100
+
+  // Entry Parameters
+  entryPrice      Float?
+  targetPrice     Float?
+  stopLoss        Float?
+  quantity        Int      @default(1)
+
+  // 7-Layer Strategy Scores (0-100 each)
+  layer1Score     Float    @default(0) // Market Regime Detection
+  layer2Score     Float    @default(0) // Price Action Analysis
+  layer3Score     Float    @default(0) // Multi-Timeframe Alignment
+  layer4Score     Float    @default(0) // Volatility Analysis
+  layer5Score     Float    @default(0) // Option Flow (Writer Ratio)
+  layer6Score     Float    @default(0) // Risk Regime Filter
+  layer7Score     Float    @default(0) // Portfolio Management
+
+  // Layer 5: CRITICAL Writer Ratio Filter
+  writerRatio     Float?   // Actual ratio (e.g., 3.2 means PUT writers are 3.2x CALL writers)
+  writerRatioPassed Boolean @default(false) // Must be true for trade execution
+  callWriters     Int?     // Number of CALL option writers (OI)
+  putWriters      Int?     // Number of PUT option writers (OI)
+
+  // Market Context
+  vixLevel        Float?   // VIX at signal generation
+  marketRegime    String?  // TRENDING, RANGING, VOLATILE
+  timeframe       String   @default("15M") // Primary timeframe
+
+  // Analysis Data
+  priceActionZones Json?   // Support/Resistance, Supply/Demand zones
+  multiTimeframeData Json? // 1H, 15M, 5M alignment data
+  volatilityMetrics Json?  // IV, HV, volatility percentile
+  riskMetrics     Json?    // Portfolio risk, position sizing
+
+  // Signal Status
+  status          SignalStatus @default(PENDING)
+  statusReason    String?  // Why signal was rejected/executed
+
+  // Performance Tracking
+  executedAt      DateTime?
+  closedAt        DateTime?
+  actualEntry     Float?
+  actualExit      Float?
+  actualPnL       Float?
+  actualROI       Float?
+
+  // Metadata
+  notes           String?
+  metadata        Json?    // Additional analysis data
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  expiresAt       DateTime? // Signal validity period
+
+  // Relations
+  positions       TradingPosition[]
+
+  @@index([organizationId, userId])
+  @@index([symbol, expiry])
+  @@index([status])
+  @@index([createdAt])
+  @@index([writerRatioPassed]) // Critical for filtering executable signals
+  @@map("trading_signals")
+}
+
+// Active Trading Positions
+model TradingPosition {
+  id              String   @id @default(cuid())
+  organizationId  String
+  userId          String
+  signalId        String?  // Reference to original signal
+
+  // Position Details
+  symbol          String
+  strike          Float
+  expiry          DateTime
+  optionType      OptionType
+  positionType    PositionType // LONG_CALL, LONG_PUT, SHORT_CALL, SHORT_PUT
+
+  // Entry Details
+  entryPrice      Float
+  entryTime       DateTime @default(now())
+  quantity        Int
+  entryValue      Float    // Total entry cost
+
+  // Current Details
+  currentPrice    Float?
+  currentValue    Float?
+  unrealizedPnL   Float?
+  unrealizedROI   Float?
+
+  // Exit Details
+  exitPrice       Float?
+  exitTime        DateTime?
+  exitValue       Float?
+  realizedPnL     Float?
+  realizedROI     Float?
+
+  // Risk Management
+  stopLoss        Float
+  target          Float
+  trailingStop    Boolean  @default(false)
+  trailingStopDistance Float?
+
+  // Position Status
+  status          PositionStatus @default(OPEN)
+  exitReason      String?  // STOP_LOSS, TARGET, MANUAL, EXPIRY, SIGNAL_EXIT
+
+  // Performance Metrics
+  highestPrice    Float?   // Highest price reached
+  lowestPrice     Float?   // Lowest price reached
+  maxDrawdown     Float?   // Max adverse movement
+  holdingPeriod   Int?     // Minutes
+
+  // Metadata
+  notes           String?
+  metadata        Json?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  signal          TradingSignal? @relation(fields: [signalId], references: [id], onDelete: SetNull)
+  trade           TradingTrade?
+
+  @@index([organizationId, userId])
+  @@index([symbol, expiry])
+  @@index([status])
+  @@index([createdAt])
+  @@map("trading_positions")
+}
+
+// Completed Trades (Historical Record)
+model TradingTrade {
+  id              String   @id @default(cuid())
+  organizationId  String
+  userId          String
+  positionId      String   @unique
+
+  // Trade Summary
+  symbol          String
+  strike          Float
+  expiry          DateTime
+  optionType      OptionType
+  positionType    PositionType
+
+  // Financial Details
+  entryPrice      Float
+  exitPrice       Float
+  quantity        Int
+  entryValue      Float
+  exitValue       Float
+
+  // P&L
+  grossPnL        Float    // Profit/Loss before costs
+  brokerage       Float    @default(0)
+  taxes           Float    @default(0)
+  netPnL          Float    // Profit/Loss after costs
+  roi             Float    // Return on Investment %
+
+  // Timing
+  entryTime       DateTime
+  exitTime        DateTime
+  holdingPeriod   Int      // Minutes
+
+  // Trade Classification
+  tradeResult     TradeResult // WIN, LOSS, BREAKEVEN
+  exitReason      String   // STOP_LOSS, TARGET, MANUAL, EXPIRY, SIGNAL_EXIT
+
+  // Strategy Metrics
+  strategyScores  Json?    // All 7 layer scores at entry
+  writerRatio     Float?   // Writer ratio at entry
+  vixLevel        Float?   // VIX at entry
+  marketRegime    String?  // Market regime at entry
+
+  // Performance Metrics
+  maxFavorable    Float?   // Maximum favorable excursion
+  maxAdverse      Float?   // Maximum adverse excursion
+  riskRewardRatio Float?   // Actual R:R achieved
+
+  // Metadata
+  notes           String?
+  metadata        Json?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+
+  // Relations
+  position        TradingPosition @relation(fields: [positionId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, userId])
+  @@index([symbol])
+  @@index([tradeResult])
+  @@index([entryTime])
+  @@map("trading_trades")
+}
+
+// Backtest Results
+model BacktestResult {
+  id              String   @id @default(cuid())
+  organizationId  String
+  userId          String
+
+  // Backtest Configuration
+  name            String
+  description     String?
+  symbol          String   // NIFTY, BANKNIFTY, etc.
+  startDate       DateTime
+  endDate         DateTime
+  initialCapital  Float
+
+  // Strategy Parameters
+  strategyConfig  Json     // All 7 layer configurations
+  minWriterRatio  Float    @default(2.5) // Minimum writer ratio required
+  riskPerTrade    Float    @default(2.0) // % of capital per trade
+
+  // Overall Performance
+  totalTrades     Int
+  winningTrades   Int
+  losingTrades    Int
+  breakEvenTrades Int
+
+  // Financial Metrics
+  totalPnL        Float
+  totalReturn     Float    // %
+  winRate         Float    // %
+  avgWin          Float
+  avgLoss         Float
+  profitFactor    Float    // Gross profit / Gross loss
+
+  // Risk Metrics
+  maxDrawdown     Float    // %
+  maxDrawdownValue Float   // Absolute
+  sharpeRatio     Float?
+  sortinoRatio    Float?
+  calmarRatio     Float?
+
+  // Trade Statistics
+  avgHoldingPeriod Float   // Minutes
+  avgRiskReward   Float
+  largestWin      Float
+  largestLoss     Float
+  consecutiveWins Int
+  consecutiveLosses Int
+
+  // Monthly Breakdown
+  monthlyReturns  Json?    // Month-by-month P&L
+
+  // Trade History
+  trades          Json     // Complete trade log
+  equityCurve     Json?    // Equity progression
+
+  // Layer Performance
+  layer1Accuracy  Float?   // Market Regime accuracy
+  layer2Accuracy  Float?   // Price Action accuracy
+  layer3Accuracy  Float?   // MTF accuracy
+  layer4Accuracy  Float?   // Volatility accuracy
+  layer5Accuracy  Float?   // Writer Ratio accuracy
+  layer6Accuracy  Float?   // Risk Filter accuracy
+  layer7Accuracy  Float?   // Portfolio Management accuracy
+
+  // Status
+  status          String   @default("completed") // running, completed, failed
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  completedAt     DateTime?
+
+  @@index([organizationId, userId])
+  @@index([symbol])
+  @@index([createdAt])
+  @@map("backtest_results")
+}
+
+// Writer Ratio Snapshots (Historical Option Chain Data)
+model WriterRatioSnapshot {
+  id              String   @id @default(cuid())
+
+  // Instrument Details
+  symbol          String   // NIFTY, BANKNIFTY
+  expiry          DateTime
+  strike          Float
+
+  // Option Chain Data
+  callOI          Int      // Call Open Interest
+  putOI           Int      // Put Open Interest
+  callOIChange    Int      @default(0)
+  putOIChange     Int      @default(0)
+
+  // Writer Positions
+  callWriters     Int      // Estimated CALL writers (from OI build-up)
+  putWriters      Int      // Estimated PUT writers (from OI build-up)
+
+  // Critical Ratio
+  writerRatio     Float    // PUT writers / CALL writers (for bullish) or vice versa
+  ratioPassed     Boolean  // TRUE if ratio >= 2.5x threshold
+
+  // Price Data
+  callLTP         Float?   // Call Last Traded Price
+  putLTP          Float?   // Put Last Traded Price
+  callIV          Float?   // Call Implied Volatility
+  putIV           Float?   // Put Implied Volatility
+
+  // Volume Data
+  callVolume      Int      @default(0)
+  putVolume       Int      @default(0)
+
+  // Market Metrics
+  pcr             Float?   // Put-Call Ratio (OI based)
+  vixLevel        Float?   // VIX at snapshot time
+  spotPrice       Float?   // Underlying spot price
+
+  // Metadata
+  dataSource      String   @default("zerodha") // zerodha, nse, custom
+
+  // Timestamp
+  timestamp       DateTime @default(now())
+
+  @@index([symbol, expiry, strike])
+  @@index([timestamp])
+  @@index([ratioPassed])
+  @@map("writer_ratio_snapshots")
+}
+
+// Option Chain Data (Real-time)
+model OptionChainData {
+  id              String   @id @default(cuid())
+
+  // Instrument
+  symbol          String   // NIFTY, BANKNIFTY
+  expiry          DateTime
+  strike          Float
+
+  // Call Option Data
+  callLTP         Float?
+  callOI          Int      @default(0)
+  callOIChange    Int      @default(0)
+  callVolume      Int      @default(0)
+  callIV          Float?
+  callBidQty      Int      @default(0)
+  callAskQty      Int      @default(0)
+  callBidPrice    Float?
+  callAskPrice    Float?
+
+  // Put Option Data
+  putLTP          Float?
+  putOI           Int      @default(0)
+  putOIChange     Int      @default(0)
+  putVolume       Int      @default(0)
+  putIV           Float?
+  putBidQty       Int      @default(0)
+  putAskQty       Int      @default(0)
+  putBidPrice     Float?
+  putAskPrice     Float?
+
+  // Underlying
+  spotPrice       Float?
+
+  // Metrics
+  pcr             Float?   // Put-Call Ratio
+
+  // Timestamp
+  timestamp       DateTime @default(now())
+
+  @@index([symbol, expiry])
+  @@index([timestamp])
+  @@map("option_chain_data")
+}
+
+// Market Regime Analysis
+model MarketRegime {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Market Details
+  symbol          String   // NIFTY, BANKNIFTY
+
+  // Regime Classification
+  regimeType      RegimeType // TRENDING_BULLISH, TRENDING_BEARISH, RANGING, VOLATILE
+  regimeStrength  Float    @default(0) // 0-100
+
+  // Market Indicators
+  vixLevel        Float
+  vixCategory     String   // LOW, MEDIUM, HIGH, EXTREME
+
+  // Trend Analysis
+  trendDirection  String?  // UP, DOWN, SIDEWAYS
+  trendStrength   Float?   // 0-100
+
+  // Volatility Metrics
+  historicalVol   Float?   // Historical volatility
+  impliedVol      Float?   // Average implied volatility
+  volPercentile   Float?   // Volatility percentile (0-100)
+
+  // Price Action
+  priceLevel      Float?   // Current spot price
+  keyLevels       Json?    // Support/Resistance levels
+
+  // Sentiment
+  marketSentiment String?  // BULLISH, BEARISH, NEUTRAL
+  sentimentScore  Float?   // -100 to +100
+
+  // Technical Indicators
+  indicators      Json?    // RSI, MACD, ADX, etc.
+
+  // Timestamp
+  timestamp       DateTime @default(now())
+  validUntil      DateTime? // Regime validity period
+
+  @@index([organizationId, symbol])
+  @@index([timestamp])
+  @@index([regimeType])
+  @@map("market_regimes")
+}
+
+// ==================== TRADING ENUMS ====================
+
+enum OptionType {
+  CE  // Call Option
+  PE  // Put Option
+}
+
+enum SignalType {
+  BUY_CALL
+  BUY_PUT
+  SELL_CALL
+  SELL_PUT
+  HOLD
+  EXIT
+  NO_TRADE
+}
+
+enum PositionType {
+  LONG_CALL
+  LONG_PUT
+  SHORT_CALL
+  SHORT_PUT
+  LONG_STRADDLE
+  LONG_STRANGLE
+  SHORT_STRADDLE
+  SHORT_STRANGLE
+}
+
+enum SignalStatus {
+  PENDING       // Signal generated, awaiting validation
+  APPROVED      // All layers passed including writer ratio
+  REJECTED      // Failed one or more layers
+  EXECUTED      // Trade executed
+  CANCELLED     // Signal cancelled
+  EXPIRED       // Signal validity expired
+}
+
+enum PositionStatus {
+  OPEN          // Position is active
+  CLOSED        // Position closed normally
+  STOPPED_OUT   // Hit stop loss
+  TARGET_HIT    // Hit target
+  EXPIRED       // Option expired
+  CANCELLED     // Manually cancelled
+}
+
+enum TradeResult {
+  WIN           // Profitable trade
+  LOSS          // Loss-making trade
+  BREAKEVEN     // Neutral trade
+}
+
+enum RegimeType {
+  TRENDING_BULLISH
+  TRENDING_BEARISH
+  RANGING
+  VOLATILE
+  UNCERTAIN
 }

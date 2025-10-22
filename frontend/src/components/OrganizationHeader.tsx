@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
+import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 import {
   Bell,
   Search,
@@ -412,14 +413,8 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
               )}
             </div>
 
-            {/* Theme Toggle */}
-            <button
-              onClick={() => onThemeChange?.('dark')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              title="Toggle Theme"
-            >
-              <Sun className="w-5 h-5 text-gray-600" />
-            </button>
+            {/* Theme Switcher */}
+            <ThemeSwitcher />
 
             {/* Settings */}
             <a

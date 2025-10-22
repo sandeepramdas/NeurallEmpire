@@ -19,6 +19,26 @@ export default {
           700: '#0369a1',
           800: '#075985',
           900: '#0c4a6e',
+          DEFAULT: 'var(--color-primary)',
+        },
+        secondary: {
+          DEFAULT: 'var(--color-secondary)',
+        },
+        accent: {
+          DEFAULT: 'var(--color-accent)',
+        },
+        background: {
+          DEFAULT: 'var(--color-background)',
+        },
+        surface: {
+          DEFAULT: 'var(--color-surface)',
+        },
+        text: {
+          DEFAULT: 'var(--color-text)',
+          secondary: 'var(--color-text-secondary)',
+        },
+        border: {
+          DEFAULT: 'var(--color-border)',
         },
         neural: {
           50: '#f8fafc',

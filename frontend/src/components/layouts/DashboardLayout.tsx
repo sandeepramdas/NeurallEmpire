@@ -42,7 +42,9 @@ import {
   Receipt,
   DollarSign,
   Apple,
-  Heart
+  Heart,
+  TrendingUp,
+  LineChart
 } from 'lucide-react';
 
 interface NavItem {
@@ -118,6 +120,11 @@ const DashboardLayout: React.FC = () => {
       children: [
         { path: 'patient-diet-plan', label: 'Patient Diet Plan', icon: Apple },
       ],
+    },
+    {
+      path: 'zerodha',
+      label: 'Zerodha Trading',
+      icon: TrendingUp
     },
     {
       path: 'insights',
