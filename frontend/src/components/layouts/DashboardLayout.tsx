@@ -288,7 +288,7 @@ const DashboardLayout: React.FC = () => {
           )}
 
           {/* Main Navigation */}
-          <nav className="flex-1 overflow-y-auto py-4">
+          <nav className="flex-1 overflow-y-auto py-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400">
             <div className="px-3 space-y-1">
               {navItems.map((item) => {
                 const Icon = item.icon;
