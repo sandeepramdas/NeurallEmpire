@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
+import { useTheme } from '@/contexts/ThemeContext';
 import {
   Bell,
   Search,
@@ -39,6 +40,7 @@ interface OrganizationHeaderProps {
 
 const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }) => {
   const { user, organization, logout } = useAuthStore();
+  const { theme, toggleTheme } = useTheme();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -50,7 +52,6 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
   const [showHelpMenu, setShowHelpMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [unreadCount] = useState(3);
-  const [currentTheme, setCurrentTheme] = useState<'light' | 'dark'>('light');
 
   // Mock data - replace with real data from your store/API
   const notifications = [
@@ -108,9 +109,8 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
 
   // Theme toggle handler
   const handleToggleTheme = () => {
-    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-    setCurrentTheme(newTheme);
-    onThemeChange?.(newTheme);
+    toggleTheme();
+    onThemeChange?.(theme === 'light' ? 'dark' : 'light');
   };
 
   // Keyboard shortcut listener
@@ -424,13 +424,13 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
             {/* Theme Toggle */}
             <button
               onClick={handleToggleTheme}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              title={`Switch to ${currentTheme === 'light' ? 'Dark' : 'Light'} Mode`}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors group"
+              title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
             >
-              {currentTheme === 'light' ? (
-                <Moon className="w-5 h-5 text-gray-600" />
+              {theme === 'light' ? (
+                <Moon className="w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
               ) : (
-                <Sun className="w-5 h-5 text-gray-600" />
+                <Sun className="w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:text-yellow-500 transition-colors" />
               )}
             </button>
 

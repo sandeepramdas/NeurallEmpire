@@ -6,6 +6,7 @@ import { Toaster } from 'react-hot-toast';
 
 import App from './App';
 import './index.css';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -22,29 +23,31 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
-        <App />
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: '#1e293b',
-              color: '#f1f5f9',
-            },
-            success: {
+        <ThemeProvider>
+          <App />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
               style: {
-                background: '#059669',
-                color: '#ffffff',
+                background: '#1e293b',
+                color: '#f1f5f9',
               },
-            },
-            error: {
-              style: {
-                background: '#dc2626',
-                color: '#ffffff',
+              success: {
+                style: {
+                  background: '#059669',
+                  color: '#ffffff',
+                },
               },
-            },
-          }}
-        />
+              error: {
+                style: {
+                  background: '#dc2626',
+                  color: '#ffffff',
+                },
+              },
+            }}
+          />
+        </ThemeProvider>
       </QueryClientProvider>
     </BrowserRouter>
   </React.StrictMode>
