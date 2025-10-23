@@ -8,10 +8,15 @@ export class DietPlanService {
   private openai: OpenAI | null = null;
 
   constructor() {
-    if (process.env.OPENAI_API_KEY) {
+    const apiKey = process.env.OPENAI_API_KEY;
+
+    // Check if API key exists and is not a placeholder
+    if (apiKey && apiKey !== 'your_openai_api_key_here' && !apiKey.includes('placeholder')) {
       this.openai = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY
+        apiKey: apiKey
       });
+    } else {
+      console.warn('⚠️  OPENAI_API_KEY is not configured or is a placeholder. Diet plan generation will not work.');
     }
   }
 
@@ -38,7 +43,10 @@ export class DietPlanService {
     error?: string
   }> {
     if (!this.openai) {
-      throw new Error('OpenAI API key not configured. Please add OPENAI_API_KEY to your .env file');
+      return {
+        success: false,
+        error: 'OpenAI API key not configured. Please add a valid OPENAI_API_KEY to your environment variables. Get your API key from https://platform.openai.com/api-keys'
+      };
     }
 
     try {
