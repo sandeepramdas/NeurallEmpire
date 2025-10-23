@@ -18,6 +18,7 @@ import { logger } from '../infrastructure/logger';
 import { toolRegistry, ToolExecutionContext } from './tool.system';
 import { redis } from '../context-engine/redis.client';
 import { prisma } from './prisma.client';
+import ivm from 'isolated-vm';
 
 // ==================== TYPES ====================
 
@@ -528,22 +529,63 @@ export class WorkflowEngine {
     switch (operation) {
       case 'map':
         if (!script) throw new Error('Transform node missing script');
-        // Note: In production, use a sandboxed JS executor
-        return inputData.map((item) => eval(script));
+        return inputData.map((item) => this.executeSandboxed(script, { item }));
 
       case 'filter':
         if (!script) throw new Error('Transform node missing script');
-        return inputData.filter((item) => eval(script));
+        return inputData.filter((item) => this.executeSandboxed(script, { item }));
 
       case 'reduce':
         if (!script) throw new Error('Transform node missing script');
-        return inputData.reduce((acc, item) => eval(script), {});
+        return inputData.reduce((acc, item) => this.executeSandboxed(script, { acc, item }), {});
 
       case 'merge':
         return Object.assign({}, ...inputData);
 
       default:
         throw new Error(`Unknown transform operation: ${operation}`);
+    }
+  }
+
+  /**
+   * Execute code in a sandboxed environment using isolated-vm
+   * Prevents code injection attacks by isolating script execution
+   */
+  private executeSandboxed(script: string, context: Record<string, any>): any {
+    try {
+      // Create an isolated VM instance with memory limit
+      const isolate = new ivm.Isolate({ memoryLimit: 8 });
+
+      // Create a new context within the isolate
+      const vmContext = isolate.createContextSync();
+
+      // Transfer context variables into the isolated environment
+      const jail = vmContext.global;
+      jail.setSync('global', jail.derefInto());
+
+      // Set up context variables
+      for (const [key, value] of Object.entries(context)) {
+        // Create a safe copy of the value
+        const safeValue = JSON.parse(JSON.stringify(value));
+        jail.setSync(key, new ivm.ExternalCopy(safeValue).copyInto());
+      }
+
+      // Compile and execute the script with a timeout (1 second)
+      const compiledScript = isolate.compileScriptSync(script);
+      const result = compiledScript.runSync(vmContext, { timeout: 1000 });
+
+      // Copy the result back to the main context
+      if (result && typeof result.copy === 'function') {
+        return result.copy();
+      }
+
+      return result;
+    } catch (error) {
+      logger.error('Sandboxed script execution failed', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        script: script.substring(0, 100), // Log first 100 chars only
+      });
+      throw new Error(`Script execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
