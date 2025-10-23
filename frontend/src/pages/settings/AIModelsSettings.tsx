@@ -8,9 +8,11 @@ import {
   AlertCircle,
   CheckCircle,
   Sparkles,
+  Lightbulb,
 } from 'lucide-react';
 import { RightPanel } from '@/components/ui/RightPanel';
 import { api } from '@/services/api';
+import ModelTemplates from '@/components/ModelTemplates';
 
 interface AIProvider {
   id: string;
@@ -64,6 +66,9 @@ const AIModelsSettings: React.FC = () => {
   // Panel state
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [editingModel, setEditingModel] = useState<AIModelConfig | null>(null);
+
+  // Template browser state
+  const [showTemplates, setShowTemplates] = useState(false);
   const [formData, setFormData] = useState<ModelFormData>({
     providerId: '',
     modelId: '',
@@ -156,6 +161,26 @@ const AIModelsSettings: React.FC = () => {
       isDefault: false,
     });
     setFormErrors({});
+  };
+
+  const handleTemplateSelect = (template: any) => {
+    // Find the provider by code from recommendedProviders
+    const recommendedProvider = providers.find(p =>
+      template.recommendedProviders.includes(p.code)
+    );
+
+    setFormData({
+      providerId: recommendedProvider?.id || '',
+      modelId: template.name.toLowerCase().replace(/\s+/g, '-'),
+      displayName: template.name,
+      description: template.description,
+      apiKey: '',
+      maxTokens: template.defaultConfig.maxTokens,
+      temperature: template.defaultConfig.temperature,
+      isDefault: models.length === 0,
+    });
+    setFormErrors({});
+    setIsPanelOpen(true);
   };
 
   const validateForm = (): boolean => {
@@ -267,21 +292,30 @@ const AIModelsSettings: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center space-x-2">
-            <Sparkles className="w-7 h-7 text-indigo-600" />
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center space-x-2">
+            <Sparkles className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
             <span>AI Model Configuration</span>
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
             Configure AI models from various providers to use across your platform
           </p>
         </div>
-        <button
-          onClick={openAddPanel}
-          className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
-        >
-          <Plus className="w-5 h-5" />
-          <span>Add Model</span>
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowTemplates(true)}
+            className="flex items-center space-x-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          >
+            <Lightbulb className="w-5 h-5" />
+            <span>Browse Templates</span>
+          </button>
+          <button
+            onClick={openAddPanel}
+            className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Add Model</span>
+          </button>
+        </div>
       </div>
 
       {/* Error Alert */}
@@ -670,6 +704,13 @@ const AIModelsSettings: React.FC = () => {
           </div>
         </form>
       </RightPanel>
+
+      {/* Model Templates Browser */}
+      <ModelTemplates
+        isOpen={showTemplates}
+        onClose={() => setShowTemplates(false)}
+        onSelectTemplate={handleTemplateSelect}
+      />
     </div>
   );
 };
