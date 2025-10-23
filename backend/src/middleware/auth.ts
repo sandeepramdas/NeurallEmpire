@@ -4,6 +4,7 @@ import { prisma } from '@/server';
 import { AuthenticatedRequest, JwtPayload, AuthUser } from '@/types';
 import { rbacService } from '@/services/rbac.service';
 import { config } from '@/config/env';
+import { jwtBlacklistService } from '@/services/jwt-blacklist.service';
 
 const JWT_SECRET = config.JWT_SECRET;
 
@@ -36,6 +37,28 @@ export const authenticate = async (
 
     // Verify and decode token
     const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
+
+    // Check if token is blacklisted
+    const isBlacklisted = await jwtBlacklistService.isBlacklisted(token);
+    if (isBlacklisted) {
+      res.status(401).json({
+        success: false,
+        error: 'Token has been revoked',
+      });
+      return;
+    }
+
+    // Check if all user tokens are blacklisted (forced logout)
+    const allUserTokensBlacklisted = await jwtBlacklistService.areAllUserTokensBlacklisted(
+      decoded.userId
+    );
+    if (allUserTokensBlacklisted) {
+      res.status(401).json({
+        success: false,
+        error: 'All sessions have been terminated',
+      });
+      return;
+    }
 
     // Fetch user from database with organization info
     const user = await prisma.user.findUnique({
@@ -176,6 +199,18 @@ export const optionalAuth = async (
 
     if (token) {
       const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
+
+      // Check if token is blacklisted
+      const isBlacklisted = await jwtBlacklistService.isBlacklisted(token);
+      const allUserTokensBlacklisted = await jwtBlacklistService.areAllUserTokensBlacklisted(
+        decoded.userId
+      );
+
+      // Skip user lookup if token is blacklisted
+      if (isBlacklisted || allUserTokensBlacklisted) {
+        next();
+        return;
+      }
 
       const user = await prisma.user.findUnique({
         where: { id: decoded.userId },

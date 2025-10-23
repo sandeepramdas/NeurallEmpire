@@ -6,6 +6,7 @@ import { prisma } from '@/server';
 import { AuthenticatedRequest, RegisterData, LoginData, ApiResponse, AuthUser } from '@/types';
 import { createSubdomainDNS } from '@/services/cloudflare.service';
 import { config } from '@/config/env';
+import { jwtBlacklistService } from '@/services/jwt-blacklist.service';
 
 const JWT_SECRET = config.JWT_SECRET;
 const JWT_EXPIRES_IN = config.JWT_EXPIRES_IN;
@@ -577,10 +578,29 @@ export const logout = async (
   res: Response
 ): Promise<Response | void> => {
   try {
-    // In a more advanced implementation, you might want to:
-    // 1. Blacklist the token
-    // 2. Remove session from database
-    // 3. Clear cookies
+    // Extract token from request
+    let token: string | undefined;
+
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    }
+
+    // Also check cookies for token
+    if (!token && req.cookies?.token) {
+      token = req.cookies.token;
+    }
+
+    // Blacklist the token if found
+    if (token) {
+      await jwtBlacklistService.blacklistToken(token);
+    }
+
+    // Clear session cookies
+    res.clearCookie('token');
+    res.clearCookie('refreshToken');
+
+    // TODO: Future enhancement - Remove session from database if session table exists
 
     return res.json({
       success: true,
