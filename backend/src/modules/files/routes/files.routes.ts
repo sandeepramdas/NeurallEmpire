@@ -2,50 +2,16 @@ import { Router } from 'express';
 import multer from 'multer';
 import FilesController from '../controllers/files.controller';
 import { authenticate } from '@/middleware/auth';
+import { validateFileUpload } from '@/middleware/file-validation';
 
 const router = Router();
 
 // Configure multer for memory storage
+// Basic multer config - comprehensive validation is done by validateFileUpload middleware
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    // Allow common file types
-    const allowedMimeTypes = [
-      // Images
-      'image/jpeg',
-      'image/jpg',
-      'image/png',
-      'image/gif',
-      'image/webp',
-      'image/svg+xml',
-      // Documents
-      'application/pdf',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'application/vnd.ms-excel',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'application/vnd.ms-powerpoint',
-      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-      // Text
-      'text/plain',
-      'text/csv',
-      'text/html',
-      // Archives
-      'application/zip',
-      'application/x-zip-compressed',
-      'application/x-rar-compressed',
-      // Other
-      'application/json',
-    ];
-
-    if (allowedMimeTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error(`File type not allowed: ${file.mimetype}`));
-    }
+    fileSize: 50 * 1024 * 1024, // 50MB max (will be further validated by middleware)
   },
 });
 
@@ -56,7 +22,16 @@ router.use(authenticate);
 router.get('/storage/usage', FilesController.getStorageUsage);
 
 // File operations
-router.post('/upload', upload.single('file'), FilesController.uploadFile);
+// Upload with comprehensive validation: file type, size, magic numbers, sanitization
+router.post(
+  '/upload',
+  upload.single('file'),
+  validateFileUpload({
+    allowedTypes: ['images', 'documents', 'videos', 'audio'],
+    maxSize: 50 * 1024 * 1024, // 50MB
+  }),
+  FilesController.uploadFile
+);
 router.get('/', FilesController.listFiles);
 router.get('/:fileId', FilesController.getFile);
 router.get('/:fileId/download', FilesController.getDownloadUrl);
