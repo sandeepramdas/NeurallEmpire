@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useTheme } from '@/contexts/ThemeContext';
+import ThemeSelector from './ThemeSelector';
 import {
   Bell,
   Search,
@@ -10,6 +11,7 @@ import {
   ChevronDown,
   Sun,
   Moon,
+  Palette,
   FileText,
   HelpCircle,
   User,
@@ -50,6 +52,7 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
   const [showResourcesMenu, setShowResourcesMenu] = useState(false);
   const [showHelpMenu, setShowHelpMenu] = useState(false);
+  const [showThemeSelector, setShowThemeSelector] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [unreadCount] = useState(3);
 
@@ -434,6 +437,15 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
               )}
             </button>
 
+            {/* Color Theme Selector */}
+            <button
+              onClick={() => setShowThemeSelector(true)}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors group"
+              title="Customize Theme Colors"
+            >
+              <Palette className="w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
+            </button>
+
             {/* Settings */}
             <a
               href="/dashboard/settings"
@@ -758,6 +770,9 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
           </div>
         </>
       )}
+
+      {/* Theme Color Selector Modal */}
+      <ThemeSelector isOpen={showThemeSelector} onClose={() => setShowThemeSelector(false)} />
     </header>
   );
 };
