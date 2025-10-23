@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { getPaginationParams, createPaginatedResponse } from '@/utils/pagination';
 
 const prisma = new PrismaClient();
 
@@ -97,9 +98,16 @@ export class WorkflowsController {
       const organizationId = (req as any).user.organizationId;
       const status = req.query.status as string;
 
+      // Parse pagination parameters
+      const { page, limit, skip, take } = getPaginationParams(req);
+
       const where: any = { organizationId };
       if (status) where.status = status;
 
+      // Get total count for pagination
+      const total = await prisma.agentWorkflow.count({ where });
+
+      // Get paginated workflows
       const workflows = await prisma.agentWorkflow.findMany({
         where,
         include: {
@@ -117,13 +125,13 @@ export class WorkflowsController {
             }
           }
         },
-        orderBy: { createdAt: 'desc' }
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
       });
 
-      res.json({
-        success: true,
-        data: workflows
-      });
+      // Return paginated response
+      res.json(createPaginatedResponse(workflows, total, page, limit));
     } catch (error) {
       console.error('Get workflows error:', error);
       res.status(500).json({ error: 'Failed to fetch workflows' });

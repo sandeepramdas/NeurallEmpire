@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { getPaginationParams, createPaginatedResponse } from '@/utils/pagination';
 
 const prisma = new PrismaClient();
 
@@ -122,11 +123,18 @@ export class AgentsController {
       const type = req.query.type as string;
       const isPublic = req.query.isPublic === 'true';
 
+      // Parse pagination parameters
+      const { page, limit, skip, take } = getPaginationParams(req);
+
       const where: any = { organizationId };
       if (status) where.status = status;
       if (type) where.type = type;
       if (isPublic !== undefined) where.isPublic = isPublic;
 
+      // Get total count for pagination
+      const total = await prisma.agent.count({ where });
+
+      // Get paginated agents
       const agents = await prisma.agent.findMany({
         where,
         include: {
@@ -144,13 +152,13 @@ export class AgentsController {
             }
           }
         },
-        orderBy: { createdAt: 'desc' }
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
       });
 
-      res.json({
-        success: true,
-        data: agents
-      });
+      // Return paginated response
+      res.json(createPaginatedResponse(agents, total, page, limit));
     } catch (error) {
       console.error('Get agents error:', error);
       res.status(500).json({ error: 'Failed to fetch agents' });
