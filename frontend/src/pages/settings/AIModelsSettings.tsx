@@ -9,6 +9,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { RightPanel } from '@/components/ui/RightPanel';
+import { api } from '@/services/api';
 
 interface AIProvider {
   id: string;
@@ -85,20 +86,12 @@ const AIModelsSettings: React.FC = () => {
       setError(null);
 
       const [modelsRes, providersRes] = await Promise.all([
-        fetch('/api/ai-models/configs', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        }),
-        fetch('/api/ai-models/providers', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        }),
+        api.get('/ai-models/configs'),
+        api.get('/ai-models/providers'),
       ]);
 
-      if (!modelsRes.ok || !providersRes.ok) {
-        throw new Error('Failed to fetch data');
-      }
-
-      const modelsData = await modelsRes.json();
-      const providersData = await providersRes.json();
+      const modelsData = modelsRes.data;
+      const providersData = providersRes.data;
 
       setModels(modelsData.configs || []);
       setProviders(providersData.providers || []);
@@ -188,22 +181,10 @@ const AIModelsSettings: React.FC = () => {
         providerId: provider.id,
       };
 
-      const url = editingModel
-        ? `/api/ai-models/configs/${editingModel.id}`
-        : '/api/ai-models/configs';
-
-      const response = await fetch(url, {
-        method: editingModel ? 'PUT' : 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to save model');
+      if (editingModel) {
+        await api.put(`/ai-models/configs/${editingModel.id}`, payload);
+      } else {
+        await api.post('/ai-models/configs', payload);
       }
 
       await fetchData();
@@ -222,20 +203,11 @@ const AIModelsSettings: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`/api/ai-models/configs/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to delete model');
-      }
-
+      await api.delete(`/ai-models/configs/${id}`);
       await fetchData();
     } catch (err: any) {
       console.error('Error deleting model:', err);
-      alert(err.message);
+      alert(err.response?.data?.error || err.message || 'Failed to delete model');
     }
   };
 
