@@ -33,11 +33,11 @@ export class DietPlanService {
     allergies?: string[];
     medications?: string[];
     dietaryRestrictions?: string[];
-    timespan: 'weekly' | 'monthly' | 'custom';
-    customDays?: number;
+    numberOfDays: number;
     mealsPerDay: number;
     specialInstructions?: string;
     model?: string;
+    aiModelConfigId?: string;
   }): Promise<{
     success: boolean;
     dietPlan?: any;
@@ -60,20 +60,12 @@ export class DietPlanService {
         allergies = [],
         medications = [],
         dietaryRestrictions = [],
-        timespan,
-        customDays,
+        numberOfDays,
         mealsPerDay,
         specialInstructions,
-        model = 'gpt-4'
+        model = 'gpt-4',
+        aiModelConfigId
       } = params;
-
-      // Calculate number of days for the plan
-      let daysCount = 7; // default weekly
-      if (timespan === 'monthly') {
-        daysCount = 30;
-      } else if (timespan === 'custom' && customDays) {
-        daysCount = customDays;
-      }
 
       // Build the system prompt
       const systemPrompt = `You are an expert nutritionist and dietitian specializing in medical nutrition therapy.
@@ -89,7 +81,7 @@ Guidelines:
 - Be culturally sensitive and offer diverse food options`;
 
       // Build the user prompt
-      const userPrompt = `Create a comprehensive ${timespan} diet plan for the following patient:
+      const userPrompt = `Create a comprehensive diet plan for the following patient:
 
 Patient Information:
 - Name: ${patientName}
@@ -102,8 +94,11 @@ ${dietaryRestrictions.length > 0 ? `- Dietary Restrictions: ${dietaryRestriction
 ${specialInstructions ? `- Special Instructions: ${specialInstructions}` : ''}
 
 Plan Requirements:
-- Duration: ${daysCount} days
-- Meals per day: ${mealsPerDay}
+- Duration: EXACTLY ${numberOfDays} days (you MUST provide meal plans for all ${numberOfDays} days)
+- Meals per day: EXACTLY ${mealsPerDay} meals for EACH day
+- Total meals to generate: ${numberOfDays * mealsPerDay} meals (${numberOfDays} days × ${mealsPerDay} meals/day)
+
+IMPORTANT: The "dailyPlans" array MUST contain EXACTLY ${numberOfDays} day objects, and each day MUST have EXACTLY ${mealsPerDay} meal objects.
 
 Please provide a detailed diet plan in the following JSON format:
 {

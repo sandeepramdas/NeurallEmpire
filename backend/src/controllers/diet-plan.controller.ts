@@ -122,13 +122,13 @@ class DietPlanController {
         allergies,
         medications,
         dietaryRestrictions,
-        timespan = 'weekly',
-        customDays,
+        numberOfDays = 7,
         mealsPerDay = 3,
         notes,
         specialInstructions,
         companyId,
-        model = 'gpt-4'
+        model = 'gpt-4',
+        aiModelConfigId
       } = req.body;
 
       // Validation
@@ -140,7 +140,7 @@ class DietPlanController {
       }
 
       // Generate diet plan using AI
-      console.log('🔄 Generating diet plan for patient:', patientName);
+      console.log(`🔄 Generating ${numberOfDays}-day diet plan for patient:`, patientName);
       const result = await dietPlanService.generateDietPlan({
         patientName,
         patientAge,
@@ -149,11 +149,11 @@ class DietPlanController {
         allergies,
         medications,
         dietaryRestrictions,
-        timespan,
-        customDays,
+        numberOfDays,
         mealsPerDay,
         specialInstructions,
-        model
+        model,
+        aiModelConfigId
       });
 
       if (!result.success || !result.dietPlan) {
@@ -167,9 +167,8 @@ class DietPlanController {
       console.log('✅ Diet plan generated successfully');
 
       // Calculate validity period
-      const daysCount = timespan === 'monthly' ? 30 : (timespan === 'custom' && customDays ? customDays : 7);
       const validUntil = new Date();
-      validUntil.setDate(validUntil.getDate() + daysCount);
+      validUntil.setDate(validUntil.getDate() + numberOfDays);
 
       // Save to database
       const dietPlan = await prisma.patientDietPlan.create({
@@ -183,8 +182,8 @@ class DietPlanController {
           allergies: allergies || [],
           medications: medications || [],
           dietaryRestrictions: dietaryRestrictions || [],
-          timespan,
-          customDays,
+          timespan: `${numberOfDays} days`,
+          customDays: numberOfDays,
           mealsPerDay,
           dietPlan: result.dietPlan,
           notes,
@@ -193,7 +192,8 @@ class DietPlanController {
           generatedBy: userId,
           generationTokens: result.metrics,
           validUntil,
-          status: 'active'
+          status: 'active',
+          aiModelConfigId: aiModelConfigId || null
         }
       });
 

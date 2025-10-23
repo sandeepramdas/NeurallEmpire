@@ -34,8 +34,7 @@ const PatientDietPlan: React.FC = () => {
     allergies: '',
     medications: '',
     dietaryRestrictions: '',
-    timespan: 'weekly',
-    customDays: '',
+    numberOfDays: 7,
     mealsPerDay: 3,
     specialInstructions: '',
     aiModelConfigId: ''
@@ -76,8 +75,7 @@ const PatientDietPlan: React.FC = () => {
         allergies: formData.allergies ? formData.allergies.split(',').map(a => a.trim()) : [],
         medications: formData.medications ? formData.medications.split(',').map(m => m.trim()) : [],
         dietaryRestrictions: formData.dietaryRestrictions ? formData.dietaryRestrictions.split(',').map(d => d.trim()) : [],
-        timespan: formData.timespan,
-        customDays: formData.customDays ? parseInt(formData.customDays) : undefined,
+        numberOfDays: formData.numberOfDays,
         mealsPerDay: formData.mealsPerDay,
         specialInstructions: formData.specialInstructions || undefined,
         aiModelConfigId: formData.aiModelConfigId
@@ -98,8 +96,7 @@ const PatientDietPlan: React.FC = () => {
           allergies: '',
           medications: '',
           dietaryRestrictions: '',
-          timespan: 'weekly',
-          customDays: '',
+          numberOfDays: 7,
           mealsPerDay: 3,
           specialInstructions: '',
           aiModelConfigId: ''
@@ -260,35 +257,28 @@ const PatientDietPlan: React.FC = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Timespan</label>
-                <select
-                  name="timespan"
-                  value={formData.timespan}
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Number of Days <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  name="numberOfDays"
+                  value={formData.numberOfDays}
                   onChange={handleInputChange}
+                  min="1"
+                  max="90"
+                  required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                >
-                  <option value="weekly">Weekly (7 days)</option>
-                  <option value="monthly">Monthly (30 days)</option>
-                  <option value="custom">Custom</option>
-                </select>
+                  placeholder="Enter number of days (1-90)"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Tip: 7 days = 1 week, 14 days = 2 weeks, 30 days = 1 month
+                </p>
               </div>
-              {formData.timespan === 'custom' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Custom Days</label>
-                  <input
-                    type="number"
-                    name="customDays"
-                    value={formData.customDays}
-                    onChange={handleInputChange}
-                    min="1"
-                    max="90"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="Number of days"
-                  />
-                </div>
-              )}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Meals Per Day</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Meals Per Day <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="number"
                   name="mealsPerDay"
@@ -296,7 +286,9 @@ const PatientDietPlan: React.FC = () => {
                   onChange={handleInputChange}
                   min="1"
                   max="6"
+                  required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="Meals per day (1-6)"
                 />
               </div>
               <div>
@@ -534,8 +526,10 @@ const PatientDietPlan: React.FC = () => {
               {/* Daily Plans */}
               {selectedPlan.dietPlan?.dailyPlans && (
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-lg text-gray-900">Daily Meal Plans</h3>
-                  {selectedPlan.dietPlan.dailyPlans.slice(0, 3).map((day: any, idx: number) => (
+                  <h3 className="font-semibold text-lg text-gray-900">
+                    Daily Meal Plans ({selectedPlan.dietPlan.dailyPlans.length} days)
+                  </h3>
+                  {selectedPlan.dietPlan.dailyPlans.map((day: any, idx: number) => (
                     <div key={idx} className="border border-gray-200 rounded-lg p-4">
                       <h4 className="font-medium text-gray-900 mb-3">Day {day.day}</h4>
                       <div className="space-y-3">
