@@ -31,6 +31,7 @@ import dietPlansRoutes from './diet-plans';
 import aiModelsRoutes from './ai-models.routes';
 import usageAnalyticsRoutes from './usage-analytics.routes';
 import modelTemplatesRoutes from './model-templates.routes';
+import costTrackingRoutes from './cost-tracking.routes';
 
 // Import infrastructure routes
 import settingsRoutes from '../modules/system-settings/routes/settings.routes';
@@ -90,6 +91,9 @@ router.use('/model-templates', modelTemplatesRoutes);
 
 // Usage analytics routes (require authentication)
 router.use('/usage-analytics', usageAnalyticsRoutes);
+
+// Cost tracking routes (require authentication)
+router.use('/cost-tracking', costTrackingRoutes);
 
 // Admin routes (require admin authentication)
 router.use('/admin', authenticate, adminRoutes);
