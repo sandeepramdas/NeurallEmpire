@@ -21,14 +21,10 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
-  Star,
-  Clock,
   Menu,
   X,
   Building2,
-  LogOut,
   Users,
-  User,
   CreditCard,
   Key,
   Shield,
@@ -54,7 +50,7 @@ interface NavItem {
 }
 
 const DashboardLayout: React.FC = () => {
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
   const location = useLocation();
   const [, setTheme] = useState<'light' | 'dark' | 'auto'>('light');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -247,51 +243,12 @@ const DashboardLayout: React.FC = () => {
             )}
           </div>
 
-          {/* Quick Access Section */}
-          {!sidebarCollapsed && (
-            <div className="px-3 pt-4 pb-2">
-              <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-2">
-                Quick Access
-              </div>
-              <div className="space-y-1">
-                <button
-                  className="w-full flex items-center px-3 py-2 rounded-md text-sm text-gray-600 hover:bg-gray-100 transition-colors"
-                  title="Favorites"
-                >
-                  <Star className="w-4 h-4 mr-3 text-yellow-500" />
-                  Favorites
-                </button>
-                <button
-                  className="w-full flex items-center px-3 py-2 rounded-md text-sm text-gray-600 hover:bg-gray-100 transition-colors"
-                  title="Recent"
-                >
-                  <Clock className="w-4 h-4 mr-3 text-blue-500" />
-                  Recent
-                </button>
-              </div>
-            </div>
-          )}
-
-          {sidebarCollapsed && (
-            <div className="px-2 pt-4 pb-2 flex flex-col items-center space-y-2">
-              <button
-                className="p-2 rounded-md hover:bg-gray-100 transition-colors"
-                title="Favorites"
-              >
-                <Star className="w-5 h-5 text-yellow-500" />
-              </button>
-              <button
-                className="p-2 rounded-md hover:bg-gray-100 transition-colors"
-                title="Recent"
-              >
-                <Clock className="w-5 h-5 text-blue-500" />
-              </button>
-            </div>
-          )}
-
-          {/* Main Navigation */}
-          <nav className="flex-1 overflow-y-auto py-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400">
-            <div className="px-3 space-y-1">
+          {/* Main Navigation - with improved scroll */}
+          <nav className="flex-1 overflow-y-auto py-3 px-2" style={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: '#CBD5E0 transparent'
+          }}>
+            <div className="space-y-0.5">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.path);
@@ -300,26 +257,26 @@ const DashboardLayout: React.FC = () => {
 
                 if (hasChildren) {
                   return (
-                    <div key={item.path}>
+                    <div key={item.path} className="mb-1">
                       <button
                         onClick={() => toggleSubmenu(item.path)}
-                        className={`w-full flex items-center px-3 py-2 rounded-md transition-colors ${
+                        className={`w-full flex items-center px-3 py-2.5 rounded-lg transition-all ${
                           active
-                            ? 'bg-indigo-50 text-indigo-700 font-medium'
-                            : 'text-neutral-700 hover:bg-neutral-100'
+                            ? 'bg-gradient-to-r from-indigo-50 to-indigo-100 text-indigo-700 font-semibold shadow-sm'
+                            : 'text-gray-700 hover:bg-gray-50 font-medium'
                         }`}
                         title={sidebarCollapsed ? item.label : undefined}
                       >
-                        <Icon className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'} ${active ? 'text-indigo-600' : ''}`} />
+                        <Icon className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'} ${active ? 'text-indigo-600' : 'text-gray-500'}`} />
                         {!sidebarCollapsed && (
                           <>
-                            <span className="flex-1 text-left">{item.label}</span>
-                            <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                            <span className="flex-1 text-left text-sm">{item.label}</span>
+                            <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
                           </>
                         )}
                       </button>
                       {!sidebarCollapsed && isExpanded && item.children && (
-                        <div className="ml-6 mt-1 space-y-1">
+                        <div className="ml-4 mt-1 mb-2 space-y-0.5 border-l-2 border-gray-200 pl-3">
                           {item.children.map((child) => {
                             const ChildIcon = child.icon;
                             const childActive = isActive(child.path);
@@ -327,13 +284,13 @@ const DashboardLayout: React.FC = () => {
                               <Link
                                 key={child.path}
                                 to={child.path}
-                                className={`flex items-center px-3 py-2 rounded-md transition-colors text-sm ${
+                                className={`flex items-center px-3 py-2 rounded-lg transition-all text-sm ${
                                   childActive
-                                    ? 'bg-indigo-50 text-indigo-700 font-medium'
-                                    : 'text-neutral-600 hover:bg-neutral-100'
+                                    ? 'bg-indigo-50 text-indigo-700 font-semibold border-l-2 border-indigo-500 -ml-px'
+                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                 }`}
                               >
-                                <ChildIcon className={`w-4 h-4 mr-3 ${childActive ? 'text-indigo-600' : ''}`} />
+                                <ChildIcon className={`w-4 h-4 mr-2.5 ${childActive ? 'text-indigo-600' : 'text-gray-400'}`} />
                                 <span>{child.label}</span>
                               </Link>
                             );
@@ -348,83 +305,23 @@ const DashboardLayout: React.FC = () => {
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`flex items-center px-3 py-2 rounded-md transition-colors ${
+                    className={`flex items-center px-3 py-2.5 rounded-lg transition-all mb-1 ${
                       active
-                        ? 'bg-indigo-50 text-indigo-700 font-medium'
-                        : 'text-neutral-700 hover:bg-neutral-100'
+                        ? 'bg-gradient-to-r from-indigo-50 to-indigo-100 text-indigo-700 font-semibold shadow-sm'
+                        : 'text-gray-700 hover:bg-gray-50 font-medium'
                     }`}
                     title={sidebarCollapsed ? item.label : undefined}
                   >
-                    <Icon className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'} ${active ? 'text-indigo-600' : ''}`} />
-                    {!sidebarCollapsed && <span>{item.label}</span>}
+                    <Icon className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'} ${active ? 'text-indigo-600' : 'text-gray-500'}`} />
+                    {!sidebarCollapsed && <span className="text-sm">{item.label}</span>}
                     {active && !sidebarCollapsed && (
-                      <div className="ml-auto w-1 h-6 bg-indigo-600 rounded-full"></div>
+                      <div className="ml-auto w-1.5 h-6 bg-indigo-600 rounded-full"></div>
                     )}
                   </Link>
                 );
               })}
             </div>
           </nav>
-
-          {/* Footer: User Profile */}
-          <div className="border-t border-gray-200 p-3 mt-auto">
-            {!sidebarCollapsed ? (
-              <div className="bg-gray-50 rounded-lg p-3">
-                <div className="flex items-center space-x-2 mb-2">
-                  <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-medium text-white">
-                      {user?.firstName?.charAt(0) || user?.email?.charAt(0) || 'U'}
-                    </span>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-xs font-medium text-gray-900 truncate">
-                      {user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.email}
-                    </div>
-                    <div className="text-xs text-gray-500 truncate capitalize">
-                      {user?.role?.toLowerCase()}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <Link
-                    to="profile"
-                    className="flex-1 px-2 py-1.5 text-xs text-center bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
-                  >
-                    Profile
-                  </Link>
-                  <button
-                    onClick={logout}
-                    className="flex-1 px-2 py-1.5 text-xs text-center text-red-600 bg-white border border-red-200 rounded-md hover:bg-red-50 transition-colors"
-                    title="Logout"
-                  >
-                    Logout
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center space-y-3">
-                <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-medium text-white">
-                    {user?.firstName?.charAt(0) || user?.email?.charAt(0) || 'U'}
-                  </span>
-                </div>
-                <Link
-                  to="profile"
-                  className="p-2 rounded-md hover:bg-gray-100 text-gray-600 transition-colors"
-                  title="Profile"
-                >
-                  <User className="w-5 h-5" />
-                </Link>
-                <button
-                  onClick={logout}
-                  className="p-2 rounded-md hover:bg-red-50 text-red-600 transition-colors"
-                  title="Logout"
-                >
-                  <LogOut className="w-5 h-5" />
-                </button>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* Main content */}
