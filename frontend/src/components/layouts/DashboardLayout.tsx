@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, useLocation, Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
-import OrganizationSwitcher from '@/components/OrganizationSwitcher';
 import OrganizationHeader from '@/components/OrganizationHeader';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import FloatingActionButton from '@/components/FloatingActionButton';
@@ -29,6 +28,7 @@ import {
   Building2,
   LogOut,
   Users,
+  User,
   CreditCard,
   Key,
   Shield,
@@ -364,68 +364,55 @@ const DashboardLayout: React.FC = () => {
             </div>
           </nav>
 
-          {/* Footer: User Profile & Actions */}
+          {/* Footer: User Profile */}
           <div className="border-t border-gray-200 p-3 mt-auto">
             {!sidebarCollapsed ? (
-              <div className="space-y-2">
-                {/* Organization Switcher Button */}
-                <OrganizationSwitcher
-                  currentOrganization={user?.organization ? {
-                    id: user.organization.id,
-                    name: user.organization.name,
-                    slug: user.organization.slug
-                  } : undefined}
-                />
-
-                {/* User Profile Section */}
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-2 min-w-0 flex-1">
-                      <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs font-medium text-white">
-                          {user?.firstName?.charAt(0) || user?.email?.charAt(0) || 'U'}
-                        </span>
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="text-xs font-medium text-gray-900 truncate">
-                          {user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.email}
-                        </div>
-                        <div className="text-xs text-gray-500 truncate capitalize">
-                          {user?.role?.toLowerCase()}
-                        </div>
-                      </div>
+              <div className="bg-gray-50 rounded-lg p-3">
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs font-medium text-white">
+                      {user?.firstName?.charAt(0) || user?.email?.charAt(0) || 'U'}
+                    </span>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-medium text-gray-900 truncate">
+                      {user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.email}
+                    </div>
+                    <div className="text-xs text-gray-500 truncate capitalize">
+                      {user?.role?.toLowerCase()}
                     </div>
                   </div>
-                  <div className="flex items-center space-x-1">
-                    <Link
-                      to="profile"
-                      className="flex-1 px-2 py-1.5 text-xs text-center bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
-                    >
-                      Profile
-                    </Link>
-                    <button
-                      onClick={logout}
-                      className="flex-1 px-2 py-1.5 text-xs text-center text-red-600 bg-white border border-red-200 rounded-md hover:bg-red-50 transition-colors"
-                      title="Logout"
-                    >
-                      Logout
-                    </button>
-                  </div>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <Link
+                    to="profile"
+                    className="flex-1 px-2 py-1.5 text-xs text-center bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    onClick={logout}
+                    className="flex-1 px-2 py-1.5 text-xs text-center text-red-600 bg-white border border-red-200 rounded-md hover:bg-red-50 transition-colors"
+                    title="Logout"
+                  >
+                    Logout
+                  </button>
                 </div>
               </div>
             ) : (
               <div className="flex flex-col items-center space-y-3">
-                <button
-                  className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200 transition-colors"
-                  title="Switch Organization"
-                >
-                  <Building2 className="w-5 h-5 text-gray-600" />
-                </button>
                 <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center">
                   <span className="text-sm font-medium text-white">
                     {user?.firstName?.charAt(0) || user?.email?.charAt(0) || 'U'}
                   </span>
                 </div>
+                <Link
+                  to="profile"
+                  className="p-2 rounded-md hover:bg-gray-100 text-gray-600 transition-colors"
+                  title="Profile"
+                >
+                  <User className="w-5 h-5" />
+                </Link>
                 <button
                   onClick={logout}
                   className="p-2 rounded-md hover:bg-red-50 text-red-600 transition-colors"
