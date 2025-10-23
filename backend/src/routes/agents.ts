@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authenticate } from '@/middleware/auth';
 import { agentsController } from '@/controllers/agents.controller';
+import { aiExecutionRateLimiters } from '@/middleware/rate-limit';
 
 const router = Router();
 
@@ -14,8 +15,8 @@ router.post('/', agentsController.createAgent);
 router.put('/:id', agentsController.updateAgent);
 router.delete('/:id', agentsController.deleteAgent);
 
-// Agent operations
-router.post('/:id/execute', agentsController.executeAgent);
+// Agent operations with rate limiting
+router.post('/:id/execute', ...aiExecutionRateLimiters, agentsController.executeAgent);
 router.put('/:id/status', agentsController.updateAgentStatus);
 router.get('/:id/metrics', agentsController.getAgentMetrics);
 
