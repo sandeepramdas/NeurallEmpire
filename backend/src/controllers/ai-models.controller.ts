@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { encrypt, decrypt, generateApiKeyPreview } from '../utils/encryption';
+import { modelTesterService } from '../services/model-tester.service';
 
 const prisma = new PrismaClient();
 
@@ -458,38 +459,22 @@ export class AIModelsController {
         });
       }
 
-      // TODO: Implement actual API test based on provider
-      // For now, just validate the API key format
-      const apiKey = validatedData.apiKey;
+      console.log(`🧪 Testing ${provider.name} connection with model: ${validatedData.modelId}`);
 
-      let isValid = false;
-      let message = '';
-
-      switch (provider.code) {
-        case 'openai':
-          isValid = apiKey.startsWith('sk-');
-          message = isValid ? 'API key format is valid' : 'Invalid OpenAI API key format (should start with sk-)';
-          break;
-
-        case 'anthropic':
-          isValid = apiKey.startsWith('sk-ant-');
-          message = isValid ? 'API key format is valid' : 'Invalid Anthropic API key format (should start with sk-ant-)';
-          break;
-
-        case 'google':
-          isValid = apiKey.length > 20;
-          message = isValid ? 'API key format is valid' : 'Invalid Google AI API key format';
-          break;
-
-        default:
-          isValid = apiKey.length > 10;
-          message = 'API key format appears valid';
-      }
+      // Perform real API test
+      const testResult = await modelTesterService.testProvider(
+        provider.code,
+        validatedData.apiKey,
+        validatedData.modelId
+      );
 
       res.json({
         success: true,
-        valid: isValid,
-        message,
+        ...testResult,
+        provider: {
+          code: provider.code,
+          name: provider.name,
+        },
       });
     } catch (error: any) {
       console.error('Error testing model:', error);
@@ -505,6 +490,7 @@ export class AIModelsController {
       res.status(500).json({
         success: false,
         error: 'Failed to test model connection',
+        message: error.message,
       });
     }
   }

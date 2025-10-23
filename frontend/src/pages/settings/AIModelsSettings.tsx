@@ -6,6 +6,7 @@ import {
   Check,
   X,
   AlertCircle,
+  CheckCircle,
   Sparkles,
 } from 'lucide-react';
 import { RightPanel } from '@/components/ui/RightPanel';
@@ -75,6 +76,12 @@ const AIModelsSettings: React.FC = () => {
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<{
+    success: boolean;
+    message: string;
+    latency?: number;
+  } | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -208,6 +215,42 @@ const AIModelsSettings: React.FC = () => {
     } catch (err: any) {
       console.error('Error deleting model:', err);
       alert(err.response?.data?.error || err.message || 'Failed to delete model');
+    }
+  };
+
+  const handleTestConnection = async () => {
+    // Validate required fields
+    if (!formData.providerId || !formData.modelId || !formData.apiKey) {
+      setTestResult({
+        success: false,
+        message: '❌ Please fill in Provider, Model ID, and API Key fields',
+      });
+      return;
+    }
+
+    try {
+      setTesting(true);
+      setTestResult(null);
+
+      const response = await api.post('/ai-models/test', {
+        providerId: formData.providerId,
+        modelId: formData.modelId,
+        apiKey: formData.apiKey,
+      });
+
+      setTestResult({
+        success: response.data.success,
+        message: response.data.message,
+        latency: response.data.latency,
+      });
+    } catch (err: any) {
+      console.error('Error testing connection:', err);
+      setTestResult({
+        success: false,
+        message: err.response?.data?.message || err.message || '❌ Connection test failed',
+      });
+    } finally {
+      setTesting(false);
     }
   };
 
@@ -490,6 +533,61 @@ const AIModelsSettings: React.FC = () => {
             />
             {formErrors.apiKey && (
               <p className="mt-1 text-sm text-red-600">{formErrors.apiKey}</p>
+            )}
+
+            {/* Test Connection Button */}
+            <div className="mt-3">
+              <button
+                type="button"
+                onClick={handleTestConnection}
+                disabled={testing || !formData.providerId || !formData.modelId || !formData.apiKey}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+              >
+                {testing ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Testing Connection...
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4" />
+                    Test Connection
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Test Result */}
+            {testResult && (
+              <div
+                className={`mt-3 p-3 rounded-md ${
+                  testResult.success
+                    ? 'bg-green-50 border border-green-200'
+                    : 'bg-red-50 border border-red-200'
+                }`}
+              >
+                <div className="flex items-start gap-2">
+                  {testResult.success ? (
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  ) : (
+                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  )}
+                  <div className="flex-1">
+                    <p
+                      className={`text-sm ${
+                        testResult.success ? 'text-green-800' : 'text-red-800'
+                      }`}
+                    >
+                      {testResult.message}
+                    </p>
+                    {testResult.latency && (
+                      <p className="text-xs text-green-600 mt-1">
+                        Response time: {testResult.latency}ms
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
             )}
           </div>
 
