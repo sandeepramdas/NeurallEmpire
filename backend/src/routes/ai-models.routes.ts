@@ -30,6 +30,24 @@ router.use(authenticate);
  */
 router.get('/providers', (req, res) => controller.getProviders(req, res));
 
+/**
+ * POST /api/ai-models/providers
+ * Create a new AI model provider (Admin only)
+ */
+router.post('/providers', (req, res) => controller.createProvider(req, res));
+
+/**
+ * PUT /api/ai-models/providers/:id
+ * Update an AI model provider (Admin only)
+ */
+router.put('/providers/:id', (req, res) => controller.updateProvider(req, res));
+
+/**
+ * DELETE /api/ai-models/providers/:id
+ * Delete an AI model provider (Admin only)
+ */
+router.delete('/providers/:id', (req, res) => controller.deleteProvider(req, res));
+
 // ==================== MODEL CONFIGURATIONS ====================
 
 /**

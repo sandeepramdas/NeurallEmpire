@@ -160,6 +160,7 @@ const DashboardLayout: React.FC = () => {
         { path: 'settings/billing', label: 'Billing', icon: CreditCard },
         { path: 'settings/api-keys', label: 'API Keys', icon: Key },
         { path: 'settings/ai-models', label: 'AI Models', icon: Sparkles },
+        { path: 'settings/providers', label: 'AI Providers', icon: Database },
         { path: 'settings/security', label: 'Security', icon: Shield },
         { path: 'settings/branding', label: 'Branding', icon: Palette },
         { path: 'settings/analytics', label: 'Usage Analytics', icon: BarChart2 },

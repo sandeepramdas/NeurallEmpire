@@ -36,6 +36,27 @@ const testModelSchema = z.object({
   apiKey: z.string(),
 });
 
+const createProviderSchema = z.object({
+  code: z.string().min(1),
+  name: z.string().min(1),
+  displayName: z.string().min(1),
+  apiBaseUrl: z.string().url(),
+  apiDocUrl: z.string().url().optional(),
+  website: z.string().url().optional(),
+  icon: z.string().optional(),
+  color: z.string().optional(),
+  isActive: z.boolean().default(true),
+  supportsStreaming: z.boolean().default(true),
+  supportsVision: z.boolean().default(false),
+  supportsFunctionCalling: z.boolean().default(false),
+  maxTokensLimit: z.number().int().optional(),
+  orderIndex: z.number().int().default(0),
+});
+
+const updateProviderSchema = createProviderSchema.partial().extend({
+  code: z.string().min(1).optional(),
+});
+
 export class AIModelsController {
   /**
    * Get all AI model providers
@@ -537,6 +558,165 @@ export class AIModelsController {
       res.status(500).json({
         success: false,
         error: 'Failed to fetch usage statistics',
+      });
+    }
+  }
+
+  // ==================== PROVIDER MANAGEMENT (Admin Only) ====================
+
+  /**
+   * Create a new AI model provider
+   */
+  async createProvider(req: Request, res: Response) {
+    try {
+      const validatedData = createProviderSchema.parse(req.body);
+
+      // Check if code already exists
+      const existing = await prisma.aIModelProvider.findUnique({
+        where: { code: validatedData.code },
+      });
+
+      if (existing) {
+        return res.status(400).json({
+          success: false,
+          error: 'Provider code already exists',
+        });
+      }
+
+      const provider = await prisma.aIModelProvider.create({
+        data: validatedData,
+      });
+
+      res.status(201).json({
+        success: true,
+        provider,
+        message: 'Provider created successfully',
+      });
+    } catch (error: any) {
+      console.error('Error creating provider:', error);
+
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          success: false,
+          error: 'Validation error',
+          details: error.errors,
+        });
+      }
+
+      res.status(500).json({
+        success: false,
+        error: 'Failed to create provider',
+      });
+    }
+  }
+
+  /**
+   * Update an existing AI model provider
+   */
+  async updateProvider(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const validatedData = updateProviderSchema.parse(req.body);
+
+      // Check if provider exists
+      const existing = await prisma.aIModelProvider.findUnique({
+        where: { id },
+      });
+
+      if (!existing) {
+        return res.status(404).json({
+          success: false,
+          error: 'Provider not found',
+        });
+      }
+
+      // If updating code, check if new code already exists
+      if (validatedData.code && validatedData.code !== existing.code) {
+        const codeExists = await prisma.aIModelProvider.findUnique({
+          where: { code: validatedData.code },
+        });
+
+        if (codeExists) {
+          return res.status(400).json({
+            success: false,
+            error: 'Provider code already exists',
+          });
+        }
+      }
+
+      const provider = await prisma.aIModelProvider.update({
+        where: { id },
+        data: validatedData,
+      });
+
+      res.json({
+        success: true,
+        provider,
+        message: 'Provider updated successfully',
+      });
+    } catch (error: any) {
+      console.error('Error updating provider:', error);
+
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          success: false,
+          error: 'Validation error',
+          details: error.errors,
+        });
+      }
+
+      res.status(500).json({
+        success: false,
+        error: 'Failed to update provider',
+      });
+    }
+  }
+
+  /**
+   * Delete an AI model provider
+   */
+  async deleteProvider(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+
+      // Check if provider exists
+      const existing = await prisma.aIModelProvider.findUnique({
+        where: { id },
+        include: {
+          _count: {
+            select: { configs: true },
+          },
+        },
+      });
+
+      if (!existing) {
+        return res.status(404).json({
+          success: false,
+          error: 'Provider not found',
+        });
+      }
+
+      // Check if provider has associated configs
+      if (existing._count.configs > 0) {
+        return res.status(400).json({
+          success: false,
+          error: `Cannot delete provider. It has ${existing._count.configs} associated model configuration(s).`,
+        });
+      }
+
+      await prisma.aIModelProvider.delete({
+        where: { id },
+      });
+
+      res.json({
+        success: true,
+        message: 'Provider deleted successfully',
+      });
+    } catch (error: any) {
+      console.error('Error deleting provider:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to delete provider',
       });
     }
   }

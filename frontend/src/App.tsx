@@ -57,6 +57,7 @@ import PatientDietPlan from '@/pages/dashboard/PatientDietPlan';
 
 // Import Settings pages
 import AIModelsSettings from '@/pages/settings/AIModelsSettings';
+import ProvidersSettings from '@/pages/settings/ProvidersSettings';
 
 // OAuth buttons component available for login page
 
@@ -303,6 +304,7 @@ const App: React.FC = () => {
           <Route path="settings/analytics" element={<UsageAnalytics />} />
           <Route path="settings/domains" element={<DomainSettings />} />
           <Route path="settings/ai-models" element={<AIModelsSettings />} />
+          <Route path="settings/providers" element={<ProvidersSettings />} />
           <Route path="settings/data" element={<Settings />} />
           <Route path="settings/emails" element={<Settings />} />
           <Route path="profile" element={<UserProfile />} />
