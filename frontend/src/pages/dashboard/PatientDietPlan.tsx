@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Apple, Plus, Search, Calendar, Utensils, AlertCircle, CheckCircle, Loader, Eye, Trash2 } from 'lucide-react';
-import axios from 'axios';
+import { api } from '@/services/api';
 
 interface DietPlan {
   id: string;
@@ -45,10 +45,7 @@ const PatientDietPlan: React.FC = () => {
 
   const fetchDietPlans = async () => {
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/diet-plans`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/diet-plans');
       if (response.data.success) {
         setDietPlans(response.data.data || []);
       }
@@ -69,7 +66,6 @@ const PatientDietPlan: React.FC = () => {
     setSuccess('');
 
     try {
-      const token = localStorage.getItem('authToken');
       const payload = {
         patientName: formData.patientName,
         patientAge: formData.patientAge ? parseInt(formData.patientAge) : undefined,
@@ -85,11 +81,7 @@ const PatientDietPlan: React.FC = () => {
         model: formData.model
       };
 
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/diet-plans/generate`,
-        payload,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await api.post('/diet-plans/generate', payload);
 
       if (response.data.success) {
         setSuccess('Diet plan generated successfully!');
@@ -128,10 +120,7 @@ const PatientDietPlan: React.FC = () => {
     if (!confirm('Are you sure you want to delete this diet plan?')) return;
 
     try {
-      const token = localStorage.getItem('authToken');
-      await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/diet-plans/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/diet-plans/${id}`);
       setSuccess('Diet plan deleted successfully');
       fetchDietPlans();
     } catch (err: any) {
