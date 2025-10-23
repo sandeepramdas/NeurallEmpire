@@ -112,7 +112,13 @@ const PatientDietPlan: React.FC = () => {
         });
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to generate diet plan');
+      console.error('Diet plan generation error:', err);
+      console.error('Error response:', err.response);
+      const errorMessage = err.response?.data?.message ||
+                          err.response?.data?.error ||
+                          err.message ||
+                          'Failed to generate diet plan. Please check the console for details.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
