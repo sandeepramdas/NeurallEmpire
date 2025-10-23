@@ -177,7 +177,7 @@ const DashboardLayout: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-neural-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
         <div
@@ -330,12 +330,12 @@ const DashboardLayout: React.FC = () => {
           {/* Enhanced Organization Header */}
           <OrganizationHeader onThemeChange={handleThemeChange} />
 
-          <main className="flex-1 p-8 overflow-auto">
+          <main className="flex-1 p-8 overflow-auto bg-gray-50 dark:bg-gray-900">
             <Breadcrumbs />
             <Outlet />
 
             {/* Footer */}
-            <footer className="mt-16 pt-8 border-t border-gray-200">
+            <footer className="mt-16 pt-8 border-t border-gray-200 dark:border-gray-700">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
                 <div>
                   <h3 className="text-sm font-semibold text-gray-900 mb-3">Product</h3>
