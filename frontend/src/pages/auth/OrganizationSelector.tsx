@@ -59,20 +59,8 @@ const OrganizationSelector: React.FC = () => {
     // Store selected organization in localStorage
     localStorage.setItem('selectedOrganization', JSON.stringify(org));
 
-    // Redirect to organization's subdomain
-    const subdomain = org.slug;
-    const protocol = window.location.protocol;
-
-    // Check if we're in development
-    const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
-    if (isDev) {
-      // In development, use query parameter
-      window.location.href = `${protocol}//localhost:3000/dashboard?org=${subdomain}`;
-    } else {
-      // In production, redirect to subdomain
-      window.location.href = `${protocol}//${subdomain}.neurallempire.com/dashboard`;
-    }
+    // Navigate to organization's path-based dashboard
+    navigate(`/org/${org.slug}/dashboard`);
   };
 
   const handleCreateOrganization = () => {
