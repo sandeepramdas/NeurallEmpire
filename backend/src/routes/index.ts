@@ -29,6 +29,7 @@ import dietPlansRoutes from './diet-plans';
 
 // Import AI model configuration routes
 import aiModelsRoutes from './ai-models.routes';
+import usageAnalyticsRoutes from './usage-analytics.routes';
 
 // Import infrastructure routes
 import settingsRoutes from '../modules/system-settings/routes/settings.routes';
@@ -82,6 +83,9 @@ router.use('/diet-plans', authenticate, dietPlansRoutes);
 
 // AI model configuration routes (require authentication)
 router.use('/ai-models', aiModelsRoutes);
+
+// Usage analytics routes (require authentication)
+router.use('/usage-analytics', usageAnalyticsRoutes);
 
 // Admin routes (require admin authentication)
 router.use('/admin', authenticate, adminRoutes);

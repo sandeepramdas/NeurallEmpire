@@ -181,7 +181,7 @@ const DashboardLayout: React.FC = () => {
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm z-40 lg:hidden transition-all"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
@@ -190,17 +190,17 @@ const DashboardLayout: React.FC = () => {
         {/* Mobile Hamburger Button */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-md shadow-md"
+          className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-all border border-gray-200 dark:border-gray-700"
         >
-          {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          {mobileMenuOpen ? <X className="w-6 h-6 text-gray-700 dark:text-gray-200" /> : <Menu className="w-6 h-6 text-gray-700 dark:text-gray-200" />}
         </button>
 
         {/* Sidebar */}
-        <div className={`${sidebarCollapsed ? 'w-20' : 'w-64'} bg-white shadow-sm border-r border-neutral-200 h-screen sticky top-0 transition-all duration-300 flex flex-col ${
+        <div className={`${sidebarCollapsed ? 'w-20' : 'w-64'} bg-white dark:bg-gray-900 shadow-sm border-r border-neutral-200 dark:border-gray-800 h-screen sticky top-0 transition-all duration-300 flex flex-col ${
           mobileMenuOpen ? 'fixed inset-y-0 left-0 z-40' : 'hidden lg:block'
         }`}>
           {/* Header: Organization Info */}
-          <div className="p-4 border-b border-neutral-200">
+          <div className="p-4 border-b border-neutral-200 dark:border-gray-800">
             {!sidebarCollapsed ? (
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3 min-w-0 flex-1">
@@ -210,17 +210,17 @@ const DashboardLayout: React.FC = () => {
                     </span>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h2 className="text-sm font-semibold text-gray-900 truncate">
+                    <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
                       {user?.organization?.name || 'NeurallEmpire'}
                     </h2>
-                    <p className="text-xs text-gray-500 truncate">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                       {user?.organization?.planType || 'FREE'} Plan
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                  className="p-1.5 rounded-md hover:bg-gray-100 text-gray-600 flex-shrink-0"
+                  className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 flex-shrink-0 transition-colors"
                   title="Collapse sidebar"
                 >
                   <ChevronLeft className="w-4 h-4" />
@@ -235,7 +235,7 @@ const DashboardLayout: React.FC = () => {
                 </div>
                 <button
                   onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                  className="p-1.5 rounded-md hover:bg-gray-100 text-gray-600"
+                  className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 transition-colors"
                   title="Expand sidebar"
                 >
                   <ChevronRight className="w-4 h-4" />
@@ -263,12 +263,12 @@ const DashboardLayout: React.FC = () => {
                         onClick={() => toggleSubmenu(item.path)}
                         className={`w-full flex items-center px-3 py-2.5 rounded-lg transition-all ${
                           active
-                            ? 'bg-gradient-to-r from-indigo-50 to-indigo-100 text-indigo-700 font-semibold shadow-sm'
-                            : 'text-gray-700 hover:bg-gray-50 font-medium'
+                            ? 'bg-gradient-to-r from-indigo-50 to-indigo-100 dark:from-indigo-950/50 dark:to-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-semibold shadow-sm'
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/60 font-medium'
                         }`}
                         title={sidebarCollapsed ? item.label : undefined}
                       >
-                        <Icon className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'} ${active ? 'text-indigo-600' : 'text-gray-500'}`} />
+                        <Icon className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'} ${active ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'}`} />
                         {!sidebarCollapsed && (
                           <>
                             <span className="flex-1 text-left text-sm">{item.label}</span>
@@ -277,7 +277,7 @@ const DashboardLayout: React.FC = () => {
                         )}
                       </button>
                       {!sidebarCollapsed && isExpanded && item.children && (
-                        <div className="ml-4 mt-1 mb-2 space-y-0.5 border-l-2 border-gray-200 pl-3">
+                        <div className="ml-4 mt-1 mb-2 space-y-0.5 border-l-2 border-gray-200 dark:border-gray-700 pl-3">
                           {item.children.map((child) => {
                             const ChildIcon = child.icon;
                             const childActive = isActive(child.path);
@@ -287,11 +287,11 @@ const DashboardLayout: React.FC = () => {
                                 to={child.path}
                                 className={`flex items-center px-3 py-2 rounded-lg transition-all text-sm ${
                                   childActive
-                                    ? 'bg-indigo-50 text-indigo-700 font-semibold border-l-2 border-indigo-500 -ml-px'
-                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                    ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-semibold border-l-2 border-indigo-500 dark:border-indigo-400 -ml-px'
+                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/60 hover:text-gray-900 dark:hover:text-gray-200'
                                 }`}
                               >
-                                <ChildIcon className={`w-4 h-4 mr-2.5 ${childActive ? 'text-indigo-600' : 'text-gray-400'}`} />
+                                <ChildIcon className={`w-4 h-4 mr-2.5 ${childActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500'}`} />
                                 <span>{child.label}</span>
                               </Link>
                             );
@@ -308,15 +308,15 @@ const DashboardLayout: React.FC = () => {
                     to={item.path}
                     className={`flex items-center px-3 py-2.5 rounded-lg transition-all mb-1 ${
                       active
-                        ? 'bg-gradient-to-r from-indigo-50 to-indigo-100 text-indigo-700 font-semibold shadow-sm'
-                        : 'text-gray-700 hover:bg-gray-50 font-medium'
+                        ? 'bg-gradient-to-r from-indigo-50 to-indigo-100 dark:from-indigo-950/50 dark:to-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-semibold shadow-sm'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/60 font-medium'
                     }`}
                     title={sidebarCollapsed ? item.label : undefined}
                   >
-                    <Icon className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'} ${active ? 'text-indigo-600' : 'text-gray-500'}`} />
+                    <Icon className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'} ${active ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'}`} />
                     {!sidebarCollapsed && <span className="text-sm">{item.label}</span>}
                     {active && !sidebarCollapsed && (
-                      <div className="ml-auto w-1.5 h-6 bg-indigo-600 rounded-full"></div>
+                      <div className="ml-auto w-1.5 h-6 bg-indigo-600 dark:bg-indigo-400 rounded-full"></div>
                     )}
                   </Link>
                 );
@@ -335,50 +335,50 @@ const DashboardLayout: React.FC = () => {
             <Outlet />
 
             {/* Footer */}
-            <footer className="mt-16 pt-8 border-t border-gray-200 dark:border-gray-700">
+            <footer className="mt-16 pt-8 border-t border-gray-200 dark:border-gray-800">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Product</h3>
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Product</h3>
                   <ul className="space-y-2">
-                    <li><Link to="agents" className="text-sm text-gray-600 hover:text-indigo-600">AI Agents</Link></li>
-                    <li><Link to="campaigns" className="text-sm text-gray-600 hover:text-indigo-600">Campaigns</Link></li>
-                    <li><Link to="workflows" className="text-sm text-gray-600 hover:text-indigo-600">Workflows</Link></li>
-                    <li><Link to="integrations" className="text-sm text-gray-600 hover:text-indigo-600">Integrations</Link></li>
+                    <li><Link to="agents" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">AI Agents</Link></li>
+                    <li><Link to="campaigns" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Campaigns</Link></li>
+                    <li><Link to="workflows" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Workflows</Link></li>
+                    <li><Link to="integrations" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Integrations</Link></li>
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Resources</h3>
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Resources</h3>
                   <ul className="space-y-2">
-                    <li><Link to="docs" className="text-sm text-gray-600 hover:text-indigo-600">Documentation</Link></li>
-                    <li><Link to="api-playground" className="text-sm text-gray-600 hover:text-indigo-600">API Reference</Link></li>
-                    <li><Link to="templates" className="text-sm text-gray-600 hover:text-indigo-600">Templates</Link></li>
-                    <li><a href="https://blog.neurallempire.com" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 hover:text-indigo-600">Blog</a></li>
+                    <li><Link to="docs" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Documentation</Link></li>
+                    <li><Link to="api-playground" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">API Reference</Link></li>
+                    <li><Link to="templates" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Templates</Link></li>
+                    <li><a href="https://blog.neurallempire.com" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Blog</a></li>
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Support</h3>
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Support</h3>
                   <ul className="space-y-2">
-                    <li><Link to="support" className="text-sm text-gray-600 hover:text-indigo-600">Help Center</Link></li>
-                    <li><a href="https://status.neurallempire.com" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 hover:text-indigo-600">System Status</a></li>
-                    <li><a href="https://community.neurallempire.com" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 hover:text-indigo-600">Community</a></li>
-                    <li><a href="mailto:support@neurallempire.com" className="text-sm text-gray-600 hover:text-indigo-600">Contact Support</a></li>
+                    <li><Link to="support" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Help Center</Link></li>
+                    <li><a href="https://status.neurallempire.com" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">System Status</a></li>
+                    <li><a href="https://community.neurallempire.com" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Community</a></li>
+                    <li><a href="mailto:support@neurallempire.com" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Contact Support</a></li>
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Legal</h3>
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Legal</h3>
                   <ul className="space-y-2">
-                    <li><a href="/privacy" className="text-sm text-gray-600 hover:text-indigo-600">Privacy Policy</a></li>
-                    <li><a href="/terms" className="text-sm text-gray-600 hover:text-indigo-600">Terms of Service</a></li>
-                    <li><a href="/security" className="text-sm text-gray-600 hover:text-indigo-600">Security</a></li>
-                    <li><a href="/cookies" className="text-sm text-gray-600 hover:text-indigo-600">Cookie Policy</a></li>
+                    <li><a href="/privacy" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Privacy Policy</a></li>
+                    <li><a href="/terms" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Terms of Service</a></li>
+                    <li><a href="/security" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Security</a></li>
+                    <li><a href="/cookies" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Cookie Policy</a></li>
                   </ul>
                 </div>
               </div>
-              <div className="pt-6 border-t border-gray-200 flex items-center justify-between">
-                <p className="text-xs text-gray-500">© 2025 NeurallEmpire. All rights reserved.</p>
+              <div className="pt-6 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between">
+                <p className="text-xs text-gray-500 dark:text-gray-400">© 2025 NeurallEmpire. All rights reserved.</p>
                 <div className="flex items-center space-x-2">
-                  <a href="https://status.neurallempire.com" target="_blank" rel="noopener noreferrer" className="flex items-center text-xs text-gray-500 hover:text-indigo-600">
-                    <span className="w-2 h-2 bg-green-500 rounded-full mr-1.5"></span>
+                  <a href="https://status.neurallempire.com" target="_blank" rel="noopener noreferrer" className="flex items-center text-xs text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                    <span className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full mr-1.5 animate-pulse"></span>
                     All Systems Operational
                   </a>
                 </div>

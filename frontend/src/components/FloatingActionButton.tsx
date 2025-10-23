@@ -43,7 +43,7 @@ const FloatingActionButton: React.FC = () => {
       {/* Backdrop when open */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-20 z-40 transition-opacity"
+          className="fixed inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm z-40 transition-opacity"
           onClick={() => setIsOpen(false)}
         />
       )}
@@ -59,7 +59,7 @@ const FloatingActionButton: React.FC = () => {
                 className="flex items-center justify-end space-x-3 animate-fade-in-up"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <span className="bg-gray-900 text-white text-sm px-3 py-2 rounded-lg shadow-lg whitespace-nowrap">
+                <span className="bg-gray-900 dark:bg-gray-800 text-white text-sm px-3 py-2 rounded-lg shadow-lg border border-gray-800 dark:border-gray-700 whitespace-nowrap">
                   {item.label}
                 </span>
                 <button

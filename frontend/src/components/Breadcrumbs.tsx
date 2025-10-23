@@ -55,23 +55,23 @@ const Breadcrumbs: React.FC = () => {
   });
 
   return (
-    <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
+    <nav className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 mb-6">
       <Link
         to="/dashboard"
-        className="flex items-center hover:text-indigo-600 transition-colors"
+        className="flex items-center hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
       >
         <Home className="w-4 h-4" />
       </Link>
 
       {breadcrumbs.map((crumb) => (
         <React.Fragment key={crumb.to}>
-          <ChevronRight className="w-4 h-4 text-gray-400" />
+          <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-600" />
           {crumb.isLast ? (
-            <span className="font-medium text-gray-900">{crumb.label}</span>
+            <span className="font-medium text-gray-900 dark:text-gray-100">{crumb.label}</span>
           ) : (
             <Link
               to={crumb.to}
-              className="hover:text-indigo-600 transition-colors"
+              className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
             >
               {crumb.label}
             </Link>
