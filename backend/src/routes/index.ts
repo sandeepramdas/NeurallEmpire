@@ -27,6 +27,9 @@ import codeArtifactsRoutes from './code-artifacts';
 // Import healthcare routes
 import dietPlansRoutes from './diet-plans';
 
+// Import AI model configuration routes
+import aiModelsRoutes from './ai-models.routes';
+
 // Import infrastructure routes
 import settingsRoutes from '../modules/system-settings/routes/settings.routes';
 import filesRoutes from '../modules/files/routes/files.routes';
@@ -76,6 +79,9 @@ router.use('/code-artifacts', authenticate, codeArtifactsRoutes);
 
 // Healthcare routes (require authentication)
 router.use('/diet-plans', authenticate, dietPlansRoutes);
+
+// AI model configuration routes (require authentication)
+router.use('/ai-models', aiModelsRoutes);
 
 // Admin routes (require admin authentication)
 router.use('/admin', authenticate, adminRoutes);
@@ -260,6 +266,24 @@ router.get('/', (req, res) => {
         POST: {
           '/analytics/track': 'Track analytics event',
           '/analytics/funnel': 'Get funnel data'
+        }
+      },
+      aiModels: {
+        GET: {
+          '/ai-models/providers': 'List available AI providers',
+          '/ai-models/configs': 'List organization AI model configurations',
+          '/ai-models/configs/:id': 'Get model configuration details',
+          '/ai-models/configs/:id/usage': 'Get model usage statistics'
+        },
+        POST: {
+          '/ai-models/configs': 'Create new AI model configuration',
+          '/ai-models/test': 'Test AI model connection'
+        },
+        PUT: {
+          '/ai-models/configs/:id': 'Update AI model configuration'
+        },
+        DELETE: {
+          '/ai-models/configs/:id': 'Delete AI model configuration'
         }
       }
     }

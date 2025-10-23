@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Apple, Plus, Search, Calendar, Utensils, AlertCircle, CheckCircle, Loader, Eye, Trash2 } from 'lucide-react';
 import { api } from '@/services/api';
+import { RightPanel } from '@/components/ui/RightPanel';
+import { ModelSelector } from '@/components/ai-models/ModelSelector';
 
 interface DietPlan {
   id: string;
@@ -36,7 +38,7 @@ const PatientDietPlan: React.FC = () => {
     customDays: '',
     mealsPerDay: 3,
     specialInstructions: '',
-    model: 'gpt-4'
+    aiModelConfigId: ''
   });
 
   useEffect(() => {
@@ -78,7 +80,7 @@ const PatientDietPlan: React.FC = () => {
         customDays: formData.customDays ? parseInt(formData.customDays) : undefined,
         mealsPerDay: formData.mealsPerDay,
         specialInstructions: formData.specialInstructions || undefined,
-        model: formData.model
+        aiModelConfigId: formData.aiModelConfigId
       };
 
       const response = await api.post('/diet-plans/generate', payload);
@@ -100,7 +102,7 @@ const PatientDietPlan: React.FC = () => {
           customDays: '',
           mealsPerDay: 3,
           specialInstructions: '',
-          model: 'gpt-4'
+          aiModelConfigId: ''
         });
       }
     } catch (err: any) {
@@ -195,11 +197,14 @@ const PatientDietPlan: React.FC = () => {
         </div>
       </div>
 
-      {/* Generation Form */}
-      {showForm && (
-        <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Generate New Diet Plan</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Generation Form - Right Panel */}
+      <RightPanel
+        isOpen={showForm}
+        onClose={() => setShowForm(false)}
+        title="Generate New Diet Plan"
+        width="60%"
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -295,17 +300,13 @@ const PatientDietPlan: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">AI Model</label>
-                <select
-                  name="model"
-                  value={formData.model}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                >
-                  <option value="gpt-4">GPT-4 Turbo (Recommended)</option>
-                  <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Faster)</option>
-                  <option value="gpt-4o">GPT-4o (Latest)</option>
-                </select>
+                <ModelSelector
+                  value={formData.aiModelConfigId}
+                  onChange={(id) => setFormData(prev => ({ ...prev, aiModelConfigId: id }))}
+                  label="AI Model"
+                  required
+                  placeholder="Select an AI model"
+                />
               </div>
             </div>
 
@@ -363,7 +364,7 @@ const PatientDietPlan: React.FC = () => {
               />
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 pt-6 border-t border-gray-200">
               <button
                 type="submit"
                 disabled={loading}
@@ -390,8 +391,7 @@ const PatientDietPlan: React.FC = () => {
               </button>
             </div>
           </form>
-        </div>
-      )}
+      </RightPanel>
 
       {/* Search */}
       <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">

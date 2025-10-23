@@ -178,6 +178,7 @@ model Organization {
   emailNotifications EmailNotification[] @relation("OrgEmails") // NEW: Email notifications
   analyticsEvents  AnalyticsEvent[] @relation("OrgEvents") // NEW: Analytics events
   patientDietPlans PatientDietPlan[] @relation("OrgDietPlans") // NEW: Patient diet plans
+  aiModels         AIModelConfig[] @relation("OrgAIModels") // NEW: AI model configurations
 
   @@index([status])
   @@index([planType])
@@ -2657,6 +2658,106 @@ model RoleAssignment {
   @@map("role_assignments")
 }
 
+// ==================== AI MODEL CONFIGURATION ====================
+
+model AIModelProvider {
+  id              String   @id @default(cuid())
+
+  // Provider Identity
+  code            String   @unique // "openai", "anthropic", "google", "mistral"
+  name            String   // "OpenAI", "Anthropic", "Google AI"
+  displayName     String   // "OpenAI GPT Models"
+
+  // API Configuration
+  apiBaseUrl      String   // Base URL for API calls
+  apiDocUrl       String?  // Documentation URL
+  website         String?
+
+  // Provider Settings
+  icon            String?  // Icon/logo URL
+  color           String?  // Brand color
+  isActive        Boolean  @default(true)
+
+  // Supported Features
+  supportsStreaming Boolean @default(true)
+  supportsVision    Boolean @default(false)
+  supportsFunctionCalling Boolean @default(false)
+  maxTokensLimit    Int?
+
+  // Display
+  orderIndex      Int      @default(0)
+  description     String?
+
+  // Metadata
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  models          AIModelConfig[]
+
+  @@index([code])
+  @@index([isActive])
+  @@map("ai_model_providers")
+}
+
+model AIModelConfig {
+  id              String   @id @default(cuid())
+  organizationId  String
+  providerId      String
+
+  // Model Identity
+  modelId         String   // "gpt-4-turbo-preview", "claude-3-opus-20240229"
+  displayName     String   // "GPT-4 Turbo"
+  description     String?
+
+  // API Configuration
+  apiKeyEncrypted String   // Encrypted API key
+  apiKeyPreview   String   // Last 4 chars for display: "****1234"
+
+  // Model Parameters (Defaults)
+  maxTokens       Int      @default(4000)
+  temperature     Float    @default(0.7)
+  topP            Float?   @default(1.0)
+  frequencyPenalty Float?  @default(0.0)
+  presencePenalty  Float?  @default(0.0)
+
+  // Cost & Usage
+  costPerPromptToken  Decimal? @db.Decimal(10, 6) // Cost in USD
+  costPerCompletionToken Decimal? @db.Decimal(10, 6)
+  monthlyUsageLimit   Int?     // Max API calls per month
+  currentMonthUsage   Int      @default(0)
+
+  // Status & Settings
+  isActive        Boolean  @default(true)
+  isDefault       Boolean  @default(false) // Default model for this org
+
+  // Capabilities
+  capabilities    Json?    // {"vision": true, "functionCalling": true}
+  supportedTasks  String[] @default([]) // ["chat", "completion", "diet-planning"]
+
+  // Metadata
+  tags            String[] @default([])
+  notes           String?
+  createdBy       String
+  lastUsedAt      DateTime?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime? // Soft delete
+
+  // Relations
+  organization    Organization     @relation("OrgAIModels", fields: [organizationId], references: [id], onDelete: Cascade)
+  provider        AIModelProvider  @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  dietPlans       PatientDietPlan[]
+
+  @@unique([organizationId, modelId])
+  @@index([organizationId, isActive])
+  @@index([providerId])
+  @@index([isDefault])
+  @@map("ai_model_configs")
+}
+
 // ==================== PATIENT DIET PLAN (HEALTHCARE) ====================
 
 model PatientDietPlan {
@@ -2688,6 +2789,7 @@ model PatientDietPlan {
   specialInstructions String?
 
   // AI Generation Metadata
+  aiModelConfigId String?  // Reference to configured AI model
   model           String   @default("gpt-4")
   generatedBy     String   // User ID who requested the plan
   generationTokens Json?   // Token usage stats
@@ -2703,6 +2805,7 @@ model PatientDietPlan {
   // Relations
   organization    Organization @relation("OrgDietPlans", fields: [organizationId], references: [id], onDelete: Cascade)
   company         Company?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  aiModelConfig   AIModelConfig? @relation(fields: [aiModelConfigId], references: [id], onDelete: SetNull)
 
   @@index([organizationId])
   @@index([companyId])
