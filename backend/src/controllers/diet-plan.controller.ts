@@ -140,6 +140,7 @@ class DietPlanController {
       }
 
       // Generate diet plan using AI
+      console.log('🔄 Generating diet plan for patient:', patientName);
       const result = await dietPlanService.generateDietPlan({
         patientName,
         patientAge,
@@ -156,11 +157,14 @@ class DietPlanController {
       });
 
       if (!result.success || !result.dietPlan) {
+        console.error('❌ Diet plan generation failed:', result.error);
         return res.status(500).json({
           success: false,
           message: result.error || 'Failed to generate diet plan'
         });
       }
+
+      console.log('✅ Diet plan generated successfully');
 
       // Calculate validity period
       const daysCount = timespan === 'monthly' ? 30 : (timespan === 'custom' && customDays ? customDays : 7);

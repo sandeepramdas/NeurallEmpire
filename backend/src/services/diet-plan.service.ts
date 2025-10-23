@@ -15,8 +15,10 @@ export class DietPlanService {
       this.openai = new OpenAI({
         apiKey: apiKey
       });
+      console.log('✅ DietPlanService: OpenAI API key configured successfully');
     } else {
-      console.warn('⚠️  OPENAI_API_KEY is not configured or is a placeholder. Diet plan generation will not work.');
+      console.warn('⚠️  DietPlanService: OPENAI_API_KEY is not configured or is a placeholder. Diet plan generation will not work.');
+      console.warn('⚠️  Current API key value:', apiKey ? `${apiKey.substring(0, 10)}...` : 'undefined');
     }
   }
 
