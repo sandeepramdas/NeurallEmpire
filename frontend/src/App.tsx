@@ -120,10 +120,13 @@ const ProtectedRoute: React.FC<RouteGuardProps> = ({ children }) => {
 const PublicRoute: React.FC<RouteGuardProps> = ({ children }) => {
   const { isAuthenticated, organization } = useAuthStore();
 
-  // Authenticated user on login/register pages - redirect to dashboard
-  if (isAuthenticated && organization && (window.location.pathname === '/login' || window.location.pathname === '/register')) {
-    // Redirect to path-based organization dashboard
-    return <Navigate to={`/org/${organization.slug}/dashboard`} replace />;
+  // Authenticated user on public pages - redirect to dashboard
+  if (isAuthenticated && organization) {
+    const publicPaths = ['/', '/login', '/register'];
+    if (publicPaths.includes(window.location.pathname)) {
+      // Redirect to path-based organization dashboard
+      return <Navigate to={`/org/${organization.slug}/dashboard`} replace />;
+    }
   }
 
   return <>{children}</>;
