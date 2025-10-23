@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
-import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 import {
   Bell,
   Search,
@@ -8,6 +7,8 @@ import {
   Users,
   CreditCard,
   ChevronDown,
+  Sun,
+  Moon,
   FileText,
   HelpCircle,
   User,
@@ -36,7 +37,7 @@ interface OrganizationHeaderProps {
   onThemeChange?: (theme: 'light' | 'dark' | 'auto') => void;
 }
 
-const OrganizationHeader: React.FC<OrganizationHeaderProps> = () => {
+const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }) => {
   const { user, organization, logout } = useAuthStore();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
@@ -49,6 +50,7 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = () => {
   const [showHelpMenu, setShowHelpMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [unreadCount] = useState(3);
+  const [currentTheme, setCurrentTheme] = useState<'light' | 'dark'>('light');
 
   // Mock data - replace with real data from your store/API
   const notifications = [
@@ -103,6 +105,13 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = () => {
     { icon: Keyboard, label: 'Keyboard Shortcuts', description: 'View all shortcuts', action: () => setShowKeyboardShortcuts(true) },
     { icon: HelpCircle, label: 'FAQs', description: 'Frequently asked questions', href: '/dashboard/docs?category=faq' },
   ];
+
+  // Theme toggle handler
+  const handleToggleTheme = () => {
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    setCurrentTheme(newTheme);
+    onThemeChange?.(newTheme);
+  };
 
   // Keyboard shortcut listener
   useEffect(() => {
@@ -412,8 +421,18 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = () => {
               )}
             </div>
 
-            {/* Theme Switcher */}
-            <ThemeSwitcher />
+            {/* Theme Toggle */}
+            <button
+              onClick={handleToggleTheme}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              title={`Switch to ${currentTheme === 'light' ? 'Dark' : 'Light'} Mode`}
+            >
+              {currentTheme === 'light' ? (
+                <Moon className="w-5 h-5 text-gray-600" />
+              ) : (
+                <Sun className="w-5 h-5 text-gray-600" />
+              )}
+            </button>
 
             {/* Settings */}
             <a

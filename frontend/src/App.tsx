@@ -55,8 +55,8 @@ import SalesInvoice from '@/pages/dashboard/SalesInvoice';
 // Import Healthcare pages
 import PatientDietPlan from '@/pages/dashboard/PatientDietPlan';
 
-// Import Zerodha Trading pages
-import ZerodhaDashboard from '@/pages/dashboard/Zerodha';
+// Import Settings pages
+import AIModelsSettings from '@/pages/settings/AIModelsSettings';
 
 // OAuth buttons component available for login page
 
@@ -123,10 +123,13 @@ const ProtectedRoute: React.FC<RouteGuardProps> = ({ children }) => {
 const PublicRoute: React.FC<RouteGuardProps> = ({ children }) => {
   const { isAuthenticated, organization } = useAuthStore();
 
-  // Authenticated user on login/register pages - redirect to dashboard
-  if (isAuthenticated && organization && (window.location.pathname === '/login' || window.location.pathname === '/register')) {
-    // Redirect to path-based organization dashboard
-    return <Navigate to={`/org/${organization.slug}/dashboard`} replace />;
+  // Authenticated user on public pages - redirect to dashboard
+  if (isAuthenticated && organization) {
+    const publicPaths = ['/', '/login', '/register'];
+    if (publicPaths.includes(window.location.pathname)) {
+      // Redirect to path-based organization dashboard
+      return <Navigate to={`/org/${organization.slug}/dashboard`} replace />;
+    }
   }
 
   return <>{children}</>;
@@ -286,8 +289,6 @@ const App: React.FC = () => {
           <Route path="sales-invoice" element={<SalesInvoice />} />
           {/* Healthcare Routes */}
           <Route path="patient-diet-plan" element={<PatientDietPlan />} />
-          {/* Zerodha Trading Routes */}
-          <Route path="zerodha" element={<ZerodhaDashboard />} />
           {/* V2 Feature Routes */}
           <Route path="entities" element={<EntityDefinitions />} />
           <Route path="hierarchy" element={<OrganizationHierarchy />} />
@@ -301,6 +302,7 @@ const App: React.FC = () => {
           <Route path="settings/branding" element={<BrandingTheme />} />
           <Route path="settings/analytics" element={<UsageAnalytics />} />
           <Route path="settings/domains" element={<DomainSettings />} />
+          <Route path="settings/ai-models" element={<AIModelsSettings />} />
           <Route path="settings/data" element={<Settings />} />
           <Route path="settings/emails" element={<Settings />} />
           <Route path="profile" element={<UserProfile />} />

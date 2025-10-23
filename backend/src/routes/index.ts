@@ -27,6 +27,9 @@ import codeArtifactsRoutes from './code-artifacts';
 // Import healthcare routes
 import dietPlansRoutes from './diet-plans';
 
+// Import AI model configuration routes
+import aiModelsRoutes from './ai-models.routes';
+
 // Import infrastructure routes
 import settingsRoutes from '../modules/system-settings/routes/settings.routes';
 import filesRoutes from '../modules/files/routes/files.routes';
@@ -34,9 +37,6 @@ import analyticsRoutes from '../modules/analytics/routes/analytics.routes';
 
 // Import orchestrator routes
 import orchestratorRoutes from './orchestrator.routes';
-
-// Import Zerodha trading routes
-import zerodhaRoutes from './zerodha';
 
 const router = Router();
 
@@ -80,6 +80,9 @@ router.use('/code-artifacts', authenticate, codeArtifactsRoutes);
 // Healthcare routes (require authentication)
 router.use('/diet-plans', authenticate, dietPlansRoutes);
 
+// AI model configuration routes (require authentication)
+router.use('/ai-models', aiModelsRoutes);
+
 // Admin routes (require admin authentication)
 router.use('/admin', authenticate, adminRoutes);
 
@@ -94,9 +97,6 @@ router.use('/analytics', analyticsRoutes);
 
 // Orchestrator routes (require authentication)
 router.use('/orchestrator', authenticate, orchestratorRoutes);
-
-// Zerodha trading routes (require authentication)
-router.use('/zerodha', authenticate, zerodhaRoutes);
 
 // API documentation
 router.get('/', (req, res) => {
@@ -268,21 +268,22 @@ router.get('/', (req, res) => {
           '/analytics/funnel': 'Get funnel data'
         }
       },
-      zerodha: {
+      aiModels: {
         GET: {
-          '/zerodha/signals': 'List all trading signals',
-          '/zerodha/signals/:id': 'Get signal details',
-          '/zerodha/positions': 'List all positions',
-          '/zerodha/trades': 'Get trade history',
-          '/zerodha/dashboard': 'Get trading dashboard metrics',
-          '/zerodha/writer-ratio/:symbol/:strike': 'Get writer ratio snapshot'
+          '/ai-models/providers': 'List available AI providers',
+          '/ai-models/configs': 'List organization AI model configurations',
+          '/ai-models/configs/:id': 'Get model configuration details',
+          '/ai-models/configs/:id/usage': 'Get model usage statistics'
         },
         POST: {
-          '/zerodha/signals': 'Generate new trading signal (7-layer analysis)',
-          '/zerodha/positions': 'Open new trading position'
+          '/ai-models/configs': 'Create new AI model configuration',
+          '/ai-models/test': 'Test AI model connection'
         },
         PUT: {
-          '/zerodha/positions/:id/close': 'Close a position'
+          '/ai-models/configs/:id': 'Update AI model configuration'
+        },
+        DELETE: {
+          '/ai-models/configs/:id': 'Delete AI model configuration'
         }
       }
     }

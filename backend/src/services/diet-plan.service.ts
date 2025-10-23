@@ -8,10 +8,17 @@ export class DietPlanService {
   private openai: OpenAI | null = null;
 
   constructor() {
-    if (process.env.OPENAI_API_KEY) {
+    const apiKey = process.env.OPENAI_API_KEY;
+
+    // Check if API key exists and is not a placeholder
+    if (apiKey && apiKey !== 'your_openai_api_key_here' && !apiKey.includes('placeholder')) {
       this.openai = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY
+        apiKey: apiKey
       });
+      console.log('✅ DietPlanService: OpenAI API key configured successfully');
+    } else {
+      console.warn('⚠️  DietPlanService: OPENAI_API_KEY is not configured or is a placeholder. Diet plan generation will not work.');
+      console.warn('⚠️  Current API key value:', apiKey ? `${apiKey.substring(0, 10)}...` : 'undefined');
     }
   }
 
@@ -38,7 +45,10 @@ export class DietPlanService {
     error?: string
   }> {
     if (!this.openai) {
-      throw new Error('OpenAI API key not configured. Please add OPENAI_API_KEY to your .env file');
+      return {
+        success: false,
+        error: 'OpenAI API key not configured. Please add a valid OPENAI_API_KEY to your environment variables. Get your API key from https://platform.openai.com/api-keys'
+      };
     }
 
     try {
@@ -143,8 +153,11 @@ Provide ONLY the JSON response, no additional text.`;
 
       const startTime = Date.now();
 
+      // Use gpt-4-turbo-preview if user selected gpt-4 (it supports JSON mode)
+      const modelToUse = model === 'gpt-4' ? 'gpt-4-turbo-preview' : model;
+
       const response = await this.openai.chat.completions.create({
-        model: model,
+        model: modelToUse,
         messages: [
           {
             role: 'system',

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Apple, Plus, Search, Calendar, Utensils, AlertCircle, CheckCircle, Loader, Eye, Trash2 } from 'lucide-react';
-import axios from 'axios';
+import { api } from '@/services/api';
+import { RightPanel } from '@/components/ui/RightPanel';
+import { ModelSelector } from '@/components/ai-models/ModelSelector';
 
 interface DietPlan {
   id: string;
@@ -36,7 +38,7 @@ const PatientDietPlan: React.FC = () => {
     customDays: '',
     mealsPerDay: 3,
     specialInstructions: '',
-    model: 'gpt-4'
+    aiModelConfigId: ''
   });
 
   useEffect(() => {
@@ -45,10 +47,7 @@ const PatientDietPlan: React.FC = () => {
 
   const fetchDietPlans = async () => {
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/diet-plans`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/diet-plans');
       if (response.data.success) {
         setDietPlans(response.data.data || []);
       }
@@ -69,7 +68,6 @@ const PatientDietPlan: React.FC = () => {
     setSuccess('');
 
     try {
-      const token = localStorage.getItem('authToken');
       const payload = {
         patientName: formData.patientName,
         patientAge: formData.patientAge ? parseInt(formData.patientAge) : undefined,
@@ -82,14 +80,10 @@ const PatientDietPlan: React.FC = () => {
         customDays: formData.customDays ? parseInt(formData.customDays) : undefined,
         mealsPerDay: formData.mealsPerDay,
         specialInstructions: formData.specialInstructions || undefined,
-        model: formData.model
+        aiModelConfigId: formData.aiModelConfigId
       };
 
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/diet-plans/generate`,
-        payload,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await api.post('/diet-plans/generate', payload);
 
       if (response.data.success) {
         setSuccess('Diet plan generated successfully!');
@@ -108,11 +102,17 @@ const PatientDietPlan: React.FC = () => {
           customDays: '',
           mealsPerDay: 3,
           specialInstructions: '',
-          model: 'gpt-4'
+          aiModelConfigId: ''
         });
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to generate diet plan');
+      console.error('Diet plan generation error:', err);
+      console.error('Error response:', err.response);
+      const errorMessage = err.response?.data?.message ||
+                          err.response?.data?.error ||
+                          err.message ||
+                          'Failed to generate diet plan. Please check the console for details.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -122,10 +122,7 @@ const PatientDietPlan: React.FC = () => {
     if (!confirm('Are you sure you want to delete this diet plan?')) return;
 
     try {
-      const token = localStorage.getItem('authToken');
-      await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/diet-plans/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/diet-plans/${id}`);
       setSuccess('Diet plan deleted successfully');
       fetchDietPlans();
     } catch (err: any) {
@@ -200,11 +197,14 @@ const PatientDietPlan: React.FC = () => {
         </div>
       </div>
 
-      {/* Generation Form */}
-      {showForm && (
-        <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Generate New Diet Plan</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Generation Form - Right Panel */}
+      <RightPanel
+        isOpen={showForm}
+        onClose={() => setShowForm(false)}
+        title="Generate New Diet Plan"
+        width="60%"
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -299,6 +299,15 @@ const PatientDietPlan: React.FC = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 />
               </div>
+              <div>
+                <ModelSelector
+                  value={formData.aiModelConfigId}
+                  onChange={(id) => setFormData(prev => ({ ...prev, aiModelConfigId: id }))}
+                  label="AI Model"
+                  required
+                  placeholder="Select an AI model"
+                />
+              </div>
             </div>
 
             <div>
@@ -355,7 +364,7 @@ const PatientDietPlan: React.FC = () => {
               />
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 pt-6 border-t border-gray-200">
               <button
                 type="submit"
                 disabled={loading}
@@ -382,8 +391,7 @@ const PatientDietPlan: React.FC = () => {
               </button>
             </div>
           </form>
-        </div>
-      )}
+      </RightPanel>
 
       {/* Search */}
       <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
