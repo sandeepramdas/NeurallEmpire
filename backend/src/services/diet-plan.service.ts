@@ -153,8 +153,11 @@ Provide ONLY the JSON response, no additional text.`;
 
       const startTime = Date.now();
 
+      // Use gpt-4-turbo-preview if user selected gpt-4 (it supports JSON mode)
+      const modelToUse = model === 'gpt-4' ? 'gpt-4-turbo-preview' : model;
+
       const response = await this.openai.chat.completions.create({
-        model: model,
+        model: modelToUse,
         messages: [
           {
             role: 'system',
