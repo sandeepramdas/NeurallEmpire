@@ -460,7 +460,7 @@ export const joinOrganization = async (
   try {
     const joinSchema = z.object({
       email: z.string().email('Invalid email format'),
-      password: z.string().min(8, 'Password must be at least 8 characters'),
+      password: strongPasswordSchema,
       firstName: z.string().optional(),
       lastName: z.string().optional(),
       organizationSlug: z.string().min(1, 'Organization slug is required'),
