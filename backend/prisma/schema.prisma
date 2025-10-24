@@ -40,6 +40,9 @@ model PlatformAdmin {
   auditLogs    AuditLog[]
   adminActions AdminAction[]
 
+  @@index([email])
+  @@index([isActive])
+  @@index([lastLoginAt])
   @@map("platform_admins")
 }
 
@@ -184,6 +187,10 @@ model Organization {
   @@index([planType])
   @@index([slug])
   @@index([subdomainStatus])
+  @@index([createdAt])
+  @@index([parentId])
+  @@index([deletedAt])
+  @@index([updatedAt])
   @@map("organizations")
 }
 
@@ -243,6 +250,8 @@ model Company {
   @@unique([organizationId, companyCode])
   @@index([organizationId])
   @@index([status])
+  @@index([createdAt])
+  @@index([deletedAt])
   @@map("companies")
 }
 
@@ -504,6 +513,10 @@ model User {
   @@index([email])
   @@index([lastLoginAt])
   @@index([isSuperAdmin])
+  @@index([status])
+  @@index([role])
+  @@index([createdAt])
+  @@index([deletedAt])
   @@map("users")
 }
 
@@ -1118,6 +1131,9 @@ model Agent {
   @@index([organizationId, status])
   @@index([isPublic, category])
   @@index([creatorId])
+  @@index([type])
+  @@index([createdAt])
+  @@index([updatedAt])
   @@map("agents")
 }
 
@@ -1160,6 +1176,8 @@ model AgentInteraction {
   @@index([organizationId, agentId])
   @@index([startedAt])
   @@index([status])
+  @@index([completedAt])
+  @@index([userId])
   @@map("agent_interactions")
 }
 
@@ -1208,6 +1226,8 @@ model AgentWorkflow {
 
   @@index([organizationId, status])
   @@index([creatorId])
+  @@index([createdAt])
+  @@index([updatedAt])
   @@map("agent_workflows")
 }
 
@@ -1492,6 +1512,9 @@ model Invoice {
   @@index([organizationId])
   @@index([status])
   @@index([nextAttemptAt])
+  @@index([createdAt])
+  @@index([dueDate])
+  @@index([paidAt])
   @@map("invoices")
 }
 
@@ -1543,6 +1566,8 @@ model Payment {
   @@index([organizationId])
   @@index([status])
   @@index([gatewayPaymentId])
+  @@index([createdAt])
+  @@index([capturedAt])
   @@map("payments")
 }
 
@@ -1723,6 +1748,8 @@ model Notification {
   user           User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([organizationId, userId, isRead])
+  @@index([type])
+  @@index([createdAt])
   @@map("notifications")
 }
 
