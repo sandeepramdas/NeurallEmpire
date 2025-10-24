@@ -239,10 +239,10 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
                             className="flex items-start px-4 py-3 hover:bg-gray-50 transition-colors group"
                             onClick={() => setShowResourcesMenu(false)}
                           >
-                            <ItemIcon className="w-5 h-5 mr-3 text-indigo-600 mt-0.5" />
+                            <ItemIcon className="w-5 h-5 mr-3 icon-active mt-0.5" />
                             <div className="flex-1">
                               <div className="flex items-center">
-                                <span className="text-sm font-medium text-gray-900 group-hover:text-indigo-600">{item.label}</span>
+                                <span className="text-sm font-medium text-gray-900 link-hover">{item.label}</span>
                                 {item.external && <ExternalLink className="w-3 h-3 ml-1 text-gray-400" />}
                               </div>
                               <p className="text-xs text-gray-500 mt-0.5">{item.description}</p>
@@ -292,9 +292,9 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
                               }}
                               className="w-full flex items-start px-4 py-3 hover:bg-gray-50 transition-colors group text-left"
                             >
-                              <ItemIcon className="w-5 h-5 mr-3 text-indigo-600 mt-0.5" />
+                              <ItemIcon className="w-5 h-5 mr-3 icon-active mt-0.5" />
                               <div className="flex-1">
-                                <span className="text-sm font-medium text-gray-900 group-hover:text-indigo-600 block">{item.label}</span>
+                                <span className="text-sm font-medium text-gray-900 link-hover block">{item.label}</span>
                                 <p className="text-xs text-gray-500 mt-0.5">{item.description}</p>
                               </div>
                             </button>
@@ -310,10 +310,10 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
                             className="flex items-start px-4 py-3 hover:bg-gray-50 transition-colors group"
                             onClick={() => setShowHelpMenu(false)}
                           >
-                            <ItemIcon className="w-5 h-5 mr-3 text-indigo-600 mt-0.5" />
+                            <ItemIcon className="w-5 h-5 mr-3 icon-active mt-0.5" />
                             <div className="flex-1">
                               <div className="flex items-center">
-                                <span className="text-sm font-medium text-gray-900 group-hover:text-indigo-600">{item.label}</span>
+                                <span className="text-sm font-medium text-gray-900 link-hover">{item.label}</span>
                                 {item.external && <ExternalLink className="w-3 h-3 ml-1 text-gray-400" />}
                               </div>
                               <p className="text-xs text-gray-500 mt-0.5">{item.description}</p>
@@ -369,7 +369,7 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
                       ))}
                     </div>
                     <div className="px-4 py-2 border-t border-gray-100">
-                      <a href="/dashboard/notifications" className="text-xs text-indigo-600 hover:text-indigo-700 font-medium">
+                      <a href="/dashboard/notifications" className="text-xs icon-active link-hover font-medium">
                         View all notifications →
                       </a>
                     </div>
@@ -415,7 +415,7 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
                       ))}
                     </div>
                     <div className="px-4 py-2 border-t border-gray-100">
-                      <a href="/dashboard/activity" className="text-xs text-indigo-600 hover:text-indigo-700 font-medium">
+                      <a href="/dashboard/activity" className="text-xs icon-active link-hover font-medium">
                         View all activity →
                       </a>
                     </div>
@@ -431,7 +431,7 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
               title={`Switch to ${mode === 'light' ? 'Dark' : 'Light'} Mode`}
             >
               {mode === 'light' ? (
-                <Moon className="w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
+                <Moon className="w-5 h-5 text-gray-600 dark:text-gray-300 link-hover transition-colors" />
               ) : (
                 <Sun className="w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:text-yellow-500 transition-colors" />
               )}
@@ -443,7 +443,7 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors group"
               title="Customize Theme Colors"
             >
-              <Palette className="w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
+              <Palette className="w-5 h-5 text-gray-600 dark:text-gray-300 link-hover transition-colors" />
             </button>
 
             {/* Settings */}
@@ -465,7 +465,7 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
                 className="flex items-center space-x-2 p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
                 title="User Menu"
               >
-                <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 avatar-gradient rounded-full flex items-center justify-center">
                   <span className="text-white text-sm font-medium">
                     {user?.firstName?.charAt(0) || user?.email?.charAt(0) || 'U'}
                   </span>
@@ -545,7 +545,7 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
           <div className="flex items-center space-x-6">
             {/* Organization Name */}
             <div className="flex items-center space-x-2">
-              <div className="w-7 h-7 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <div className="w-7 h-7 avatar-gradient rounded-lg flex items-center justify-center">
                 <span className="text-white text-xs font-bold">
                   {organization?.name?.charAt(0) || 'O'}
                 </span>
@@ -614,7 +614,7 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
           {(organization?.planType === 'FREE' || !organization?.planType) && (
             <a
               href="/dashboard/settings/billing"
-              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all shadow-sm"
+              className="btn-primary flex items-center space-x-2 px-4 py-2 rounded-lg shadow-sm"
             >
               <Crown className="w-4 h-4" />
               <span className="text-xs font-semibold">Upgrade Now</span>
@@ -679,7 +679,7 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
                 <button
                   key={org.id}
                   className={`w-full flex items-center justify-between px-4 py-3 rounded-lg mb-1 ${
-                    org.current ? 'bg-indigo-50 border-2 border-indigo-500' : 'hover:bg-gray-50'
+                    org.current ? 'menu-active-child border-2' : 'hover:bg-gray-50'
                   }`}
                   onClick={() => {
                     if (!org.current) {
@@ -690,7 +690,7 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
                   }}
                 >
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 avatar-gradient rounded-lg flex items-center justify-center">
                       <span className="text-white font-bold">{org.name.charAt(0)}</span>
                     </div>
                     <div className="text-left">
@@ -708,7 +708,7 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
                       {org.planType}
                     </span>
                     {org.current && (
-                      <span className="text-xs text-indigo-600 font-medium">Current</span>
+                      <span className="text-xs icon-active font-medium">Current</span>
                     )}
                   </div>
                 </button>
@@ -717,7 +717,7 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
             <div className="p-4 border-t border-gray-200">
               <button
                 onClick={() => setShowOrgSwitcher(false)}
-                className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                className="w-full btn-primary rounded-lg"
               >
                 Create New Organization
               </button>

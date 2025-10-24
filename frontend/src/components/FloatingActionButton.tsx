@@ -10,25 +10,21 @@ const FloatingActionButton: React.FC = () => {
     {
       icon: Bot,
       label: 'New Agent',
-      color: 'bg-blue-500 hover:bg-blue-600',
       action: () => navigate('/dashboard/agents?create=true'),
     },
     {
       icon: Megaphone,
       label: 'New Campaign',
-      color: 'bg-purple-500 hover:bg-purple-600',
       action: () => navigate('/dashboard/campaigns?create=true'),
     },
     {
       icon: Workflow,
       label: 'New Workflow',
-      color: 'bg-indigo-500 hover:bg-indigo-600',
       action: () => navigate('/dashboard/workflows?create=true'),
     },
     {
       icon: FileText,
       label: 'From Template',
-      color: 'bg-green-500 hover:bg-green-600',
       action: () => navigate('/dashboard/templates'),
     },
   ];
@@ -64,7 +60,7 @@ const FloatingActionButton: React.FC = () => {
                 </span>
                 <button
                   onClick={() => handleAction(item.action)}
-                  className={`${item.color} text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-110`}
+                  className="btn-primary w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-110"
                 >
                   <Icon className="w-5 h-5" />
                 </button>
@@ -79,8 +75,8 @@ const FloatingActionButton: React.FC = () => {
         onClick={() => setIsOpen(!isOpen)}
         className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all ${
           isOpen
-            ? 'bg-gray-900 rotate-45'
-            : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:shadow-2xl hover:scale-110'
+            ? 'bg-gray-900 dark:bg-gray-800 rotate-45'
+            : 'avatar-gradient hover:shadow-2xl hover:scale-110'
         }`}
         title="Quick Create"
       >

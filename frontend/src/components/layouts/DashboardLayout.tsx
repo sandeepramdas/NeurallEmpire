@@ -204,7 +204,7 @@ const DashboardLayout: React.FC = () => {
             {!sidebarCollapsed ? (
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3 min-w-0 flex-1">
-                  <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 avatar-gradient rounded-lg flex items-center justify-center flex-shrink-0">
                     <span className="text-white font-bold text-lg">
                       {user?.organization?.name?.charAt(0) || 'N'}
                     </span>
@@ -228,7 +228,7 @@ const DashboardLayout: React.FC = () => {
               </div>
             ) : (
               <div className="flex flex-col items-center space-y-2">
-                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <div className="w-10 h-10 avatar-gradient rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-lg">
                     {user?.organization?.name?.charAt(0) || 'N'}
                   </span>
@@ -263,12 +263,12 @@ const DashboardLayout: React.FC = () => {
                         onClick={() => toggleSubmenu(item.path)}
                         className={`w-full flex items-center px-3 py-2.5 rounded-lg transition-all ${
                           active
-                            ? 'bg-gradient-to-r from-indigo-50 to-indigo-100 dark:from-indigo-950/50 dark:to-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-semibold shadow-sm'
+                            ? 'menu-active font-semibold shadow-sm'
                             : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/60 font-medium'
                         }`}
                         title={sidebarCollapsed ? item.label : undefined}
                       >
-                        <Icon className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'} ${active ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'}`} />
+                        <Icon className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'} ${active ? 'icon-active' : 'text-gray-500 dark:text-gray-400'}`} />
                         {!sidebarCollapsed && (
                           <>
                             <span className="flex-1 text-left text-sm">{item.label}</span>
@@ -287,11 +287,11 @@ const DashboardLayout: React.FC = () => {
                                 to={child.path}
                                 className={`flex items-center px-3 py-2 rounded-lg transition-all text-sm ${
                                   childActive
-                                    ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-semibold border-l-2 border-indigo-500 dark:border-indigo-400 -ml-px'
+                                    ? 'menu-active-child font-semibold border-l-2 -ml-px'
                                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/60 hover:text-gray-900 dark:hover:text-gray-200'
                                 }`}
                               >
-                                <ChildIcon className={`w-4 h-4 mr-2.5 ${childActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500'}`} />
+                                <ChildIcon className={`w-4 h-4 mr-2.5 ${childActive ? 'icon-active' : 'text-gray-400 dark:text-gray-500'}`} />
                                 <span>{child.label}</span>
                               </Link>
                             );
@@ -308,15 +308,15 @@ const DashboardLayout: React.FC = () => {
                     to={item.path}
                     className={`flex items-center px-3 py-2.5 rounded-lg transition-all mb-1 ${
                       active
-                        ? 'bg-gradient-to-r from-indigo-50 to-indigo-100 dark:from-indigo-950/50 dark:to-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-semibold shadow-sm'
+                        ? 'menu-active font-semibold shadow-sm'
                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/60 font-medium'
                     }`}
                     title={sidebarCollapsed ? item.label : undefined}
                   >
-                    <Icon className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'} ${active ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'}`} />
+                    <Icon className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'} ${active ? 'icon-active' : 'text-gray-500 dark:text-gray-400'}`} />
                     {!sidebarCollapsed && <span className="text-sm">{item.label}</span>}
                     {active && !sidebarCollapsed && (
-                      <div className="ml-auto w-1.5 h-6 bg-indigo-600 dark:bg-indigo-400 rounded-full"></div>
+                      <div className="ml-auto w-1.5 h-6 active-indicator rounded-full"></div>
                     )}
                   </Link>
                 );
@@ -340,44 +340,44 @@ const DashboardLayout: React.FC = () => {
                 <div>
                   <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Product</h3>
                   <ul className="space-y-2">
-                    <li><Link to="agents" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">AI Agents</Link></li>
-                    <li><Link to="campaigns" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Campaigns</Link></li>
-                    <li><Link to="workflows" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Workflows</Link></li>
-                    <li><Link to="integrations" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Integrations</Link></li>
+                    <li><Link to="agents" className="text-sm text-gray-600 dark:text-gray-400 link-hover transition-colors">AI Agents</Link></li>
+                    <li><Link to="campaigns" className="text-sm text-gray-600 dark:text-gray-400 link-hover transition-colors">Campaigns</Link></li>
+                    <li><Link to="workflows" className="text-sm text-gray-600 dark:text-gray-400 link-hover transition-colors">Workflows</Link></li>
+                    <li><Link to="integrations" className="text-sm text-gray-600 dark:text-gray-400 link-hover transition-colors">Integrations</Link></li>
                   </ul>
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Resources</h3>
                   <ul className="space-y-2">
-                    <li><Link to="docs" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Documentation</Link></li>
-                    <li><Link to="api-playground" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">API Reference</Link></li>
-                    <li><Link to="templates" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Templates</Link></li>
-                    <li><a href="https://blog.neurallempire.com" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Blog</a></li>
+                    <li><Link to="docs" className="text-sm text-gray-600 dark:text-gray-400 link-hover transition-colors">Documentation</Link></li>
+                    <li><Link to="api-playground" className="text-sm text-gray-600 dark:text-gray-400 link-hover transition-colors">API Reference</Link></li>
+                    <li><Link to="templates" className="text-sm text-gray-600 dark:text-gray-400 link-hover transition-colors">Templates</Link></li>
+                    <li><a href="https://blog.neurallempire.com" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 dark:text-gray-400 link-hover transition-colors">Blog</a></li>
                   </ul>
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Support</h3>
                   <ul className="space-y-2">
-                    <li><Link to="support" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Help Center</Link></li>
-                    <li><a href="https://status.neurallempire.com" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">System Status</a></li>
-                    <li><a href="https://community.neurallempire.com" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Community</a></li>
-                    <li><a href="mailto:support@neurallempire.com" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Contact Support</a></li>
+                    <li><Link to="support" className="text-sm text-gray-600 dark:text-gray-400 link-hover transition-colors">Help Center</Link></li>
+                    <li><a href="https://status.neurallempire.com" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 dark:text-gray-400 link-hover transition-colors">System Status</a></li>
+                    <li><a href="https://community.neurallempire.com" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 dark:text-gray-400 link-hover transition-colors">Community</a></li>
+                    <li><a href="mailto:support@neurallempire.com" className="text-sm text-gray-600 dark:text-gray-400 link-hover transition-colors">Contact Support</a></li>
                   </ul>
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Legal</h3>
                   <ul className="space-y-2">
-                    <li><a href="/privacy" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Privacy Policy</a></li>
-                    <li><a href="/terms" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Terms of Service</a></li>
-                    <li><a href="/security" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Security</a></li>
-                    <li><a href="/cookies" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Cookie Policy</a></li>
+                    <li><a href="/privacy" className="text-sm text-gray-600 dark:text-gray-400 link-hover transition-colors">Privacy Policy</a></li>
+                    <li><a href="/terms" className="text-sm text-gray-600 dark:text-gray-400 link-hover transition-colors">Terms of Service</a></li>
+                    <li><a href="/security" className="text-sm text-gray-600 dark:text-gray-400 link-hover transition-colors">Security</a></li>
+                    <li><a href="/cookies" className="text-sm text-gray-600 dark:text-gray-400 link-hover transition-colors">Cookie Policy</a></li>
                   </ul>
                 </div>
               </div>
               <div className="pt-6 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between">
                 <p className="text-xs text-gray-500 dark:text-gray-400">© 2025 NeurallEmpire. All rights reserved.</p>
                 <div className="flex items-center space-x-2">
-                  <a href="https://status.neurallempire.com" target="_blank" rel="noopener noreferrer" className="flex items-center text-xs text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                  <a href="https://status.neurallempire.com" target="_blank" rel="noopener noreferrer" className="flex items-center text-xs text-gray-500 dark:text-gray-400 link-hover transition-colors">
                     <span className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full mr-1.5 animate-pulse"></span>
                     All Systems Operational
                   </a>

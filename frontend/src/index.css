@@ -216,6 +216,49 @@
     color: white;
   }
 
+  /* ========== THEME-AWARE UI ELEMENTS ========== */
+
+  .avatar-gradient {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  }
+
+  .menu-active {
+    background: linear-gradient(90deg,
+      color-mix(in srgb, var(--color-primary) 10%, transparent) 0%,
+      color-mix(in srgb, var(--color-primary) 15%, transparent) 100%
+    );
+    color: var(--color-primary);
+  }
+
+  .dark .menu-active {
+    background: linear-gradient(90deg,
+      color-mix(in srgb, var(--color-primary) 20%, transparent) 0%,
+      color-mix(in srgb, var(--color-primary) 25%, transparent) 100%
+    );
+  }
+
+  .menu-active-child {
+    background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);
+    color: var(--color-primary);
+    border-left-color: var(--color-primary);
+  }
+
+  .dark .menu-active-child {
+    background-color: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  }
+
+  .icon-active {
+    color: var(--color-primary);
+  }
+
+  .link-hover:hover {
+    color: var(--color-primary);
+  }
+
+  .active-indicator {
+    background-color: var(--color-primary);
+  }
+
   /* ========== ALERTS ========== */
 
   .alert {
