@@ -7,6 +7,7 @@
 import { prisma } from '@/server';
 import { MenuItem } from '@prisma/client';
 import { rbacService } from './rbac.service';
+import { logger } from '@/infrastructure/logger';
 
 interface MenuItemWithChildren extends MenuItem {
   children?: MenuItemWithChildren[];
@@ -64,7 +65,7 @@ class MenuService {
 
       return filteredMenus;
     } catch (error) {
-      console.error('Error getting user menus:', error);
+      logger.error('Error getting user menus:', error);
       return [];
     }
   }
@@ -95,7 +96,7 @@ class MenuService {
         })
       );
     } catch (error) {
-      console.error('Error getting menu children:', error);
+      logger.error('Error getting menu children:', error);
       return [];
     }
   }
@@ -207,7 +208,7 @@ class MenuService {
         })
       );
     } catch (error) {
-      console.error('Error getting all menus:', error);
+      logger.error('Error getting all menus:', error);
       return [];
     }
   }
@@ -221,7 +222,7 @@ class MenuService {
         where: { id: menuId },
       });
     } catch (error) {
-      console.error('Error getting menu by ID:', error);
+      logger.error('Error getting menu by ID:', error);
       return null;
     }
   }
@@ -283,7 +284,7 @@ class MenuService {
 
       return menu;
     } catch (error) {
-      console.error('Error creating menu:', error);
+      logger.error('Error creating menu:', error);
       throw error;
     }
   }
@@ -346,7 +347,7 @@ class MenuService {
 
       return menu;
     } catch (error) {
-      console.error('Error updating menu:', error);
+      logger.error('Error updating menu:', error);
       throw error;
     }
   }
@@ -389,7 +390,7 @@ class MenuService {
         },
       });
     } catch (error) {
-      console.error('Error deleting menu:', error);
+      logger.error('Error deleting menu:', error);
       throw error;
     }
   }
@@ -423,7 +424,7 @@ class MenuService {
         },
       });
     } catch (error) {
-      console.error('Error reordering menus:', error);
+      logger.error('Error reordering menus:', error);
       throw error;
     }
   }
@@ -461,7 +462,7 @@ class MenuService {
 
       return breadcrumbs;
     } catch (error) {
-      console.error('Error getting menu breadcrumbs:', error);
+      logger.error('Error getting menu breadcrumbs:', error);
       return [];
     }
   }
@@ -504,7 +505,7 @@ class MenuService {
 
       return menus;
     } catch (error) {
-      console.error('Error searching menus:', error);
+      logger.error('Error searching menus:', error);
       return [];
     }
   }
@@ -524,7 +525,7 @@ class MenuService {
         },
       });
     } catch (error) {
-      console.error('Error getting menus by module:', error);
+      logger.error('Error getting menus by module:', error);
       return [];
     }
   }
@@ -563,7 +564,7 @@ class MenuService {
 
       return updated;
     } catch (error) {
-      console.error('Error toggling menu visibility:', error);
+      logger.error('Error toggling menu visibility:', error);
       throw error;
     }
   }

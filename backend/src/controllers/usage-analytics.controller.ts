@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { logger } from '@/infrastructure/logger';
 
 const prisma = new PrismaClient();
 
@@ -111,7 +112,7 @@ export class UsageAnalyticsController {
         },
       });
     } catch (error: any) {
-      console.error('Error fetching usage dashboard:', error);
+      logger.error('Error fetching usage dashboard:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch usage dashboard',
@@ -220,7 +221,7 @@ export class UsageAnalyticsController {
         },
       });
     } catch (error: any) {
-      console.error('Error fetching model usage:', error);
+      logger.error('Error fetching model usage:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch model usage',
@@ -269,7 +270,7 @@ export class UsageAnalyticsController {
         },
       });
     } catch (error: any) {
-      console.error('Error fetching cost analytics:', error);
+      logger.error('Error fetching cost analytics:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch cost analytics',

@@ -21,6 +21,7 @@ import { initSentry, sentryErrorHandler } from '@/config/sentry';
 
 // Import cron jobs
 import { startCronJobs, stopCronJobs } from '@/services/cron.service';
+import { logger } from '@/infrastructure/logger';
 
 dotenv.config();
 
@@ -81,7 +82,7 @@ app.get('/health', async (req, res) => {
       ...healthChecks,
     });
   } catch (error) {
-    console.error('Health check failed:', error);
+    logger.error('Health check failed:', error);
     res.status(503).json({
       status: 'unhealthy',
       timestamp: new Date().toISOString(),
@@ -157,7 +158,7 @@ app.use(cors({
 
     // Log CORS requests in development for debugging
     if (NODE_ENV === 'development') {
-      console.log('🌐 CORS Request from origin:', origin);
+      logger.info('🌐 CORS Request from origin:', origin);
     }
 
     // Allow subdomain pattern *.neurallempire.com
@@ -251,7 +252,7 @@ app.use('/api', apiRoutes);
 // Serve frontend static files in production
 if (NODE_ENV === 'production') {
   const frontendPath = path.join(__dirname, 'public');
-  console.log('📂 Frontend path:', frontendPath);
+  logger.info('📂 Frontend path:', frontendPath);
 
   // Serve static files (JS, CSS, images, etc.)
   app.use(express.static(frontendPath, { maxAge: '1d' }));
@@ -266,7 +267,7 @@ if (NODE_ENV === 'production') {
     const indexPath = path.join(frontendPath, 'index.html');
     res.sendFile(indexPath, (err) => {
       if (err) {
-        console.error('❌ Error serving index.html:', err);
+        logger.error('❌ Error serving index.html:', err);
         next(err);
       }
     });
@@ -280,14 +281,14 @@ app.use(errorHandler);
 
 // Graceful shutdown
 process.on('SIGINT', async () => {
-  console.log('🔄 Shutting down gracefully...');
+  logger.info('🔄 Shutting down gracefully...');
   stopCronJobs();
   await prisma.$disconnect();
   process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
-  console.log('🔄 Shutting down gracefully...');
+  logger.info('🔄 Shutting down gracefully...');
   stopCronJobs();
   await prisma.$disconnect();
   process.exit(0);
@@ -295,12 +296,12 @@ process.on('SIGTERM', async () => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 NeurallEmpire Backend running on port ${PORT}`);
-  console.log(`📱 Environment: ${NODE_ENV}`);
-  console.log(`🌐 API available at: http://localhost:${PORT}`);
+  logger.info(`🚀 NeurallEmpire Backend running on port ${PORT}`);
+  logger.info(`📱 Environment: ${NODE_ENV}`);
+  logger.info(`🌐 API available at: http://localhost:${PORT}`);
 
   if (NODE_ENV === 'development') {
-    console.log(`📊 Prisma Studio: npx prisma studio`);
+    logger.info(`📊 Prisma Studio: npx prisma studio`);
   }
 
   // Start cron jobs for auto-renewals and scheduled tasks

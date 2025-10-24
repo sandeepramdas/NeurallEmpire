@@ -7,6 +7,7 @@ import { AuthenticatedRequest, RegisterData, LoginData, ApiResponse, AuthUser } 
 import { createSubdomainDNS } from '@/services/cloudflare.service';
 import { config } from '@/config/env';
 import { jwtBlacklistService } from '@/services/jwt-blacklist.service';
+import { logger } from '@/infrastructure/logger';
 
 const JWT_SECRET = config.JWT_SECRET;
 const JWT_EXPIRES_IN = config.JWT_EXPIRES_IN;
@@ -182,14 +183,14 @@ export const register = async (
               externalRecordId: cloudflareResult.recordId || null,
               status: 'ACTIVE',
             },
-          }).catch(err => console.error('Error creating subdomain record:', err));
+          }).catch(err => logger.error('Error creating subdomain record:', err));
 
-          console.log(`✅ Subdomain created: ${slug}.neurallempire.com`);
+          logger.info(`✅ Subdomain created: ${slug}.neurallempire.com`);
         } else {
-          console.error(`❌ Failed to create subdomain: ${cloudflareResult.error}`);
+          logger.error(`❌ Failed to create subdomain: ${cloudflareResult.error}`);
         }
       })
-      .catch(err => console.error('Cloudflare DNS creation error:', err));
+      .catch(err => logger.error('Cloudflare DNS creation error:', err));
 
     // Generate JWT token
     const token = generateToken(result.user.id, result.user.organizationId, result.user.role);
@@ -221,7 +222,7 @@ export const register = async (
 
     return res.status(201).json(response);
   } catch (error) {
-    console.error('Registration error:', error);
+    logger.error('Registration error:', error);
     return res.status(500).json({
       success: false,
       error: 'Registration failed',
@@ -384,7 +385,7 @@ export const login = async (
 
     return res.json(response);
   } catch (error) {
-    console.error('Login error details:', {
+    logger.error('Login error details:', {
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
       email: req.body?.email,
@@ -445,7 +446,7 @@ export const getProfile = async (
       data: user,
     });
   } catch (error) {
-    console.error('Get profile error:', error);
+    logger.error('Get profile error:', error);
     return res.status(500).json({
       success: false,
       error: 'Failed to fetch profile',
@@ -565,7 +566,7 @@ export const joinOrganization = async (
 
     return res.status(201).json(response);
   } catch (error) {
-    console.error('Join organization error:', error);
+    logger.error('Join organization error:', error);
     return res.status(500).json({
       success: false,
       error: 'Failed to join organization',
@@ -607,7 +608,7 @@ export const logout = async (
       message: 'Logged out successfully',
     });
   } catch (error) {
-    console.error('Logout error:', error);
+    logger.error('Logout error:', error);
     return res.status(500).json({
       success: false,
       error: 'Logout failed',

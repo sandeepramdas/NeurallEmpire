@@ -7,6 +7,7 @@
 import { prisma } from '@/server';
 import { Vendor } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
+import { logger } from '@/infrastructure/logger';
 
 interface CreateVendorDTO {
   vendorNumber?: string;
@@ -134,7 +135,7 @@ class VendorService {
 
       return vendor;
     } catch (error) {
-      console.error('Error creating vendor:', error);
+      logger.error('Error creating vendor:', error);
       throw error;
     }
   }
@@ -217,7 +218,7 @@ class VendorService {
 
       return vendor;
     } catch (error) {
-      console.error('Error updating vendor:', error);
+      logger.error('Error updating vendor:', error);
       throw error;
     }
   }
@@ -278,7 +279,7 @@ class VendorService {
         },
       });
     } catch (error) {
-      console.error('Error deleting vendor:', error);
+      logger.error('Error deleting vendor:', error);
       throw error;
     }
   }
@@ -295,7 +296,7 @@ class VendorService {
         },
       });
     } catch (error) {
-      console.error('Error getting vendor:', error);
+      logger.error('Error getting vendor:', error);
       return null;
     }
   }
@@ -315,7 +316,7 @@ class VendorService {
         },
       });
     } catch (error) {
-      console.error('Error getting vendor by number:', error);
+      logger.error('Error getting vendor by number:', error);
       return null;
     }
   }
@@ -350,7 +351,7 @@ class VendorService {
         skip: options?.offset || 0,
       });
     } catch (error) {
-      console.error('Error getting vendors:', error);
+      logger.error('Error getting vendors:', error);
       return [];
     }
   }
@@ -382,7 +383,7 @@ class VendorService {
         take: limit,
       });
     } catch (error) {
-      console.error('Error searching vendors:', error);
+      logger.error('Error searching vendors:', error);
       return [];
     }
   }
@@ -420,7 +421,7 @@ class VendorService {
         currency: vendor.company.currencyCode,
       };
     } catch (error) {
-      console.error('Error getting vendor balance:', error);
+      logger.error('Error getting vendor balance:', error);
       return null;
     }
   }
@@ -470,7 +471,7 @@ class VendorService {
         skip: options?.offset || 0,
       });
     } catch (error) {
-      console.error('Error getting vendor transactions:', error);
+      logger.error('Error getting vendor transactions:', error);
       return [];
     }
   }
@@ -521,7 +522,7 @@ class VendorService {
 
       return updatedVendor;
     } catch (error) {
-      console.error('Error updating vendor balance:', error);
+      logger.error('Error updating vendor balance:', error);
       throw error;
     }
   }
@@ -552,7 +553,7 @@ class VendorService {
         totalPayables,
       };
     } catch (error) {
-      console.error('Error getting vendor stats:', error);
+      logger.error('Error getting vendor stats:', error);
       return {
         totalVendors: 0,
         activeVendors: 0,
@@ -589,7 +590,7 @@ class VendorService {
       const count = await prisma.vendor.count({ where: { companyId } });
       return `VEND-${(count + 1).toString().padStart(4, '0')}`;
     } catch (error) {
-      console.error('Error generating vendor number:', error);
+      logger.error('Error generating vendor number:', error);
       return `VEND-${Date.now()}`;
     }
   }

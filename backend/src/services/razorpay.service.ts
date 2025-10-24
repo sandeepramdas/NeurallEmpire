@@ -2,6 +2,7 @@ import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import { config } from '@/config/env';
 import { prisma } from '@/server';
+import { logger } from '@/infrastructure/logger';
 
 /**
  * Razorpay Service
@@ -114,7 +115,7 @@ export const createOrder = async (params: CreateOrderParams) => {
       data: order,
     };
   } catch (error: any) {
-    console.error('Razorpay create order error:', error);
+    logger.error('Razorpay create order error:', error);
     return {
       success: false,
       error: error.message || 'Failed to create order',
@@ -141,7 +142,7 @@ export const verifyPaymentSignature = (params: VerifyPaymentParams): boolean => 
 
     return expectedSignature === razorpay_signature;
   } catch (error) {
-    console.error('Payment verification error:', error);
+    logger.error('Payment verification error:', error);
     return false;
   }
 };
@@ -152,7 +153,7 @@ export const verifyPaymentSignature = (params: VerifyPaymentParams): boolean => 
 export const verifyWebhookSignature = (payload: string, signature: string): boolean => {
   try {
     if (!config.RAZORPAY_WEBHOOK_SECRET) {
-      console.warn('Razorpay webhook secret not configured');
+      logger.warn('Razorpay webhook secret not configured');
       return false;
     }
 
@@ -163,7 +164,7 @@ export const verifyWebhookSignature = (payload: string, signature: string): bool
 
     return expectedSignature === signature;
   } catch (error) {
-    console.error('Webhook verification error:', error);
+    logger.error('Webhook verification error:', error);
     return false;
   }
 };
@@ -181,7 +182,7 @@ export const getPaymentDetails = async (paymentId: string) => {
       data: payment,
     };
   } catch (error: any) {
-    console.error('Razorpay get payment error:', error);
+    logger.error('Razorpay get payment error:', error);
     return {
       success: false,
       error: error.message || 'Failed to fetch payment details',
@@ -226,7 +227,7 @@ export const createSubscriptionOrder = async (
 
     return order;
   } catch (error: any) {
-    console.error('Create subscription order error:', error);
+    logger.error('Create subscription order error:', error);
     return {
       success: false,
       error: error.message || 'Failed to create subscription order',
@@ -280,7 +281,7 @@ export const processSubscriptionPayment = async (
       },
     };
   } catch (error: any) {
-    console.error('Process subscription payment error:', error);
+    logger.error('Process subscription payment error:', error);
     return {
       success: false,
       error: error.message || 'Failed to process subscription payment',
@@ -320,7 +321,7 @@ export const cancelSubscription = async (organizationId: string) => {
       data: organization,
     };
   } catch (error: any) {
-    console.error('Cancel subscription error:', error);
+    logger.error('Cancel subscription error:', error);
     return {
       success: false,
       error: error.message || 'Failed to cancel subscription',

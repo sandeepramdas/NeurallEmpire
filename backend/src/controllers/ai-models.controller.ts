@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { encrypt, decrypt, generateApiKeyPreview } from '../utils/encryption';
 import { modelTesterService } from '../services/model-tester.service';
+import { logger } from '@/infrastructure/logger';
 
 const prisma = new PrismaClient();
 
@@ -73,7 +74,7 @@ export class AIModelsController {
         providers,
       });
     } catch (error: any) {
-      console.error('Error fetching providers:', error);
+      logger.error('Error fetching providers:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch AI providers',
@@ -121,7 +122,7 @@ export class AIModelsController {
         configs: sanitizedConfigs,
       });
     } catch (error: any) {
-      console.error('Error fetching model configs:', error);
+      logger.error('Error fetching model configs:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch model configurations',
@@ -163,7 +164,7 @@ export class AIModelsController {
         config: sanitizedConfig,
       });
     } catch (error: any) {
-      console.error('Error fetching model config:', error);
+      logger.error('Error fetching model config:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch model configuration',
@@ -262,7 +263,7 @@ export class AIModelsController {
             provider: provider.name,
           },
         },
-      }).catch(err => console.error('Audit log error:', err));
+      }).catch(err => logger.error('Audit log error:', err));
 
       // Remove encrypted API key from response
       const { apiKeyEncrypted: _, ...sanitizedConfig } = modelConfig;
@@ -272,7 +273,7 @@ export class AIModelsController {
         config: sanitizedConfig,
       });
     } catch (error: any) {
-      console.error('Error creating model config:', error);
+      logger.error('Error creating model config:', error);
 
       if (error instanceof z.ZodError) {
         return res.status(400).json({
@@ -368,7 +369,7 @@ export class AIModelsController {
             changes: Object.keys(validatedData),
           },
         },
-      }).catch(err => console.error('Audit log error:', err));
+      }).catch(err => logger.error('Audit log error:', err));
 
       // Remove encrypted API key from response
       const { apiKeyEncrypted: _, ...sanitizedConfig } = updatedConfig;
@@ -378,7 +379,7 @@ export class AIModelsController {
         config: sanitizedConfig,
       });
     } catch (error: any) {
-      console.error('Error updating model config:', error);
+      logger.error('Error updating model config:', error);
 
       if (error instanceof z.ZodError) {
         return res.status(400).json({
@@ -446,14 +447,14 @@ export class AIModelsController {
             modelId: existingConfig.modelId,
           },
         },
-      }).catch(err => console.error('Audit log error:', err));
+      }).catch(err => logger.error('Audit log error:', err));
 
       res.json({
         success: true,
         message: 'Model configuration deleted successfully',
       });
     } catch (error: any) {
-      console.error('Error deleting model config:', error);
+      logger.error('Error deleting model config:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to delete model configuration',
@@ -480,7 +481,7 @@ export class AIModelsController {
         });
       }
 
-      console.log(`🧪 Testing ${provider.name} connection with model: ${validatedData.modelId}`);
+      logger.info(`🧪 Testing ${provider.name} connection with model: ${validatedData.modelId}`);
 
       // Perform real API test
       const testResult = await modelTesterService.testProvider(
@@ -498,7 +499,7 @@ export class AIModelsController {
         },
       });
     } catch (error: any) {
-      console.error('Error testing model:', error);
+      logger.error('Error testing model:', error);
 
       if (error instanceof z.ZodError) {
         return res.status(400).json({
@@ -554,7 +555,7 @@ export class AIModelsController {
         },
       });
     } catch (error: any) {
-      console.error('Error fetching usage stats:', error);
+      logger.error('Error fetching usage stats:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch usage statistics',
@@ -593,7 +594,7 @@ export class AIModelsController {
         message: 'Provider created successfully',
       });
     } catch (error: any) {
-      console.error('Error creating provider:', error);
+      logger.error('Error creating provider:', error);
 
       if (error instanceof z.ZodError) {
         return res.status(400).json({
@@ -655,7 +656,7 @@ export class AIModelsController {
         message: 'Provider updated successfully',
       });
     } catch (error: any) {
-      console.error('Error updating provider:', error);
+      logger.error('Error updating provider:', error);
 
       if (error instanceof z.ZodError) {
         return res.status(400).json({
@@ -713,7 +714,7 @@ export class AIModelsController {
         message: 'Provider deleted successfully',
       });
     } catch (error: any) {
-      console.error('Error deleting provider:', error);
+      logger.error('Error deleting provider:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to delete provider',

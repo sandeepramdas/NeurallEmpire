@@ -1,5 +1,6 @@
 import { prisma } from '@/server';
 import { captureException } from '@/config/sentry';
+import { logger } from '@/infrastructure/logger';
 
 export interface SystemSettingInput {
   key: string;
@@ -39,7 +40,7 @@ export class SystemSettingsService {
 
       return setting.value;
     } catch (error: any) {
-      console.error('❌ Error getting setting:', error);
+      logger.error('❌ Error getting setting:', error);
       captureException(error, { key, organizationId });
       throw new Error(`Failed to get setting: ${error.message}`);
     }
@@ -59,7 +60,7 @@ export class SystemSettingsService {
 
       return setting;
     } catch (error: any) {
-      console.error('❌ Error getting setting details:', error);
+      logger.error('❌ Error getting setting details:', error);
       captureException(error, { key, organizationId });
       throw new Error(`Failed to get setting details: ${error.message}`);
     }
@@ -104,10 +105,10 @@ export class SystemSettingsService {
         },
       });
 
-      console.log(`✅ Setting updated: ${key}`);
+      logger.info(`✅ Setting updated: ${key}`);
       return setting;
     } catch (error: any) {
-      console.error('❌ Error setting value:', error);
+      logger.error('❌ Error setting value:', error);
       captureException(error, { key, value, organizationId });
       throw new Error(`Failed to set setting: ${error.message}`);
     }
@@ -130,7 +131,7 @@ export class SystemSettingsService {
 
       return settings;
     } catch (error: any) {
-      console.error('❌ Error getting settings by category:', error);
+      logger.error('❌ Error getting settings by category:', error);
       captureException(error, { category, organizationId });
       throw new Error(`Failed to get settings: ${error.message}`);
     }
@@ -156,7 +157,7 @@ export class SystemSettingsService {
 
       return settings;
     } catch (error: any) {
-      console.error('❌ Error getting all settings:', error);
+      logger.error('❌ Error getting all settings:', error);
       captureException(error, { organizationId, filter });
       throw new Error(`Failed to get settings: ${error.message}`);
     }
@@ -186,7 +187,7 @@ export class SystemSettingsService {
         return acc;
       }, {} as Record<string, any>);
     } catch (error: any) {
-      console.error('❌ Error getting public settings:', error);
+      logger.error('❌ Error getting public settings:', error);
       captureException(error, { organizationId });
       throw new Error(`Failed to get public settings: ${error.message}`);
     }
@@ -218,9 +219,9 @@ export class SystemSettingsService {
         },
       });
 
-      console.log(`✅ Setting deleted: ${key}`);
+      logger.info(`✅ Setting deleted: ${key}`);
     } catch (error: any) {
-      console.error('❌ Error deleting setting:', error);
+      logger.error('❌ Error deleting setting:', error);
       captureException(error, { key, organizationId });
       throw new Error(`Failed to delete setting: ${error.message}`);
     }
@@ -234,7 +235,7 @@ export class SystemSettingsService {
       const setting = await this.getSetting(`feature_${featureName}`, organizationId);
       return setting === true || setting === 'enabled';
     } catch (error) {
-      console.error(`❌ Error checking feature flag: ${featureName}`, error);
+      logger.error(`❌ Error checking feature flag: ${featureName}`, error);
       return false; // Fail closed - feature disabled by default
     }
   }
@@ -271,9 +272,9 @@ export class SystemSettingsService {
         )
       );
 
-      console.log(`✅ Bulk updated ${settings.length} settings`);
+      logger.info(`✅ Bulk updated ${settings.length} settings`);
     } catch (error: any) {
-      console.error('❌ Error bulk updating settings:', error);
+      logger.error('❌ Error bulk updating settings:', error);
       captureException(error, { settingsCount: settings.length, organizationId });
       throw new Error(`Failed to bulk update settings: ${error.message}`);
     }
@@ -300,9 +301,9 @@ export class SystemSettingsService {
 
       await this.setSetting(key, setting.defaultValue, organizationId);
 
-      console.log(`✅ Setting reset to default: ${key}`);
+      logger.info(`✅ Setting reset to default: ${key}`);
     } catch (error: any) {
-      console.error('❌ Error resetting setting:', error);
+      logger.error('❌ Error resetting setting:', error);
       captureException(error, { key, organizationId });
       throw new Error(`Failed to reset setting: ${error.message}`);
     }

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { getPaginationParams, createPaginatedResponse } from '@/utils/pagination';
+import { logger } from '@/infrastructure/logger';
 
 const prisma = new PrismaClient();
 
@@ -110,7 +111,7 @@ export class AgentsController {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
-      console.error('Create agent error:', error);
+      logger.error('Create agent error:', error);
       res.status(500).json({ error: 'Failed to create agent' });
     }
   }
@@ -160,7 +161,7 @@ export class AgentsController {
       // Return paginated response
       res.json(createPaginatedResponse(agents, total, page, limit));
     } catch (error) {
-      console.error('Get agents error:', error);
+      logger.error('Get agents error:', error);
       res.status(500).json({ error: 'Failed to fetch agents' });
     }
   }
@@ -209,7 +210,7 @@ export class AgentsController {
         data: agent
       });
     } catch (error) {
-      console.error('Get agent error:', error);
+      logger.error('Get agent error:', error);
       res.status(500).json({ error: 'Failed to fetch agent' });
     }
   }
@@ -259,7 +260,7 @@ export class AgentsController {
         data: updated
       });
     } catch (error) {
-      console.error('Update agent error:', error);
+      logger.error('Update agent error:', error);
       res.status(500).json({ error: 'Failed to update agent' });
     }
   }
@@ -287,7 +288,7 @@ export class AgentsController {
         data: agent
       });
     } catch (error) {
-      console.error('Update agent status error:', error);
+      logger.error('Update agent status error:', error);
       res.status(500).json({ error: 'Failed to update agent status' });
     }
   }
@@ -377,7 +378,7 @@ export class AgentsController {
         }
       });
     } catch (error) {
-      console.error('Execute agent error:', error);
+      logger.error('Execute agent error:', error);
       res.status(500).json({ error: 'Failed to execute agent' });
     }
   }
@@ -427,7 +428,7 @@ export class AgentsController {
         }
       });
     } catch (error) {
-      console.error('Get agent metrics error:', error);
+      logger.error('Get agent metrics error:', error);
       res.status(500).json({ error: 'Failed to fetch agent metrics' });
     }
   }
@@ -468,7 +469,7 @@ export class AgentsController {
         message: 'Agent archived successfully'
       });
     } catch (error) {
-      console.error('Delete agent error:', error);
+      logger.error('Delete agent error:', error);
       res.status(500).json({ error: 'Failed to delete agent' });
     }
   }

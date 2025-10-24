@@ -2,6 +2,7 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { register, login, getProfile, logout, joinOrganization } from '@/controllers/auth.controller';
 import { authenticate, optionalAuth } from '@/middleware/auth';
+import { logger } from '@/infrastructure/logger';
 
 const router = Router();
 
@@ -123,7 +124,7 @@ router.get('/organizations', authenticate, async (req, res) => {
       data: organizations,
     });
   } catch (error: any) {
-    console.error('Get organizations error:', error);
+    logger.error('Get organizations error:', error);
     res.status(500).json({
       success: false,
       error: error.message || 'Failed to fetch organizations',

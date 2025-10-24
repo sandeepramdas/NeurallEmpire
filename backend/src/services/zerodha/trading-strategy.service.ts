@@ -25,6 +25,7 @@ import { volatilityService, VolatilityInput } from './layers/layer4-volatility.s
 import { writerRatioService, OptionChainInput } from './layers/layer5-writer-ratio.service';
 import { riskRegimeService, RiskRegimeInput } from './layers/layer6-risk-regime.service';
 import { portfolioService, PortfolioInput } from './layers/layer7-portfolio.service';
+import { logger } from '@/infrastructure/logger';
 
 const prisma = new PrismaClient();
 
@@ -110,40 +111,40 @@ export class TradingStrategyService {
    * Generate trading signal by running all 7 layers
    */
   async generateSignal(input: TradingSignalInput): Promise<TradingSignalOutput> {
-    console.log(`🎯 Generating trading signal for ${input.symbol} ${input.strike} ${input.optionType}`);
+    logger.info(`🎯 Generating trading signal for ${input.symbol} ${input.strike} ${input.optionType}`);
 
     // ==================== LAYER 1: Market Regime Detection ====================
-    console.log('📊 Layer 1: Analyzing market regime...');
+    logger.info('📊 Layer 1: Analyzing market regime...');
     const layer1Result = await marketRegimeService.detectRegime({
       symbol: input.symbol,
       spotPrice: input.marketData.spotPrice,
       vixLevel: input.marketData.vixLevel,
       historicalData: input.marketData.historicalData,
     });
-    console.log(`✓ Layer 1 Score: ${layer1Result.score}/100 - ${layer1Result.regimeType}`);
+    logger.info(`✓ Layer 1 Score: ${layer1Result.score}/100 - ${layer1Result.regimeType}`);
 
     // ==================== LAYER 2: Price Action Analysis ====================
-    console.log('📈 Layer 2: Analyzing price action...');
+    logger.info('📈 Layer 2: Analyzing price action...');
     const layer2Result = await priceActionService.analyzePriceAction({
       symbol: input.symbol,
       timeframe: '15M',
       historicalData: input.marketData.fifteenMinData,
       currentPrice: input.marketData.spotPrice,
     });
-    console.log(`✓ Layer 2 Score: ${layer2Result.score}/100 - ${layer2Result.priceLevel}`);
+    logger.info(`✓ Layer 2 Score: ${layer2Result.score}/100 - ${layer2Result.priceLevel}`);
 
     // ==================== LAYER 3: Multi-Timeframe Alignment ====================
-    console.log('⏰ Layer 3: Checking multi-timeframe alignment...');
+    logger.info('⏰ Layer 3: Checking multi-timeframe alignment...');
     const layer3Result = await multiTimeframeService.analyzeTimeframes({
       symbol: input.symbol,
       oneHour: input.marketData.oneHourData,
       fifteenMin: input.marketData.fifteenMinData,
       fiveMin: input.marketData.fiveMinData,
     });
-    console.log(`✓ Layer 3 Score: ${layer3Result.score}/100 - ${layer3Result.alignment}`);
+    logger.info(`✓ Layer 3 Score: ${layer3Result.score}/100 - ${layer3Result.alignment}`);
 
     // ==================== LAYER 4: Volatility Analysis ====================
-    console.log('📉 Layer 4: Analyzing volatility...');
+    logger.info('📉 Layer 4: Analyzing volatility...');
 
     const atmIV = this.getATMImpliedVolatility(input.optionChain.strikes, input.optionChain.atmStrike);
 
@@ -155,10 +156,10 @@ export class TradingStrategyService {
       atmIV: atmIV,
       historicalData: input.marketData.historicalData,
     });
-    console.log(`✓ Layer 4 Score: ${layer4Result.score}/100 - ${layer4Result.volRegime}`);
+    logger.info(`✓ Layer 4 Score: ${layer4Result.score}/100 - ${layer4Result.volRegime}`);
 
     // ==================== LAYER 5: Writer Ratio Filter ⚠️ CRITICAL ====================
-    console.log('🔥 Layer 5: Checking writer ratio (CRITICAL GATEKEEPER)...');
+    logger.info('🔥 Layer 5: Checking writer ratio (CRITICAL GATEKEEPER)...');
     const layer5Result = await writerRatioService.analyzeWriterRatio({
       symbol: input.symbol,
       expiry: input.expiry,
@@ -169,10 +170,10 @@ export class TradingStrategyService {
     });
 
     if (layer5Result.writerRatioPassed) {
-      console.log(`✅ Layer 5 PASSED: Writer ratio ${layer5Result.writerRatio.toFixed(2)}x (minimum 2.5x)`);
+      logger.info(`✅ Layer 5 PASSED: Writer ratio ${layer5Result.writerRatio.toFixed(2)}x (minimum 2.5x)`);
     } else {
-      console.log(`❌ Layer 5 FAILED: Writer ratio ${layer5Result.writerRatio.toFixed(2)}x (need minimum 2.5x)`);
-      console.log(`⛔ TRADE REJECTED - Layer 5 mandatory requirement not met`);
+      logger.info(`❌ Layer 5 FAILED: Writer ratio ${layer5Result.writerRatio.toFixed(2)}x (need minimum 2.5x)`);
+      logger.info(`⛔ TRADE REJECTED - Layer 5 mandatory requirement not met`);
 
       // Save rejected signal to database
       return this.saveRejectedSignal(input, {
@@ -187,7 +188,7 @@ export class TradingStrategyService {
     }
 
     // ==================== LAYER 6: Risk Regime Filter ====================
-    console.log('⚡ Layer 6: Checking risk regime...');
+    logger.info('⚡ Layer 6: Checking risk regime...');
     const layer6Result = await riskRegimeService.analyzeRiskRegime({
       currentTime: input.riskData.currentTime,
       marketOpenTime: input.riskData.marketOpenTime,
@@ -201,14 +202,14 @@ export class TradingStrategyService {
       vixLevel: input.marketData.vixLevel,
       dayOfWeek: input.riskData.dayOfWeek,
     });
-    console.log(`✓ Layer 6 Score: ${layer6Result.score}/100 - Risk: ${layer6Result.riskLevel}`);
+    logger.info(`✓ Layer 6 Score: ${layer6Result.score}/100 - Risk: ${layer6Result.riskLevel}`);
 
     if (!layer6Result.tradingAllowed) {
-      console.log(`⚠️  Layer 6: Trading not recommended due to ${layer6Result.overallRestriction}`);
+      logger.info(`⚠️  Layer 6: Trading not recommended due to ${layer6Result.overallRestriction}`);
     }
 
     // ==================== LAYER 7: Portfolio Management ====================
-    console.log('💼 Layer 7: Calculating position sizing...');
+    logger.info('💼 Layer 7: Calculating position sizing...');
 
     const proposedTrade = {
       symbol: input.symbol,
@@ -222,7 +223,7 @@ export class TradingStrategyService {
       ...input.portfolioData,
       proposedTrade,
     });
-    console.log(`✓ Layer 7 Score: ${layer7Result.score}/100 - Position: ${layer7Result.positionSizeRecommended} units`);
+    logger.info(`✓ Layer 7 Score: ${layer7Result.score}/100 - Position: ${layer7Result.positionSizeRecommended} units`);
 
     // ==================== FINAL DECISION ====================
     const overallScore = this.calculateOverallScore({
@@ -235,7 +236,7 @@ export class TradingStrategyService {
       layer7: layer7Result.score,
     });
 
-    console.log(`\n📊 Overall Score: ${overallScore}/100`);
+    logger.info(`\n📊 Overall Score: ${overallScore}/100`);
 
     const recommendation = this.generateRecommendation(
       overallScore,
@@ -244,7 +245,7 @@ export class TradingStrategyService {
       layer7Result.positionAllowed
     );
 
-    console.log(`\n🎯 Final Recommendation: ${recommendation}`);
+    logger.info(`\n🎯 Final Recommendation: ${recommendation}`);
 
     if (recommendation === 'EXECUTE') {
       return this.saveApprovedSignal(input, {

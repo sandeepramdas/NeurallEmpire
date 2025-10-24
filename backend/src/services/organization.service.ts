@@ -7,6 +7,7 @@ import { prisma } from '@/server';
 import crypto from 'crypto';
 import { config } from '@/config/env';
 import jwt from 'jsonwebtoken';
+import { logger } from '@/infrastructure/logger';
 
 interface CreateOrganizationDTO {
   name: string;
@@ -117,7 +118,7 @@ export async function createOrganization(data: CreateOrganizationDTO) {
       organization,
     };
   } catch (error: any) {
-    console.error('Create organization error:', error);
+    logger.error('Create organization error:', error);
     return {
       success: false,
       error: error.message || 'Failed to create organization',
@@ -169,7 +170,7 @@ export async function getUserOrganizations(userId: string) {
       organizations,
     };
   } catch (error: any) {
-    console.error('Get user organizations error:', error);
+    logger.error('Get user organizations error:', error);
     return {
       success: false,
       error: error.message || 'Failed to fetch organizations',
@@ -259,7 +260,7 @@ export async function switchOrganization(data: SwitchOrganizationDTO) {
       },
     };
   } catch (error: any) {
-    console.error('Switch organization error:', error);
+    logger.error('Switch organization error:', error);
     return {
       success: false,
       error: error.message || 'Failed to switch organization',
@@ -366,15 +367,15 @@ export async function inviteUserToOrganization(data: InviteUserDTO) {
     });
 
     // TODO: Send invite email
-    console.log('📧 Send invite email to:', email);
-    console.log('📧 Invite link:', `${config.FRONTEND_URL}/accept-invite/${inviteToken}`);
+    logger.info('📧 Send invite email to:', email);
+    logger.info('📧 Invite link:', `${config.FRONTEND_URL}/accept-invite/${inviteToken}`);
 
     return {
       success: true,
       invite,
     };
   } catch (error: any) {
-    console.error('Invite user error:', error);
+    logger.error('Invite user error:', error);
     return {
       success: false,
       error: error.message || 'Failed to send invite',
@@ -495,7 +496,7 @@ export async function acceptOrganizationInvite(inviteToken: string, userId: stri
       organization: invite.organization,
     };
   } catch (error: any) {
-    console.error('Accept invite error:', error);
+    logger.error('Accept invite error:', error);
     return {
       success: false,
       error: error.message || 'Failed to accept invite',
@@ -543,7 +544,7 @@ export async function getUserPendingInvites(email: string) {
       invites,
     };
   } catch (error: any) {
-    console.error('Get pending invites error:', error);
+    logger.error('Get pending invites error:', error);
     return {
       success: false,
       error: error.message || 'Failed to fetch invites',
@@ -642,7 +643,7 @@ export async function leaveOrganization(userId: string, organizationId: string) 
       message: 'Successfully left organization',
     };
   } catch (error: any) {
-    console.error('Leave organization error:', error);
+    logger.error('Leave organization error:', error);
     return {
       success: false,
       error: error.message || 'Failed to leave organization',
@@ -686,7 +687,7 @@ export async function getOrganizationDescendants(
 
     return results;
   } catch (error: any) {
-    console.error('Get descendants error:', error);
+    logger.error('Get descendants error:', error);
     throw new Error('Failed to get organization descendants');
   }
 }
@@ -723,7 +724,7 @@ export async function getOrganizationAncestors(
 
     return results;
   } catch (error: any) {
-    console.error('Get ancestors error:', error);
+    logger.error('Get ancestors error:', error);
     throw new Error('Failed to get organization ancestors');
   }
 }
@@ -756,7 +757,7 @@ export async function getOrganizationChildren(
 
     return children;
   } catch (error: any) {
-    console.error('Get children error:', error);
+    logger.error('Get children error:', error);
     throw new Error('Failed to get organization children');
   }
 }
@@ -817,7 +818,7 @@ export async function setOrganizationParent(
     await updateDescendantHierarchy(organizationId);
 
   } catch (error: any) {
-    console.error('Set parent error:', error);
+    logger.error('Set parent error:', error);
     throw new Error(error.message || 'Failed to set organization parent');
   }
 }
@@ -888,7 +889,7 @@ export async function userHasOrganizationAccess(
       return result[0]?.has_access || false;
     }
   } catch (error: any) {
-    console.error('Check access error:', error);
+    logger.error('Check access error:', error);
     return false;
   }
 }
@@ -947,7 +948,7 @@ export async function getOrganizationHierarchyTree(
 
     return buildTree(rootOrganizationId);
   } catch (error: any) {
-    console.error('Get hierarchy tree error:', error);
+    logger.error('Get hierarchy tree error:', error);
     throw new Error('Failed to get organization hierarchy tree');
   }
 }

@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import { Agent } from '@prisma/client';
+import { logger } from '@/infrastructure/logger';
 
 /**
  * Agent Executor Service
@@ -84,7 +85,7 @@ export class AgentExecutorService {
         }
       };
     } catch (error: any) {
-      console.error('OpenAI execution error:', error);
+      logger.error('OpenAI execution error:', error);
       return {
         success: false,
         output: null,

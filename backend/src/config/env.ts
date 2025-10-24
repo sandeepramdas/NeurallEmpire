@@ -1,3 +1,5 @@
+import { logger } from '@/infrastructure/logger';
+
 /**
  * Environment Configuration
  * Centralizes all environment variables with validation
@@ -182,15 +184,15 @@ export const isTest = () => config.NODE_ENV === 'test';
 
 // Validate configuration on import
 if (isDevelopment()) {
-  console.log('🔧 Environment Configuration:');
-  console.log(`   NODE_ENV: ${config.NODE_ENV}`);
-  console.log(`   PORT: ${config.PORT}`);
-  console.log(`   BASE_DOMAIN: ${config.BASE_DOMAIN}`);
-  console.log(`   DATABASE: ${config.DATABASE_URL ? '✓ Connected' : '✗ Not configured'}`);
-  console.log(`   JWT_SECRET: ${config.JWT_SECRET ? '✓ Set' : '✗ Missing'}`);
-  console.log(`   SENTRY: ${config.SENTRY_DSN ? '✓ Enabled' : 'ℹ Disabled'}`);
-  console.log(`   CSRF Protection: ${config.ENABLE_CSRF ? '✓ Enabled' : '✗ Disabled'}`);
-  console.log(`   Rate Limiting: ${config.ENABLE_RATE_LIMITING ? '✓ Enabled' : '✗ Disabled'}`);
+  logger.info('🔧 Environment Configuration:');
+  logger.info(`   NODE_ENV: ${config.NODE_ENV}`);
+  logger.info(`   PORT: ${config.PORT}`);
+  logger.info(`   BASE_DOMAIN: ${config.BASE_DOMAIN}`);
+  logger.info(`   DATABASE: ${config.DATABASE_URL ? '✓ Connected' : '✗ Not configured'}`);
+  logger.info(`   JWT_SECRET: ${config.JWT_SECRET ? '✓ Set' : '✗ Missing'}`);
+  logger.info(`   SENTRY: ${config.SENTRY_DSN ? '✓ Enabled' : 'ℹ Disabled'}`);
+  logger.info(`   CSRF Protection: ${config.ENABLE_CSRF ? '✓ Enabled' : '✗ Disabled'}`);
+  logger.info(`   Rate Limiting: ${config.ENABLE_RATE_LIMITING ? '✓ Enabled' : '✗ Disabled'}`);
 }
 
 export default config;

@@ -1,10 +1,11 @@
 import { PrismaClient, UserRole, PlanType, UserStatus } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { logger } from '@/infrastructure/logger';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting database seed...');
+  logger.info('🌱 Starting database seed...');
 
   // Create Super Admin Organization
   const superAdminOrg = await prisma.organization.upsert({
@@ -26,7 +27,7 @@ async function main() {
     },
   });
 
-  console.log('✅ Created Super Admin Organization:', superAdminOrg.id);
+  logger.info('✅ Created Super Admin Organization:', superAdminOrg.id);
 
   // Create Super Admin User
   const superAdminPassword = await bcrypt.hash('NeurallEmpire2024!', 10);
@@ -51,7 +52,7 @@ async function main() {
     },
   });
 
-  console.log('✅ Created Super Admin User:', superAdmin.email);
+  logger.info('✅ Created Super Admin User:', superAdmin.email);
 
   // Create Regular Admin User
   const adminPassword = await bcrypt.hash('Admin2024!', 10);
@@ -76,7 +77,7 @@ async function main() {
     },
   });
 
-  console.log('✅ Created Admin User:', admin.email);
+  logger.info('✅ Created Admin User:', admin.email);
 
   // Create Demo Organization
   const demoOrg = await prisma.organization.upsert({
@@ -95,7 +96,7 @@ async function main() {
     },
   });
 
-  console.log('✅ Created Demo Organization:', demoOrg.id);
+  logger.info('✅ Created Demo Organization:', demoOrg.id);
 
   // Create Demo User
   const demoPassword = await bcrypt.hash('Demo2024!', 10);
@@ -120,28 +121,28 @@ async function main() {
     },
   });
 
-  console.log('✅ Created Demo User:', demoUser.email);
+  logger.info('✅ Created Demo User:', demoUser.email);
 
-  console.log('\n🎉 Database seeded successfully!\n');
-  console.log('📋 Login Credentials:');
-  console.log('━'.repeat(50));
-  console.log('SUPER ADMIN:');
-  console.log('  Email: admin@neurallempire.com');
-  console.log('  Password: NeurallEmpire2024!');
-  console.log('━'.repeat(50));
-  console.log('ADMIN:');
-  console.log('  Email: support@neurallempire.com');
-  console.log('  Password: Admin2024!');
-  console.log('━'.repeat(50));
-  console.log('DEMO USER:');
-  console.log('  Email: demo@neurallempire.com');
-  console.log('  Password: Demo2024!');
-  console.log('━'.repeat(50));
+  logger.info('\n🎉 Database seeded successfully!\n');
+  logger.info('📋 Login Credentials:');
+  logger.info('━'.repeat(50));
+  logger.info('SUPER ADMIN:');
+  logger.info('  Email: admin@neurallempire.com');
+  logger.info('  Password: NeurallEmpire2024!');
+  logger.info('━'.repeat(50));
+  logger.info('ADMIN:');
+  logger.info('  Email: support@neurallempire.com');
+  logger.info('  Password: Admin2024!');
+  logger.info('━'.repeat(50));
+  logger.info('DEMO USER:');
+  logger.info('  Email: demo@neurallempire.com');
+  logger.info('  Password: Demo2024!');
+  logger.info('━'.repeat(50));
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Error seeding database:', e);
+    logger.error('❌ Error seeding database:', e);
     process.exit(1);
   })
   .finally(async () => {

@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { authenticate } from '@/middleware/auth';
 import razorpayService from '@/services/razorpay.service';
 import subscriptionService from '@/services/subscription.service';
+import { logger } from '@/infrastructure/logger';
 
 const router = Router();
 
@@ -117,7 +118,7 @@ router.post('/create-order', async (req: Request, res: Response) => {
     const expectedAmount = billingCycle === 'MONTHLY' ? plan.price : plan.price * 10; // 10 months for yearly
 
     if (amount && amount !== expectedAmount) {
-      console.warn('⚠️ Amount manipulation attempt:', {
+      logger.warn('⚠️ Amount manipulation attempt:', {
         planType,
         billingCycle,
         expected: expectedAmount,
@@ -150,7 +151,7 @@ router.post('/create-order', async (req: Request, res: Response) => {
       },
     });
   } catch (error: any) {
-    console.error('Create order error:', error);
+    logger.error('Create order error:', error);
     res.status(500).json({
       success: false,
       message: error.message || 'Failed to create order',
@@ -190,7 +191,7 @@ router.post('/verify-payment', async (req: Request, res: Response) => {
     }
 
     // Verify signature
-    console.log('🔐 Verifying payment signature:', {
+    logger.info('🔐 Verifying payment signature:', {
       order_id: razorpay_order_id,
       payment_id: razorpay_payment_id,
       signature_length: razorpay_signature?.length,
@@ -203,7 +204,7 @@ router.post('/verify-payment', async (req: Request, res: Response) => {
     });
 
     if (!isValid) {
-      console.error('❌ Payment signature verification failed:', {
+      logger.error('❌ Payment signature verification failed:', {
         order_id: razorpay_order_id,
         payment_id: razorpay_payment_id,
         organizationId,
@@ -215,7 +216,7 @@ router.post('/verify-payment', async (req: Request, res: Response) => {
       });
     }
 
-    console.log('✅ Payment signature verified successfully');
+    logger.info('✅ Payment signature verified successfully');
 
     // Handle contribution (one-time payment)
     if (type === 'CONTRIBUTION') {
@@ -259,7 +260,7 @@ router.post('/verify-payment', async (req: Request, res: Response) => {
       data: subscriptionResult.data,
     });
   } catch (error: any) {
-    console.error('Verify payment error:', error);
+    logger.error('Verify payment error:', error);
     res.status(500).json({
       success: false,
       message: error.message || 'Failed to verify payment',
@@ -311,7 +312,7 @@ router.get('/subscription', async (req: Request, res: Response) => {
       },
     });
   } catch (error: any) {
-    console.error('Get subscription error:', error);
+    logger.error('Get subscription error:', error);
     res.status(500).json({
       success: false,
       message: error.message || 'Failed to fetch subscription',
@@ -345,7 +346,7 @@ router.post('/cancel-subscription', async (req: Request, res: Response) => {
       data: result.data,
     });
   } catch (error: any) {
-    console.error('Cancel subscription error:', error);
+    logger.error('Cancel subscription error:', error);
     res.status(500).json({
       success: false,
       message: error.message || 'Failed to cancel subscription',
@@ -379,7 +380,7 @@ router.get('/invoices', async (req: Request, res: Response) => {
       data: result.data,
     });
   } catch (error: any) {
-    console.error('Get invoices error:', error);
+    logger.error('Get invoices error:', error);
     res.status(500).json({
       success: false,
       message: error.message || 'Failed to fetch invoices',
@@ -589,7 +590,7 @@ router.get('/invoices/:invoiceId/download', async (req: Request, res: Response) 
     res.send(html);
 
   } catch (error: any) {
-    console.error('Download invoice error:', error);
+    logger.error('Download invoice error:', error);
     res.status(500).json({
       success: false,
       message: error.message || 'Failed to download invoice',

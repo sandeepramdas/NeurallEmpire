@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import razorpayService from '@/services/razorpay.service';
 import subscriptionService from '@/services/subscription.service';
 import { prisma } from '@/server';
+import { logger } from '@/infrastructure/logger';
 
 const router = Router();
 
@@ -18,7 +19,7 @@ router.post('/razorpay', async (req: Request, res: Response) => {
     const isValid = razorpayService.verifyWebhookSignature(payload, signature);
 
     if (!isValid) {
-      console.error('Invalid webhook signature');
+      logger.error('Invalid webhook signature');
       return res.status(400).json({
         success: false,
         message: 'Invalid signature',
@@ -28,7 +29,7 @@ router.post('/razorpay', async (req: Request, res: Response) => {
     const event = req.body.event;
     const paymentEntity = req.body.payload?.payment?.entity;
 
-    console.log('Razorpay webhook event:', event);
+    logger.info('Razorpay webhook event:', event);
 
     // Handle different webhook events
     switch (event) {
@@ -53,7 +54,7 @@ router.post('/razorpay', async (req: Request, res: Response) => {
         break;
 
       default:
-        console.log('Unhandled webhook event:', event);
+        logger.info('Unhandled webhook event:', event);
     }
 
     res.json({
@@ -61,7 +62,7 @@ router.post('/razorpay', async (req: Request, res: Response) => {
       message: 'Webhook processed successfully',
     });
   } catch (error: any) {
-    console.error('Webhook processing error:', error);
+    logger.error('Webhook processing error:', error);
     res.status(500).json({
       success: false,
       message: error.message || 'Webhook processing failed',
@@ -77,7 +78,7 @@ async function handlePaymentCaptured(payment: any) {
   const webhookEventId = payment.event_id || `${payment.id}_${Date.now()}`;
 
   try {
-    console.log('💰 Payment captured webhook:', payment.id, payment.order_id);
+    logger.info('💰 Payment captured webhook:', payment.id, payment.order_id);
 
     // Check for duplicate webhook event (replay attack prevention)
     const existingEvent = await prisma.webhookEvent.findUnique({
@@ -85,7 +86,7 @@ async function handlePaymentCaptured(payment: any) {
     });
 
     if (existingEvent) {
-      console.warn('⚠️ Duplicate webhook event detected:', webhookEventId);
+      logger.warn('⚠️ Duplicate webhook event detected:', webhookEventId);
       return;
     }
 
@@ -114,7 +115,7 @@ async function handlePaymentCaptured(payment: any) {
     });
 
     if (existingInvoice) {
-      console.log('✅ Invoice already exists for payment:', paymentId);
+      logger.info('✅ Invoice already exists for payment:', paymentId);
 
       // Mark webhook as processed
       await prisma.webhookEvent.update({
@@ -127,7 +128,7 @@ async function handlePaymentCaptured(payment: any) {
       return;
     }
 
-    console.log('📝 Creating invoice from webhook for payment:', paymentId);
+    logger.info('📝 Creating invoice from webhook for payment:', paymentId);
 
     // Determine if it's a subscription or contribution from notes
     const organizationId = notes.organizationId;
@@ -147,7 +148,7 @@ async function handlePaymentCaptured(payment: any) {
         orderId,
         paymentId
       );
-      console.log('✅ Contribution invoice created via webhook');
+      logger.info('✅ Contribution invoice created via webhook');
     } else if (planType && billingCycle) {
       // Create subscription
       await subscriptionService.createSubscription({
@@ -158,9 +159,9 @@ async function handlePaymentCaptured(payment: any) {
         razorpayOrderId: orderId,
         razorpayPaymentId: paymentId,
       });
-      console.log('✅ Subscription and invoice created via webhook');
+      logger.info('✅ Subscription and invoice created via webhook');
     } else {
-      console.warn('⚠️ Unknown payment type, creating generic invoice');
+      logger.warn('⚠️ Unknown payment type, creating generic invoice');
       await subscriptionService.createContributionInvoice(
         organizationId,
         amount,
@@ -178,7 +179,7 @@ async function handlePaymentCaptured(payment: any) {
       },
     });
   } catch (error: any) {
-    console.error('❌ Handle payment captured error:', error);
+    logger.error('❌ Handle payment captured error:', error);
 
     // Log error in webhook event
     try {
@@ -190,7 +191,7 @@ async function handlePaymentCaptured(payment: any) {
         },
       });
     } catch (updateError) {
-      console.error('Failed to update webhook event error:', updateError);
+      logger.error('Failed to update webhook event error:', updateError);
     }
 
     throw error; // Re-throw to return 500 to Razorpay for retry
@@ -202,11 +203,11 @@ async function handlePaymentCaptured(payment: any) {
  */
 async function handlePaymentFailed(payment: any) {
   try {
-    console.log('Payment failed:', payment.id);
+    logger.info('Payment failed:', payment.id);
     // TODO: Update invoice status when schema is updated
     // You can add additional logic here like sending failure notifications
   } catch (error) {
-    console.error('Handle payment failed error:', error);
+    logger.error('Handle payment failed error:', error);
   }
 }
 
@@ -215,11 +216,11 @@ async function handlePaymentFailed(payment: any) {
  */
 async function handleOrderPaid(order: any) {
   try {
-    console.log('Order paid:', order.id);
+    logger.info('Order paid:', order.id);
 
     // Additional order processing logic can go here
   } catch (error) {
-    console.error('Handle order paid error:', error);
+    logger.error('Handle order paid error:', error);
   }
 }
 
@@ -228,10 +229,10 @@ async function handleOrderPaid(order: any) {
  */
 async function handleSubscriptionActivated(subscription: any) {
   try {
-    console.log('Subscription activated:', subscription.id);
+    logger.info('Subscription activated:', subscription.id);
     // TODO: Update subscription status when schema is updated
   } catch (error) {
-    console.error('Handle subscription activated error:', error);
+    logger.error('Handle subscription activated error:', error);
   }
 }
 
@@ -240,10 +241,10 @@ async function handleSubscriptionActivated(subscription: any) {
  */
 async function handleSubscriptionCancelled(subscription: any) {
   try {
-    console.log('Subscription cancelled:', subscription.id);
+    logger.info('Subscription cancelled:', subscription.id);
     // TODO: Update subscription status when schema is updated
   } catch (error) {
-    console.error('Handle subscription cancelled error:', error);
+    logger.error('Handle subscription cancelled error:', error);
   }
 }
 

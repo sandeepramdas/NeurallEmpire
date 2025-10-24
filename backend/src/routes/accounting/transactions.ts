@@ -10,6 +10,7 @@ import { requirePermission } from '@/middleware/rbac';
 import { requireCompanyContext, requireActiveCompany } from '@/middleware/company-context';
 import { transactionService } from '@/services/accounting/transaction.service';
 import { TransactionType, TransactionStatus } from '@prisma/client';
+import { logger } from '@/infrastructure/logger';
 
 const router = Router();
 
@@ -45,7 +46,7 @@ router.get(
         data: transactions,
       });
     } catch (error: any) {
-      console.error('Error fetching transactions:', error);
+      logger.error('Error fetching transactions:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch transactions',
@@ -79,7 +80,7 @@ router.get(
         data: transaction,
       });
     } catch (error: any) {
-      console.error('Error fetching transaction:', error);
+      logger.error('Error fetching transaction:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch transaction',
@@ -115,7 +116,7 @@ router.get(
         data: transactions,
       });
     } catch (error: any) {
-      console.error('Error fetching account transactions:', error);
+      logger.error('Error fetching account transactions:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch account transactions',
@@ -146,7 +147,7 @@ router.get(
         data: summary,
       });
     } catch (error: any) {
-      console.error('Error fetching transaction summary:', error);
+      logger.error('Error fetching transaction summary:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch transaction summary',
@@ -184,7 +185,7 @@ router.get(
         data: transactions,
       });
     } catch (error: any) {
-      console.error('Error searching transactions:', error);
+      logger.error('Error searching transactions:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to search transactions',
@@ -252,7 +253,7 @@ router.post(
         message: 'Transaction created successfully',
       });
     } catch (error: any) {
-      console.error('Error creating transaction:', error);
+      logger.error('Error creating transaction:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to create transaction',
@@ -286,7 +287,7 @@ router.put(
         message: 'Transaction updated successfully',
       });
     } catch (error: any) {
-      console.error('Error updating transaction:', error);
+      logger.error('Error updating transaction:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to update transaction',
@@ -318,7 +319,7 @@ router.post(
         message: 'Transaction posted successfully',
       });
     } catch (error: any) {
-      console.error('Error posting transaction:', error);
+      logger.error('Error posting transaction:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to post transaction',
@@ -352,7 +353,7 @@ router.post(
         message: 'Transaction voided successfully',
       });
     } catch (error: any) {
-      console.error('Error voiding transaction:', error);
+      logger.error('Error voiding transaction:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to void transaction',
@@ -379,7 +380,7 @@ router.delete(
         message: 'Transaction deleted successfully',
       });
     } catch (error: any) {
-      console.error('Error deleting transaction:', error);
+      logger.error('Error deleting transaction:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to delete transaction',

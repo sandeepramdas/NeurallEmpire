@@ -12,6 +12,7 @@
 import { Request, Response } from 'express';
 import { PrismaClient, SignalType, OptionType } from '@prisma/client';
 import { tradingStrategyService } from '../services/zerodha/trading-strategy.service';
+import { logger } from '@/infrastructure/logger';
 
 const prisma = new PrismaClient();
 
@@ -78,7 +79,7 @@ export class ZerodhaController {
         analysis: result.analysis,
       });
     } catch (error: any) {
-      console.error('Error generating signal:', error);
+      logger.error('Error generating signal:', error);
       return res.status(500).json({
         success: false,
         error: 'Failed to generate trading signal',
@@ -124,7 +125,7 @@ export class ZerodhaController {
         },
       });
     } catch (error: any) {
-      console.error('Error fetching signals:', error);
+      logger.error('Error fetching signals:', error);
       return res.status(500).json({
         success: false,
         error: 'Failed to fetch signals',
@@ -163,7 +164,7 @@ export class ZerodhaController {
         data: signal,
       });
     } catch (error: any) {
-      console.error('Error fetching signal:', error);
+      logger.error('Error fetching signal:', error);
       return res.status(500).json({
         success: false,
         error: 'Failed to fetch signal',
@@ -240,7 +241,7 @@ export class ZerodhaController {
         data: position,
       });
     } catch (error: any) {
-      console.error('Error opening position:', error);
+      logger.error('Error opening position:', error);
       return res.status(500).json({
         success: false,
         error: 'Failed to open position',
@@ -280,7 +281,7 @@ export class ZerodhaController {
         data: positions,
       });
     } catch (error: any) {
-      console.error('Error fetching positions:', error);
+      logger.error('Error fetching positions:', error);
       return res.status(500).json({
         success: false,
         error: 'Failed to fetch positions',
@@ -372,7 +373,7 @@ export class ZerodhaController {
         },
       });
     } catch (error: any) {
-      console.error('Error closing position:', error);
+      logger.error('Error closing position:', error);
       return res.status(500).json({
         success: false,
         error: 'Failed to close position',
@@ -428,7 +429,7 @@ export class ZerodhaController {
         },
       });
     } catch (error: any) {
-      console.error('Error fetching trades:', error);
+      logger.error('Error fetching trades:', error);
       return res.status(500).json({
         success: false,
         error: 'Failed to fetch trades',
@@ -499,7 +500,7 @@ export class ZerodhaController {
         },
       });
     } catch (error: any) {
-      console.error('Error fetching dashboard:', error);
+      logger.error('Error fetching dashboard:', error);
       return res.status(500).json({
         success: false,
         error: 'Failed to fetch dashboard data',
@@ -538,7 +539,7 @@ export class ZerodhaController {
         data: snapshot,
       });
     } catch (error: any) {
-      console.error('Error fetching writer ratio:', error);
+      logger.error('Error fetching writer ratio:', error);
       return res.status(500).json({
         success: false,
         error: 'Failed to fetch writer ratio',

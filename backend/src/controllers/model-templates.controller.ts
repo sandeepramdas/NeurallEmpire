@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { logger } from '@/infrastructure/logger';
 
 interface ModelTemplate {
   id: string;
@@ -246,7 +247,7 @@ export class ModelTemplatesController {
         categories: [...new Set(MODEL_TEMPLATES.map(t => t.category))],
       });
     } catch (error: any) {
-      console.error('Error fetching templates:', error);
+      logger.error('Error fetching templates:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch model templates',
@@ -275,7 +276,7 @@ export class ModelTemplatesController {
         template,
       });
     } catch (error: any) {
-      console.error('Error fetching template:', error);
+      logger.error('Error fetching template:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch template',
@@ -305,7 +306,7 @@ export class ModelTemplatesController {
         defaultConfig: template.defaultConfig,
       });
     } catch (error: any) {
-      console.error('Error fetching template providers:', error);
+      logger.error('Error fetching template providers:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch template providers',

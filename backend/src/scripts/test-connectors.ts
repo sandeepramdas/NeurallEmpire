@@ -25,11 +25,11 @@ const TEST_USER_ID = 'test-user-123';
  * Test 1: Database Connector
  */
 async function testDatabaseConnector() {
-  console.log('\n========== TEST 1: Database Connector ==========\n');
+  logger.info('\n========== TEST 1: Database Connector ==========\n');
 
   try {
     // Create database connector
-    console.log('✓ Creating database connector...');
+    logger.info('✓ Creating database connector...');
     const dbConnector = await connectorService.createConnector(
       TEST_ORG_ID,
       TEST_USER_ID,
@@ -47,35 +47,35 @@ async function testDatabaseConnector() {
       }
     );
 
-    console.log(`✓ Database connector created: ${dbConnector.id}`);
-    console.log(`  Status: ${dbConnector.status}`);
+    logger.info(`✓ Database connector created: ${dbConnector.id}`);
+    logger.info(`  Status: ${dbConnector.status}`);
 
     // Test connection
-    console.log('\n✓ Testing database connection...');
+    logger.info('\n✓ Testing database connection...');
     const testResult = await connectorService.testConnector(
       dbConnector.id,
       TEST_ORG_ID
     );
 
-    console.log(`  Connection ${testResult.success ? 'SUCCESS' : 'FAILED'}`);
-    console.log(`  Latency: ${testResult.latencyMs}ms`);
+    logger.info(`  Connection ${testResult.success ? 'SUCCESS' : 'FAILED'}`);
+    logger.info(`  Latency: ${testResult.latencyMs}ms`);
 
     // Get schema
-    console.log('\n✓ Fetching database schema...');
+    logger.info('\n✓ Fetching database schema...');
     const schema = await connectorService.getConnectorSchema(
       dbConnector.id,
       TEST_ORG_ID
     );
 
-    console.log(`  Found ${schema.resources.length} resources (tables)`);
+    logger.info(`  Found ${schema.resources.length} resources (tables)`);
     schema.resources.slice(0, 5).forEach((resource) => {
-      console.log(`    - ${resource.name} (${resource.fields.length} fields)`);
+      logger.info(`    - ${resource.name} (${resource.fields.length} fields)`);
     });
 
     // Query data
     if (schema.resources.length > 0) {
       const firstResource = schema.resources[0].name;
-      console.log(`\n✓ Querying data from ${firstResource}...`);
+      logger.info(`\n✓ Querying data from ${firstResource}...`);
 
       const queryResult = await connectorService.queryConnector(
         dbConnector.id,
@@ -87,36 +87,36 @@ async function testDatabaseConnector() {
         }
       );
 
-      console.log(`  Retrieved ${queryResult.data.length} rows`);
-      console.log(`  Total: ${queryResult.metadata.total || 'unknown'}`);
-      console.log(`  Duration: ${queryResult.performance?.durationMs}ms`);
+      logger.info(`  Retrieved ${queryResult.data.length} rows`);
+      logger.info(`  Total: ${queryResult.metadata.total || 'unknown'}`);
+      logger.info(`  Duration: ${queryResult.performance?.durationMs}ms`);
     }
 
     // Get statistics
-    console.log('\n✓ Fetching connector statistics...');
+    logger.info('\n✓ Fetching connector statistics...');
     const stats = await connectorService.getConnectorStats(
       dbConnector.id,
       TEST_ORG_ID
     );
 
-    console.log(`  Query count: ${stats.queryCount}`);
-    console.log(`  Error count: ${stats.errorCount}`);
-    console.log(`  Error rate: ${(stats.errorRate * 100).toFixed(2)}%`);
-    console.log(`  Avg response time: ${Math.round(stats.avgResponseTimeMs)}ms`);
+    logger.info(`  Query count: ${stats.queryCount}`);
+    logger.info(`  Error count: ${stats.errorCount}`);
+    logger.info(`  Error rate: ${(stats.errorRate * 100).toFixed(2)}%`);
+    logger.info(`  Avg response time: ${Math.round(stats.avgResponseTimeMs)}ms`);
 
     // Cleanup
-    console.log('\n✓ Cleaning up...');
+    logger.info('\n✓ Cleaning up...');
     await connectorService.deleteConnector(
       dbConnector.id,
       TEST_ORG_ID,
       TEST_USER_ID
     );
 
-    console.log('\n✅ Database connector test PASSED\n');
+    logger.info('\n✅ Database connector test PASSED\n');
     return true;
   } catch (error) {
-    console.error('\n❌ Database connector test FAILED');
-    console.error(error);
+    logger.error('\n❌ Database connector test FAILED');
+    logger.error(error);
     return false;
   }
 }
@@ -125,11 +125,11 @@ async function testDatabaseConnector() {
  * Test 2: API Connector
  */
 async function testAPIConnector() {
-  console.log('\n========== TEST 2: API Connector ==========\n');
+  logger.info('\n========== TEST 2: API Connector ==========\n');
 
   try {
     // Create API connector (using JSONPlaceholder as test API)
-    console.log('✓ Creating API connector...');
+    logger.info('✓ Creating API connector...');
     const apiConnector = await connectorService.createConnector(
       TEST_ORG_ID,
       TEST_USER_ID,
@@ -147,21 +147,21 @@ async function testAPIConnector() {
       }
     );
 
-    console.log(`✓ API connector created: ${apiConnector.id}`);
-    console.log(`  Status: ${apiConnector.status}`);
+    logger.info(`✓ API connector created: ${apiConnector.id}`);
+    logger.info(`  Status: ${apiConnector.status}`);
 
     // Test connection
-    console.log('\n✓ Testing API connection...');
+    logger.info('\n✓ Testing API connection...');
     const testResult = await connectorService.testConnector(
       apiConnector.id,
       TEST_ORG_ID
     );
 
-    console.log(`  Connection ${testResult.success ? 'SUCCESS' : 'FAILED'}`);
-    console.log(`  Latency: ${testResult.latencyMs}ms`);
+    logger.info(`  Connection ${testResult.success ? 'SUCCESS' : 'FAILED'}`);
+    logger.info(`  Latency: ${testResult.latencyMs}ms`);
 
     // Query data
-    console.log('\n✓ Querying API data (GET /posts)...');
+    logger.info('\n✓ Querying API data (GET /posts)...');
     const queryResult = await connectorService.queryConnector(
       apiConnector.id,
       TEST_ORG_ID,
@@ -172,16 +172,16 @@ async function testAPIConnector() {
       }
     );
 
-    console.log(`  Retrieved ${queryResult.data.length} items`);
-    console.log(`  Duration: ${queryResult.performance?.durationMs}ms`);
+    logger.info(`  Retrieved ${queryResult.data.length} items`);
+    logger.info(`  Duration: ${queryResult.performance?.durationMs}ms`);
 
     if (queryResult.data.length > 0) {
       const firstItem = queryResult.data[0];
-      console.log(`  Sample: ${JSON.stringify(firstItem).substring(0, 100)}...`);
+      logger.info(`  Sample: ${JSON.stringify(firstItem).substring(0, 100)}...`);
     }
 
     // Execute action (POST)
-    console.log('\n✓ Executing API action (POST /posts)...');
+    logger.info('\n✓ Executing API action (POST /posts)...');
     const actionResult = await connectorService.executeAction(
       apiConnector.id,
       TEST_ORG_ID,
@@ -197,35 +197,35 @@ async function testAPIConnector() {
       }
     );
 
-    console.log(`  Action ${actionResult.success ? 'SUCCESS' : 'FAILED'}`);
+    logger.info(`  Action ${actionResult.success ? 'SUCCESS' : 'FAILED'}`);
     if (actionResult.data) {
-      console.log(`  Created ID: ${(actionResult.data as any).id}`);
+      logger.info(`  Created ID: ${(actionResult.data as any).id}`);
     }
 
     // Get statistics
-    console.log('\n✓ Fetching connector statistics...');
+    logger.info('\n✓ Fetching connector statistics...');
     const stats = await connectorService.getConnectorStats(
       apiConnector.id,
       TEST_ORG_ID
     );
 
-    console.log(`  Query count: ${stats.queryCount}`);
-    console.log(`  Error count: ${stats.errorCount}`);
-    console.log(`  Avg response time: ${Math.round(stats.avgResponseTimeMs)}ms`);
+    logger.info(`  Query count: ${stats.queryCount}`);
+    logger.info(`  Error count: ${stats.errorCount}`);
+    logger.info(`  Avg response time: ${Math.round(stats.avgResponseTimeMs)}ms`);
 
     // Cleanup
-    console.log('\n✓ Cleaning up...');
+    logger.info('\n✓ Cleaning up...');
     await connectorService.deleteConnector(
       apiConnector.id,
       TEST_ORG_ID,
       TEST_USER_ID
     );
 
-    console.log('\n✅ API connector test PASSED\n');
+    logger.info('\n✅ API connector test PASSED\n');
     return true;
   } catch (error) {
-    console.error('\n❌ API connector test FAILED');
-    console.error(error);
+    logger.error('\n❌ API connector test FAILED');
+    logger.error(error);
     return false;
   }
 }
@@ -234,11 +234,11 @@ async function testAPIConnector() {
  * Test 3: Error Handling
  */
 async function testErrorHandling() {
-  console.log('\n========== TEST 3: Error Handling ==========\n');
+  logger.info('\n========== TEST 3: Error Handling ==========\n');
 
   try {
     // Test 3.1: Invalid credentials
-    console.log('✓ Testing invalid database credentials...');
+    logger.info('✓ Testing invalid database credentials...');
     try {
       await connectorService.createConnector(TEST_ORG_ID, TEST_USER_ID, {
         name: 'Invalid DB',
@@ -248,14 +248,14 @@ async function testErrorHandling() {
           databaseUrl: 'postgresql://invalid:invalid@localhost:9999/invalid',
         },
       });
-      console.log('  ❌ Should have thrown error');
+      logger.info('  ❌ Should have thrown error');
       return false;
     } catch (error) {
-      console.log('  ✓ Correctly handled invalid credentials');
+      logger.info('  ✓ Correctly handled invalid credentials');
     }
 
     // Test 3.2: Invalid API endpoint
-    console.log('\n✓ Testing invalid API endpoint...');
+    logger.info('\n✓ Testing invalid API endpoint...');
     const invalidApiConnector = await connectorService.createConnector(
       TEST_ORG_ID,
       TEST_USER_ID,
@@ -275,9 +275,9 @@ async function testErrorHandling() {
     );
 
     if (!testResult.success) {
-      console.log('  ✓ Correctly detected invalid API');
+      logger.info('  ✓ Correctly detected invalid API');
     } else {
-      console.log('  ❌ Should have detected invalid API');
+      logger.info('  ❌ Should have detected invalid API');
     }
 
     // Cleanup
@@ -288,7 +288,7 @@ async function testErrorHandling() {
     );
 
     // Test 3.3: Duplicate connector name
-    console.log('\n✓ Testing duplicate connector name...');
+    logger.info('\n✓ Testing duplicate connector name...');
     const connector1 = await connectorService.createConnector(
       TEST_ORG_ID,
       TEST_USER_ID,
@@ -311,11 +311,11 @@ async function testErrorHandling() {
           baseUrl: 'https://api.example.com',
         },
       });
-      console.log('  ❌ Should have thrown conflict error');
+      logger.info('  ❌ Should have thrown conflict error');
       return false;
     } catch (error: any) {
       if (error.message.includes('already exists')) {
-        console.log('  ✓ Correctly prevented duplicate connector');
+        logger.info('  ✓ Correctly prevented duplicate connector');
       }
     }
 
@@ -326,11 +326,11 @@ async function testErrorHandling() {
       TEST_USER_ID
     );
 
-    console.log('\n✅ Error handling test PASSED\n');
+    logger.info('\n✅ Error handling test PASSED\n');
     return true;
   } catch (error) {
-    console.error('\n❌ Error handling test FAILED');
-    console.error(error);
+    logger.error('\n❌ Error handling test FAILED');
+    logger.error(error);
     return false;
   }
 }
@@ -339,7 +339,7 @@ async function testErrorHandling() {
  * Test 4: Performance
  */
 async function testPerformance() {
-  console.log('\n========== TEST 4: Performance ==========\n');
+  logger.info('\n========== TEST 4: Performance ==========\n');
 
   try {
     // Create test connector
@@ -357,7 +357,7 @@ async function testPerformance() {
     );
 
     // Test query performance
-    console.log('✓ Testing query performance (10 requests)...');
+    logger.info('✓ Testing query performance (10 requests)...');
     const queryTimes: number[] = [];
 
     for (let i = 0; i < 10; i++) {
@@ -374,14 +374,14 @@ async function testPerformance() {
     const minTime = Math.min(...queryTimes);
     const maxTime = Math.max(...queryTimes);
 
-    console.log(`  Average: ${Math.round(avgTime)}ms`);
-    console.log(`  Min: ${minTime}ms`);
-    console.log(`  Max: ${maxTime}ms`);
+    logger.info(`  Average: ${Math.round(avgTime)}ms`);
+    logger.info(`  Min: ${minTime}ms`);
+    logger.info(`  Max: ${maxTime}ms`);
 
     if (avgTime < 2000) {
-      console.log('  ✓ Performance acceptable (< 2s average)');
+      logger.info('  ✓ Performance acceptable (< 2s average)');
     } else {
-      console.log('  ⚠️  Performance degraded (> 2s average)');
+      logger.info('  ⚠️  Performance degraded (> 2s average)');
     }
 
     // Cleanup
@@ -391,11 +391,11 @@ async function testPerformance() {
       TEST_USER_ID
     );
 
-    console.log('\n✅ Performance test PASSED\n');
+    logger.info('\n✅ Performance test PASSED\n');
     return true;
   } catch (error) {
-    console.error('\n❌ Performance test FAILED');
-    console.error(error);
+    logger.error('\n❌ Performance test FAILED');
+    logger.error(error);
     return false;
   }
 }
@@ -404,13 +404,13 @@ async function testPerformance() {
  * Main test runner
  */
 async function runAllTests() {
-  console.log('\n');
-  console.log('╔═══════════════════════════════════════════════════════════╗');
-  console.log('║                                                             ║');
-  console.log('║        CONNECTOR SYSTEM - END-TO-END TEST SUITE            ║');
-  console.log('║                                                             ║');
-  console.log('╚═══════════════════════════════════════════════════════════╝');
-  console.log('\n');
+  logger.info('\n');
+  logger.info('╔═══════════════════════════════════════════════════════════╗');
+  logger.info('║                                                             ║');
+  logger.info('║        CONNECTOR SYSTEM - END-TO-END TEST SUITE            ║');
+  logger.info('║                                                             ║');
+  logger.info('╚═══════════════════════════════════════════════════════════╝');
+  logger.info('\n');
 
   const results = {
     database: await testDatabaseConnector(),
@@ -420,26 +420,26 @@ async function runAllTests() {
   };
 
   // Summary
-  console.log('\n');
-  console.log('╔═══════════════════════════════════════════════════════════╗');
-  console.log('║                       TEST SUMMARY                          ║');
-  console.log('╚═══════════════════════════════════════════════════════════╝');
-  console.log('\n');
+  logger.info('\n');
+  logger.info('╔═══════════════════════════════════════════════════════════╗');
+  logger.info('║                       TEST SUMMARY                          ║');
+  logger.info('╚═══════════════════════════════════════════════════════════╝');
+  logger.info('\n');
 
-  console.log(`Database Connector:    ${results.database ? '✅ PASSED' : '❌ FAILED'}`);
-  console.log(`API Connector:         ${results.api ? '✅ PASSED' : '❌ FAILED'}`);
-  console.log(`Error Handling:        ${results.errorHandling ? '✅ PASSED' : '❌ FAILED'}`);
-  console.log(`Performance:           ${results.performance ? '✅ PASSED' : '❌ FAILED'}`);
+  logger.info(`Database Connector:    ${results.database ? '✅ PASSED' : '❌ FAILED'}`);
+  logger.info(`API Connector:         ${results.api ? '✅ PASSED' : '❌ FAILED'}`);
+  logger.info(`Error Handling:        ${results.errorHandling ? '✅ PASSED' : '❌ FAILED'}`);
+  logger.info(`Performance:           ${results.performance ? '✅ PASSED' : '❌ FAILED'}`);
 
   const allPassed = Object.values(results).every((r) => r === true);
 
-  console.log('\n');
+  logger.info('\n');
   if (allPassed) {
-    console.log('🎉 ALL TESTS PASSED! 🎉');
+    logger.info('🎉 ALL TESTS PASSED! 🎉');
   } else {
-    console.log('❌ SOME TESTS FAILED');
+    logger.info('❌ SOME TESTS FAILED');
   }
-  console.log('\n');
+  logger.info('\n');
 
   // Cleanup all connectors
   await connectorService.disposeAll();
@@ -449,6 +449,6 @@ async function runAllTests() {
 
 // Run tests
 runAllTests().catch((error) => {
-  console.error('Fatal error running tests:', error);
+  logger.error('Fatal error running tests:', error);
   process.exit(1);
 });

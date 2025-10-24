@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import AnalyticsService from '../services/analytics.service';
 import { captureException } from '@/config/sentry';
+import { logger } from '@/infrastructure/logger';
 
 export class AnalyticsController {
   /**
@@ -73,7 +74,7 @@ export class AnalyticsController {
         message: 'Event tracked successfully',
       });
     } catch (error: any) {
-      console.error('Error tracking event:', error);
+      logger.error('Error tracking event:', error);
       captureException(error);
       res.status(500).json({
         success: false,
@@ -125,7 +126,7 @@ export class AnalyticsController {
         count: events.length,
       });
     } catch (error: any) {
-      console.error('Error getting events:', error);
+      logger.error('Error getting events:', error);
       captureException(error);
       res.status(500).json({
         success: false,
@@ -163,7 +164,7 @@ export class AnalyticsController {
         data: counts,
       });
     } catch (error: any) {
-      console.error('Error getting event counts:', error);
+      logger.error('Error getting event counts:', error);
       captureException(error);
       res.status(500).json({
         success: false,
@@ -202,7 +203,7 @@ export class AnalyticsController {
         data: activity,
       });
     } catch (error: any) {
-      console.error('Error getting user activity:', error);
+      logger.error('Error getting user activity:', error);
       captureException(error);
       res.status(500).json({
         success: false,
@@ -240,7 +241,7 @@ export class AnalyticsController {
         data: pageViews,
       });
     } catch (error: any) {
-      console.error('Error getting page views:', error);
+      logger.error('Error getting page views:', error);
       captureException(error);
       res.status(500).json({
         success: false,
@@ -285,7 +286,7 @@ export class AnalyticsController {
         data: funnelData,
       });
     } catch (error: any) {
-      console.error('Error getting funnel data:', error);
+      logger.error('Error getting funnel data:', error);
       captureException(error);
       res.status(500).json({
         success: false,
@@ -318,7 +319,7 @@ export class AnalyticsController {
         data: summary,
       });
     } catch (error: any) {
-      console.error('Error getting dashboard summary:', error);
+      logger.error('Error getting dashboard summary:', error);
       captureException(error);
       res.status(500).json({
         success: false,

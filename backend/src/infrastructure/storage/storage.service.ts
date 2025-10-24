@@ -12,6 +12,7 @@ import { captureException } from '@/config/sentry';
 import sharp from 'sharp';
 import path from 'path';
 import { randomUUID } from 'crypto';
+import { logger } from '@/infrastructure/logger';
 
 // AWS S3 Configuration
 const s3Client = new S3Client({
@@ -108,7 +109,7 @@ export class StorageService {
             organizationId,
           });
         } catch (error) {
-          console.error('Failed to generate thumbnail:', error);
+          logger.error('Failed to generate thumbnail:', error);
         }
       }
 
@@ -134,7 +135,7 @@ export class StorageService {
         },
       });
 
-      console.log(`✅ File uploaded: ${filename} (${fileSize} bytes)`);
+      logger.info(`✅ File uploaded: ${filename} (${fileSize} bytes)`);
 
       return {
         id: fileRecord.id,
@@ -144,7 +145,7 @@ export class StorageService {
         size: fileSize,
       };
     } catch (error: any) {
-      console.error('❌ File upload error:', error);
+      logger.error('❌ File upload error:', error);
       captureException(error, { uploadOptions: options });
       throw new Error(`File upload failed: ${error.message}`);
     }
@@ -241,9 +242,9 @@ export class StorageService {
         data: { deletedAt: new Date() },
       });
 
-      console.log(`✅ File deleted: ${file.originalName}`);
+      logger.info(`✅ File deleted: ${file.originalName}`);
     } catch (error: any) {
-      console.error('❌ File deletion error:', error);
+      logger.error('❌ File deletion error:', error);
       captureException(error, { fileId, organizationId });
       throw new Error(`File deletion failed: ${error.message}`);
     }

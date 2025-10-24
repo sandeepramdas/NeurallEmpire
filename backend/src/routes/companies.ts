@@ -10,6 +10,7 @@ import { requirePermission, requireRole } from '@/middleware/rbac';
 import { requireCompanyContext, optionalCompanyContext } from '@/middleware/company-context';
 import { companyService } from '@/services/company.service';
 import { rbacService } from '@/services/rbac.service';
+import { logger } from '@/infrastructure/logger';
 
 const router = Router();
 
@@ -29,7 +30,7 @@ router.get(
         data: companies,
       });
     } catch (error: any) {
-      console.error('Error fetching companies:', error);
+      logger.error('Error fetching companies:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch companies',
@@ -72,7 +73,7 @@ router.get(
         data: company,
       });
     } catch (error: any) {
-      console.error('Error fetching company:', error);
+      logger.error('Error fetching company:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch company',
@@ -118,7 +119,7 @@ router.post(
         message: 'Company created successfully',
       });
     } catch (error: any) {
-      console.error('Error creating company:', error);
+      logger.error('Error creating company:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to create company',
@@ -153,7 +154,7 @@ router.put(
         message: 'Company updated successfully',
       });
     } catch (error: any) {
-      console.error('Error updating company:', error);
+      logger.error('Error updating company:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to update company',
@@ -182,7 +183,7 @@ router.delete(
         message: 'Company archived successfully',
       });
     } catch (error: any) {
-      console.error('Error deleting company:', error);
+      logger.error('Error deleting company:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to delete company',
@@ -210,7 +211,7 @@ router.post(
         message: 'Switched company successfully',
       });
     } catch (error: any) {
-      console.error('Error switching company:', error);
+      logger.error('Error switching company:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to switch company',
@@ -237,7 +238,7 @@ router.post(
         message: 'Default company set successfully',
       });
     } catch (error: any) {
-      console.error('Error setting default company:', error);
+      logger.error('Error setting default company:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to set default company',
@@ -266,7 +267,7 @@ router.get(
         data: stats,
       });
     } catch (error: any) {
-      console.error('Error fetching company stats:', error);
+      logger.error('Error fetching company stats:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch company stats',
@@ -310,7 +311,7 @@ router.post(
         message: 'Access granted successfully',
       });
     } catch (error: any) {
-      console.error('Error granting access:', error);
+      logger.error('Error granting access:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to grant access',
@@ -339,7 +340,7 @@ router.delete(
         message: 'Access revoked successfully',
       });
     } catch (error: any) {
-      console.error('Error revoking access:', error);
+      logger.error('Error revoking access:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to revoke access',
@@ -375,7 +376,7 @@ router.get(
         data: companies,
       });
     } catch (error: any) {
-      console.error('Error fetching organization companies:', error);
+      logger.error('Error fetching organization companies:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch companies',

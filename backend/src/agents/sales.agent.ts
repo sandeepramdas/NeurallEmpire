@@ -1,12 +1,13 @@
 import { BaseAgent, AgentExecutionResult } from './index';
 import { AgentType } from '@prisma/client';
+import { logger } from '@/infrastructure/logger';
 
 export class SalesAgent extends BaseAgent {
   async execute(input?: any): Promise<AgentExecutionResult> {
     const startTime = Date.now();
 
     try {
-      console.log(`[Sales] Starting execution`);
+      logger.info(`[Sales] Starting execution`);
 
       const pipeline = this.config.configuration?.pipeline || {};
       const outreach = this.config.configuration?.outreach || {};

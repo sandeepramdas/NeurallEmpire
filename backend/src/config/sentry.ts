@@ -2,6 +2,7 @@ import * as Sentry from '@sentry/node';
 import { httpIntegration, expressIntegration } from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import { Application } from 'express';
+import { logger } from '@/infrastructure/logger';
 
 /**
  * Sentry Error Monitoring Configuration
@@ -17,7 +18,7 @@ const APP_VERSION = process.env.npm_package_version || '1.0.0';
  */
 export const initSentry = (app: Application): void => {
   if (!SENTRY_DSN) {
-    console.log('ℹ️  Sentry DSN not configured, skipping error monitoring setup');
+    logger.info('ℹ️  Sentry DSN not configured, skipping error monitoring setup');
     return;
   }
 
@@ -89,7 +90,7 @@ export const initSentry = (app: Application): void => {
     ],
   });
 
-  console.log('✅ Sentry error monitoring initialized');
+  logger.info('✅ Sentry error monitoring initialized');
 };
 
 /**

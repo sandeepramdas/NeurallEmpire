@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
 import { config } from '@/config/env';
+import { logger } from '@/infrastructure/logger';
 
 const prisma = new PrismaClient();
 
@@ -189,7 +190,7 @@ export class OAuthService {
 
       return response.data;
     } catch (error: any) {
-      console.error(`Token exchange failed for ${provider}:`, error.response?.data);
+      logger.error(`Token exchange failed for ${provider}:`, error.response?.data);
       throw new Error(`Failed to exchange code for tokens: ${error.message}`);
     }
   }
@@ -261,7 +262,7 @@ export class OAuthService {
           throw new Error(`Unsupported provider: ${provider}`);
       }
     } catch (error: any) {
-      console.error(`Failed to fetch user profile for ${provider}:`, error.response?.data);
+      logger.error(`Failed to fetch user profile for ${provider}:`, error.response?.data);
       throw new Error(`Failed to fetch user profile: ${error.message}`);
     }
   }
@@ -489,7 +490,7 @@ export class OAuthService {
 
       await this.updateSocialAccount(socialAccountId, response.data);
     } catch (error) {
-      console.error('Token refresh failed:', error);
+      logger.error('Token refresh failed:', error);
       // Mark account as requiring re-authentication
       await prisma.socialAccount.update({
         where: { id: socialAccountId },

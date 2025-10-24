@@ -1,6 +1,7 @@
 import { prisma } from '@/server';
 import { PlanType, BillingCycle, SubscriptionStatus, InvoiceStatus } from '@prisma/client';
 import { SUBSCRIPTION_PLANS } from './razorpay.service';
+import { logger } from '@/infrastructure/logger';
 
 /**
  * Subscription Management Service
@@ -90,7 +91,7 @@ export const createInvoice = async (params: CreateInvoiceParams) => {
       data: invoice,
     };
   } catch (error: any) {
-    console.error('Create invoice error:', error);
+    logger.error('Create invoice error:', error);
     return {
       success: false,
       error: error.message || 'Failed to create invoice',
@@ -103,7 +104,7 @@ export const createInvoice = async (params: CreateInvoiceParams) => {
  */
 export const createSubscription = async (params: CreateSubscriptionParams) => {
   try {
-    console.log('📦 Creating subscription:', {
+    logger.info('📦 Creating subscription:', {
       organizationId: params.organizationId,
       planType: params.planType,
       billingCycle: params.billingCycle,
@@ -177,7 +178,7 @@ export const createSubscription = async (params: CreateSubscriptionParams) => {
       data: subscription,
     };
   } catch (error: any) {
-    console.error('Create subscription error:', error);
+    logger.error('Create subscription error:', error);
     return {
       success: false,
       error: error.message || 'Failed to create subscription',
@@ -208,7 +209,7 @@ export const createContributionInvoice = async (
 
     return invoice;
   } catch (error: any) {
-    console.error('Create contribution invoice error:', error);
+    logger.error('Create contribution invoice error:', error);
     return {
       success: false,
       error: error.message || 'Failed to create contribution invoice',
@@ -244,7 +245,7 @@ export const getActiveSubscription = async (organizationId: string) => {
       data: subscription,
     };
   } catch (error: any) {
-    console.error('Get active subscription error:', error);
+    logger.error('Get active subscription error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get subscription',
@@ -276,7 +277,7 @@ export const getInvoices = async (organizationId: string, limit = 50) => {
       data: invoices,
     };
   } catch (error: any) {
-    console.error('Get invoices error:', error);
+    logger.error('Get invoices error:', error);
     return {
       success: false,
       error: error.message || 'Failed to get invoices',
@@ -316,7 +317,7 @@ export const cancelSubscriptionAtPeriodEnd = async (organizationId: string) => {
       data: updated,
     };
   } catch (error: any) {
-    console.error('Cancel subscription error:', error);
+    logger.error('Cancel subscription error:', error);
     return {
       success: false,
       error: error.message || 'Failed to cancel subscription',
@@ -403,7 +404,7 @@ export const renewSubscription = async (subscriptionId: string) => {
       data: { renewed: true, subscription: updated },
     };
   } catch (error: any) {
-    console.error('Renew subscription error:', error);
+    logger.error('Renew subscription error:', error);
     return {
       success: false,
       error: error.message || 'Failed to renew subscription',
@@ -448,7 +449,7 @@ export const processSubscriptionRenewals = async () => {
       },
     };
   } catch (error: any) {
-    console.error('Process renewals error:', error);
+    logger.error('Process renewals error:', error);
     return {
       success: false,
       error: error.message || 'Failed to process renewals',

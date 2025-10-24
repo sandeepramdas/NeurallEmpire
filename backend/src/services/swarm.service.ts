@@ -2,6 +2,7 @@ import { prisma } from '@/server';
 import { SwarmType, SwarmRole, AgentStatus, ExecutionStatus } from '@prisma/client';
 import { EventEmitter } from 'events';
 import { agentService } from './agent.service';
+import { logger } from '@/infrastructure/logger';
 
 export interface SwarmConfig {
   name: string;
@@ -42,7 +43,7 @@ class SwarmService extends EventEmitter {
       this.emit('swarmCreated', { swarmId: swarm.id, organizationId });
       return swarm;
     } catch (error) {
-      console.error('Failed to create swarm:', error);
+      logger.error('Failed to create swarm:', error);
       throw new Error('Failed to create swarm');
     }
   }
@@ -80,7 +81,7 @@ class SwarmService extends EventEmitter {
       this.emit('agentAddedToSwarm', { swarmId, agentId: memberConfig.agentId });
       return member;
     } catch (error) {
-      console.error('Failed to add agent to swarm:', error);
+      logger.error('Failed to add agent to swarm:', error);
       throw error;
     }
   }
@@ -99,7 +100,7 @@ class SwarmService extends EventEmitter {
       this.emit('agentRemovedFromSwarm', { swarmId, agentId });
       return true;
     } catch (error) {
-      console.error('Failed to remove agent from swarm:', error);
+      logger.error('Failed to remove agent from swarm:', error);
       throw error;
     }
   }
@@ -167,7 +168,7 @@ class SwarmService extends EventEmitter {
       // Clean up on error
       this.activeSwarms.delete(swarmId);
 
-      console.error('Swarm execution failed:', error);
+      logger.error('Swarm execution failed:', error);
       throw error;
     }
   }
@@ -178,12 +179,12 @@ class SwarmService extends EventEmitter {
 
     for (const member of swarm.members) {
       if (member.agent.status !== AgentStatus.READY && member.agent.status !== AgentStatus.RUNNING) {
-        console.warn(`Skipping agent ${member.agentId} - not ready (status: ${member.agent.status})`);
+        logger.warn(`Skipping agent ${member.agentId} - not ready (status: ${member.agent.status})`);
         continue;
       }
 
       try {
-        console.log(`Executing agent ${member.agentId} (${member.role}) in sequential mode`);
+        logger.info(`Executing agent ${member.agentId} (${member.role}) in sequential mode`);
 
         const agentResult = await agentService.executeAgent(member.agentId, {
           ...currentInput,
@@ -215,7 +216,7 @@ class SwarmService extends EventEmitter {
         }
 
       } catch (error) {
-        console.error(`Agent ${member.agentId} failed in sequential execution:`, error);
+        logger.error(`Agent ${member.agentId} failed in sequential execution:`, error);
         results.push({
           agentId: member.agentId,
           role: member.role,
@@ -240,7 +241,7 @@ class SwarmService extends EventEmitter {
       )
       .map(async (member: any) => {
         try {
-          console.log(`Executing agent ${member.agentId} (${member.role}) in parallel mode`);
+          logger.info(`Executing agent ${member.agentId} (${member.role}) in parallel mode`);
 
           const agentResult = await agentService.executeAgent(member.agentId, {
             ...context.input,
@@ -258,7 +259,7 @@ class SwarmService extends EventEmitter {
             timestamp: new Date(),
           };
         } catch (error) {
-          console.error(`Agent ${member.agentId} failed in parallel execution:`, error);
+          logger.error(`Agent ${member.agentId} failed in parallel execution:`, error);
           return {
             agentId: member.agentId,
             role: member.role,
@@ -314,7 +315,7 @@ class SwarmService extends EventEmitter {
             context.sharedData!.set('workPlan', planResult.output.workPlan);
           }
         } catch (error) {
-          console.error(`Coordinator ${coordinator.agentId} failed:`, error);
+          logger.error(`Coordinator ${coordinator.agentId} failed:`, error);
         }
       }
     }
@@ -433,7 +434,7 @@ class SwarmService extends EventEmitter {
         }
 
       } catch (error) {
-        console.error(`Hierarchical agent ${node.agentId} failed:`, error);
+        logger.error(`Hierarchical agent ${node.agentId} failed:`, error);
         results.push({
           agentId: node.agentId,
           role: node.role,

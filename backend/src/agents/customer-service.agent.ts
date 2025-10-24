@@ -1,12 +1,13 @@
 import { BaseAgent, AgentExecutionResult } from './index';
 import { AgentType } from '@prisma/client';
+import { logger } from '@/infrastructure/logger';
 
 export class CustomerServiceAgent extends BaseAgent {
   async execute(input?: any): Promise<AgentExecutionResult> {
     const startTime = Date.now();
 
     try {
-      console.log(`[Customer Service] Starting execution`);
+      logger.info(`[Customer Service] Starting execution`);
 
       const channels = this.config.configuration?.channels || ['email', 'chat'];
       const responses = this.config.configuration?.responses || {};

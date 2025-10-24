@@ -8,6 +8,7 @@ import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '@/types';
 import { companyService } from '@/services/company.service';
 import { prisma } from '@/server';
+import { logger } from '@/infrastructure/logger';
 
 /**
  * Require company context (companyId in JWT or header)
@@ -69,7 +70,7 @@ export const requireCompanyContext = async (
 
     next();
   } catch (error) {
-    console.error('Company context error:', error);
+    logger.error('Company context error:', error);
     return res.status(500).json({
       success: false,
       error: 'Failed to verify company access',
@@ -122,7 +123,7 @@ export const optionalCompanyContext = async (
 
     next();
   } catch (error) {
-    console.error('Optional company context error:', error);
+    logger.error('Optional company context error:', error);
     next(); // Don't block request on error
   }
 };
@@ -151,7 +152,7 @@ export const loadDefaultCompany = async (
 
     next();
   } catch (error) {
-    console.error('Load default company error:', error);
+    logger.error('Load default company error:', error);
     next(); // Don't block request on error
   }
 };
@@ -196,7 +197,7 @@ export const requireActiveCompany = async (
 
     next();
   } catch (error) {
-    console.error('Active company check error:', error);
+    logger.error('Active company check error:', error);
     return res.status(500).json({
       success: false,
       error: 'Failed to verify company status',
@@ -270,7 +271,7 @@ export const validateResourceCompany = (
 
       next();
     } catch (error) {
-      console.error('Resource company validation error:', error);
+      logger.error('Resource company validation error:', error);
       return res.status(500).json({
         success: false,
         error: 'Failed to validate resource',
@@ -325,7 +326,7 @@ export const restrictToOwnOrganization = async (
 
     next();
   } catch (error) {
-    console.error('Organization restriction error:', error);
+    logger.error('Organization restriction error:', error);
     return res.status(500).json({
       success: false,
       error: 'Failed to verify organization access',

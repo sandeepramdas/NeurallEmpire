@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { getPaginationParams, createPaginatedResponse } from '@/utils/pagination';
+import { logger } from '@/infrastructure/logger';
 
 const prisma = new PrismaClient();
 
@@ -87,7 +88,7 @@ export class WorkflowsController {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
-      console.error('Create workflow error:', error);
+      logger.error('Create workflow error:', error);
       res.status(500).json({ error: 'Failed to create workflow' });
     }
   }
@@ -133,7 +134,7 @@ export class WorkflowsController {
       // Return paginated response
       res.json(createPaginatedResponse(workflows, total, page, limit));
     } catch (error) {
-      console.error('Get workflows error:', error);
+      logger.error('Get workflows error:', error);
       res.status(500).json({ error: 'Failed to fetch workflows' });
     }
   }
@@ -174,7 +175,7 @@ export class WorkflowsController {
         data: workflow
       });
     } catch (error) {
-      console.error('Get workflow error:', error);
+      logger.error('Get workflow error:', error);
       res.status(500).json({ error: 'Failed to fetch workflow' });
     }
   }
@@ -231,7 +232,7 @@ export class WorkflowsController {
         data: updated
       });
     } catch (error) {
-      console.error('Update workflow error:', error);
+      logger.error('Update workflow error:', error);
       res.status(500).json({ error: 'Failed to update workflow' });
     }
   }
@@ -261,7 +262,7 @@ export class WorkflowsController {
         data: workflow
       });
     } catch (error) {
-      console.error('Update workflow status error:', error);
+      logger.error('Update workflow status error:', error);
       res.status(500).json({ error: 'Failed to update workflow status' });
     }
   }
@@ -369,7 +370,7 @@ export class WorkflowsController {
         }
       });
     } catch (error) {
-      console.error('Execute workflow error:', error);
+      logger.error('Execute workflow error:', error);
       res.status(500).json({ error: 'Failed to execute workflow' });
     }
   }
@@ -402,7 +403,7 @@ export class WorkflowsController {
         data: executions
       });
     } catch (error) {
-      console.error('Get workflow executions error:', error);
+      logger.error('Get workflow executions error:', error);
       res.status(500).json({ error: 'Failed to fetch workflow executions' });
     }
   }
@@ -443,7 +444,7 @@ export class WorkflowsController {
         message: 'Workflow archived successfully'
       });
     } catch (error) {
-      console.error('Delete workflow error:', error);
+      logger.error('Delete workflow error:', error);
       res.status(500).json({ error: 'Failed to delete workflow' });
     }
   }
@@ -493,7 +494,7 @@ export class WorkflowsController {
         data: workflow
       });
     } catch (error) {
-      console.error('Create from template error:', error);
+      logger.error('Create from template error:', error);
       res.status(500).json({ error: 'Failed to create workflow from template' });
     }
   }

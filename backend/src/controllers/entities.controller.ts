@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { prisma } from '@/server';
 import { z } from 'zod';
 import { EntityService } from '@/services/entity.service';
+import { logger } from '@/infrastructure/logger';
 
 // Validation schemas
 const columnSchema = z.object({
@@ -52,7 +53,7 @@ export class EntitiesController {
 
       return res.json(entities);
     } catch (error: any) {
-      console.error('Get entities error:', error);
+      logger.error('Get entities error:', error);
       return res.status(500).json({ error: error.message || 'Failed to fetch entities' });
     }
   }
@@ -78,7 +79,7 @@ export class EntitiesController {
 
       return res.json(entity);
     } catch (error: any) {
-      console.error('Get entity error:', error);
+      logger.error('Get entity error:', error);
       return res.status(500).json({ error: error.message || 'Failed to fetch entity' });
     }
   }
@@ -107,7 +108,7 @@ export class EntitiesController {
 
       return res.status(201).json(result);
     } catch (error: any) {
-      console.error('Create entity error:', error);
+      logger.error('Create entity error:', error);
 
       if (error.name === 'ZodError') {
         return res.status(400).json({
@@ -151,7 +152,7 @@ export class EntitiesController {
         message: 'Entity activated and database table created successfully',
       });
     } catch (error: any) {
-      console.error('Activate entity error:', error);
+      logger.error('Activate entity error:', error);
       return res.status(500).json({ error: error.message || 'Failed to activate entity' });
     }
   }
@@ -193,7 +194,7 @@ export class EntitiesController {
         message: 'Entity deleted successfully',
       });
     } catch (error: any) {
-      console.error('Delete entity error:', error);
+      logger.error('Delete entity error:', error);
       return res.status(500).json({ error: error.message || 'Failed to delete entity' });
     }
   }
@@ -231,7 +232,7 @@ export class EntitiesController {
         ddl,
       });
     } catch (error: any) {
-      console.error('Get DDL error:', error);
+      logger.error('Get DDL error:', error);
       return res.status(500).json({ error: error.message || 'Failed to generate DDL' });
     }
   }
@@ -251,7 +252,7 @@ export class EntitiesController {
 
       return res.json(validation);
     } catch (error: any) {
-      console.error('Validate schema error:', error);
+      logger.error('Validate schema error:', error);
       return res.status(500).json({ error: error.message || 'Failed to validate schema' });
     }
   }

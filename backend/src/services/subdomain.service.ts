@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import axios from 'axios';
 import crypto from 'crypto';
+import { logger } from '@/infrastructure/logger';
 
 const prisma = new PrismaClient();
 
@@ -276,7 +277,7 @@ export class SubdomainService {
     try {
       await this.verifySubdomain(subdomainId);
     } catch (error) {
-      console.error(`Health check failed for subdomain ${subdomainId}:`, error);
+      logger.error(`Health check failed for subdomain ${subdomainId}:`, error);
     }
 
     // Schedule next health check in 5 minutes
@@ -344,7 +345,7 @@ export class SubdomainService {
         }
       );
     } catch (error: any) {
-      console.error('Failed to delete Cloudflare record:', error.response?.data);
+      logger.error('Failed to delete Cloudflare record:', error.response?.data);
       // Don't throw - record might already be deleted
     }
   }

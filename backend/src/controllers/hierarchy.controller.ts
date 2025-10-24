@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { prisma } from '@/server';
 import { z } from 'zod';
 import organizationService from '@/services/organization.service';
+import { logger } from '@/infrastructure/logger';
 
 // Validation schemas
 const setParentSchema = z.object({
@@ -35,7 +36,7 @@ export class HierarchyController {
 
       return res.json(tree);
     } catch (error: any) {
-      console.error('Get hierarchy tree error:', error);
+      logger.error('Get hierarchy tree error:', error);
       return res.status(500).json({ error: error.message || 'Failed to fetch hierarchy tree' });
     }
   }
@@ -69,7 +70,7 @@ export class HierarchyController {
 
       return res.json(descendants);
     } catch (error: any) {
-      console.error('Get descendants error:', error);
+      logger.error('Get descendants error:', error);
       return res.status(500).json({ error: error.message || 'Failed to fetch descendants' });
     }
   }
@@ -99,7 +100,7 @@ export class HierarchyController {
 
       return res.json(ancestors);
     } catch (error: any) {
-      console.error('Get ancestors error:', error);
+      logger.error('Get ancestors error:', error);
       return res.status(500).json({ error: error.message || 'Failed to fetch ancestors' });
     }
   }
@@ -129,7 +130,7 @@ export class HierarchyController {
 
       return res.json(children);
     } catch (error: any) {
-      console.error('Get children error:', error);
+      logger.error('Get children error:', error);
       return res.status(500).json({ error: error.message || 'Failed to fetch children' });
     }
   }
@@ -173,7 +174,7 @@ export class HierarchyController {
         message: 'Parent organization set successfully',
       });
     } catch (error: any) {
-      console.error('Set parent error:', error);
+      logger.error('Set parent error:', error);
       return res.status(500).json({ error: error.message || 'Failed to set parent' });
     }
   }
@@ -200,7 +201,7 @@ export class HierarchyController {
         inheritAccess: inheritAccess === 'true',
       });
     } catch (error: any) {
-      console.error('Check access error:', error);
+      logger.error('Check access error:', error);
       return res.status(500).json({ error: error.message || 'Failed to check access' });
     }
   }
@@ -241,7 +242,7 @@ export class HierarchyController {
 
       return res.json(stats);
     } catch (error: any) {
-      console.error('Get stats error:', error);
+      logger.error('Get stats error:', error);
       return res.status(500).json({ error: error.message || 'Failed to get statistics' });
     }
   }

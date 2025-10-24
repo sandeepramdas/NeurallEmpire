@@ -1,12 +1,13 @@
 import { BaseAgent, AgentExecutionResult } from './index';
 import { AgentType } from '@prisma/client';
+import { logger } from '@/infrastructure/logger';
 
 export class SocialMediaAgent extends BaseAgent {
   async execute(input?: any): Promise<AgentExecutionResult> {
     const startTime = Date.now();
 
     try {
-      console.log(`[Social Media] Starting execution with config:`, this.config);
+      logger.info(`[Social Media] Starting execution with config:`, this.config);
 
       const platforms = this.config.configuration?.platforms || ['twitter', 'linkedin'];
       const postTypes = this.config.configuration?.postTypes || ['text', 'image'];
@@ -51,11 +52,11 @@ export class SocialMediaAgent extends BaseAgent {
         },
       };
 
-      console.log(`[Social Media] Created ${posts.length} posts across ${platforms.length} platforms`);
+      logger.info(`[Social Media] Created ${posts.length} posts across ${platforms.length} platforms`);
       return this.createSuccessResult(output, metrics);
 
     } catch (error) {
-      console.error(`[Social Media] Execution failed:`, error);
+      logger.error(`[Social Media] Execution failed:`, error);
       const metrics = this.generateMetrics(startTime, 0);
       return this.createErrorResult(
         error instanceof Error ? error.message : 'Social media execution failed',
@@ -268,7 +269,7 @@ export class SocialMediaAgent extends BaseAgent {
       };
 
       results.push(result);
-      console.log(`[Social Media] Published to ${post.platform}: ${success ? 'Success' : 'Failed'}`);
+      logger.info(`[Social Media] Published to ${post.platform}: ${success ? 'Success' : 'Failed'}`);
     }
 
     return results;

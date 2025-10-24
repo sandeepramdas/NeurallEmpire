@@ -9,6 +9,7 @@ import { authenticate } from '@/middleware/auth';
 import { requirePermission, requireRole } from '@/middleware/rbac';
 import { requireCompanyContext } from '@/middleware/company-context';
 import { menuService } from '@/services/menu.service';
+import { logger } from '@/infrastructure/logger';
 
 const router = Router();
 
@@ -29,7 +30,7 @@ router.get(
         data: menus,
       });
     } catch (error: any) {
-      console.error('Error fetching menus:', error);
+      logger.error('Error fetching menus:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch menus',
@@ -55,7 +56,7 @@ router.get(
         data: menus,
       });
     } catch (error: any) {
-      console.error('Error fetching all menus:', error);
+      logger.error('Error fetching all menus:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch menus',
@@ -90,7 +91,7 @@ router.get(
         data: menu,
       });
     } catch (error: any) {
-      console.error('Error fetching menu:', error);
+      logger.error('Error fetching menu:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch menu',
@@ -159,7 +160,7 @@ router.post(
         message: 'Menu created successfully',
       });
     } catch (error: any) {
-      console.error('Error creating menu:', error);
+      logger.error('Error creating menu:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to create menu',
@@ -189,7 +190,7 @@ router.put(
         message: 'Menu updated successfully',
       });
     } catch (error: any) {
-      console.error('Error updating menu:', error);
+      logger.error('Error updating menu:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to update menu',
@@ -217,7 +218,7 @@ router.delete(
         message: 'Menu deleted successfully',
       });
     } catch (error: any) {
-      console.error('Error deleting menu:', error);
+      logger.error('Error deleting menu:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to delete menu',
@@ -252,7 +253,7 @@ router.post(
         message: 'Menus reordered successfully',
       });
     } catch (error: any) {
-      console.error('Error reordering menus:', error);
+      logger.error('Error reordering menus:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to reorder menus',
@@ -287,7 +288,7 @@ router.get(
         data: menus,
       });
     } catch (error: any) {
-      console.error('Error searching menus:', error);
+      logger.error('Error searching menus:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to search menus',
@@ -321,7 +322,7 @@ router.get(
         data: breadcrumbs,
       });
     } catch (error: any) {
-      console.error('Error fetching breadcrumbs:', error);
+      logger.error('Error fetching breadcrumbs:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch breadcrumbs',
@@ -348,7 +349,7 @@ router.get(
         data: menus,
       });
     } catch (error: any) {
-      console.error('Error fetching menus by module:', error);
+      logger.error('Error fetching menus by module:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch menus',
@@ -377,7 +378,7 @@ router.post(
         message: 'Menu visibility toggled successfully',
       });
     } catch (error: any) {
-      console.error('Error toggling menu visibility:', error);
+      logger.error('Error toggling menu visibility:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to toggle menu visibility',

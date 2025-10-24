@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '@/server';
+import { logger } from '@/infrastructure/logger';
 
 const router = Router();
 
@@ -70,7 +71,7 @@ router.get('/agents', async (req: Request, res: Response) => {
       }
     });
   } catch (error) {
-    console.error('Get marketplace agents error:', error);
+    logger.error('Get marketplace agents error:', error);
     res.status(500).json({ error: 'Failed to fetch marketplace agents' });
   }
 });
@@ -121,7 +122,7 @@ router.get('/workflows', async (req: Request, res: Response) => {
       }
     });
   } catch (error) {
-    console.error('Get marketplace workflows error:', error);
+    logger.error('Get marketplace workflows error:', error);
     res.status(500).json({ error: 'Failed to fetch marketplace workflows' });
   }
 });
@@ -149,7 +150,7 @@ router.get('/categories', async (req: Request, res: Response) => {
       }
     });
   } catch (error) {
-    console.error('Get categories error:', error);
+    logger.error('Get categories error:', error);
     res.status(500).json({ error: 'Failed to fetch categories' });
   }
 });
@@ -182,7 +183,7 @@ router.get('/agents/:id', async (req: Request, res: Response) => {
       data: template
     });
   } catch (error) {
-    console.error('Get template error:', error);
+    logger.error('Get template error:', error);
     res.status(500).json({ error: 'Failed to fetch template' });
   }
 });

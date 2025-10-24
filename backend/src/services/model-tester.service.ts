@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
+import { logger } from '@/infrastructure/logger';
 
 /**
  * AI Model Connection Tester Service
@@ -39,7 +40,7 @@ export class ModelTesterService {
         },
       };
     } catch (error: any) {
-      console.error('OpenAI test error:', error);
+      logger.error('OpenAI test error:', error);
 
       let message = '❌ Connection failed';
 
@@ -100,7 +101,7 @@ export class ModelTesterService {
         },
       };
     } catch (error: any) {
-      console.error('Anthropic test error:', error);
+      logger.error('Anthropic test error:', error);
 
       let message = '❌ Connection failed';
 
@@ -166,7 +167,7 @@ export class ModelTesterService {
         },
       };
     } catch (error: any) {
-      console.error('Google AI test error:', error);
+      logger.error('Google AI test error:', error);
 
       let message = '❌ Connection failed';
 

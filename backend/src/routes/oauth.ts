@@ -3,6 +3,7 @@ import { prisma } from '@/server';
 import { oauthService } from '@/services/oauth.service';
 import { tenantResolver, requireTenant } from '@/middleware/tenant';
 import { authenticate, optionalAuth } from '@/middleware/auth';
+import { logger } from '@/infrastructure/logger';
 
 const router = Router();
 
@@ -62,7 +63,7 @@ router.get('/:provider', optionalAuth, async (req, res) => {
     });
 
   } catch (error: any) {
-    console.error(`OAuth initiation error for ${req.params.provider}:`, error);
+    logger.error(`OAuth initiation error for ${req.params.provider}:`, error);
 
     res.status(400).json({
       success: false,
@@ -141,7 +142,7 @@ router.get('/:provider/callback', async (req, res) => {
     res.redirect(dashboardUrl);
 
   } catch (error: any) {
-    console.error(`OAuth callback error for ${req.params.provider}:`, error);
+    logger.error(`OAuth callback error for ${req.params.provider}:`, error);
 
     // Redirect to error page with details
     const errorUrl = process.env.NODE_ENV === 'production'
@@ -194,7 +195,7 @@ router.post('/link-account', authenticate, requireTenant, async (req, res) => {
     });
 
   } catch (error: any) {
-    console.error('Account linking error:', error);
+    logger.error('Account linking error:', error);
 
     res.status(400).json({
       success: false,
@@ -258,7 +259,7 @@ router.delete('/unlink/:provider', authenticate, requireTenant, async (req, res)
     });
 
   } catch (error: any) {
-    console.error('Account unlinking error:', error);
+    logger.error('Account unlinking error:', error);
 
     res.status(500).json({
       success: false,
@@ -303,7 +304,7 @@ router.get('/linked-accounts', authenticate, requireTenant, async (req, res) => 
     });
 
   } catch (error: any) {
-    console.error('Error fetching linked accounts:', error);
+    logger.error('Error fetching linked accounts:', error);
 
     res.status(500).json({
       success: false,
@@ -363,7 +364,7 @@ router.get('/providers', tenantResolver, async (req, res) => {
     });
 
   } catch (error: any) {
-    console.error('Error fetching OAuth providers:', error);
+    logger.error('Error fetching OAuth providers:', error);
 
     res.status(500).json({
       success: false,

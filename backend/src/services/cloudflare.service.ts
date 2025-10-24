@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { logger } from '@/infrastructure/logger';
 
 const CLOUDFLARE_API_KEY = process.env.CLOUDFLARE_API_KEY;
 const CLOUDFLARE_EMAIL = process.env.CLOUDFLARE_EMAIL;
@@ -30,7 +31,7 @@ export async function createSubdomainDNS(
 ): Promise<{ success: boolean; recordId?: string; error?: string }> {
   try {
     if (!CLOUDFLARE_API_KEY || !CLOUDFLARE_EMAIL || !CLOUDFLARE_ZONE_ID) {
-      console.error('❌ Cloudflare credentials not configured');
+      logger.error('❌ Cloudflare credentials not configured');
       return {
         success: false,
         error: 'Cloudflare credentials not configured'
@@ -51,7 +52,7 @@ export async function createSubdomainDNS(
       proxied: true,  // Enable Cloudflare proxy for SSL/security
     };
 
-    console.log(`🌐 Creating Cloudflare DNS record for ${fullDomain}...`);
+    logger.info(`🌐 Creating Cloudflare DNS record for ${fullDomain}...`);
 
     const response = await axios.post<CloudflareResponse>(
       `${CLOUDFLARE_API_URL}/zones/${CLOUDFLARE_ZONE_ID}/dns_records`,
@@ -66,24 +67,24 @@ export async function createSubdomainDNS(
     );
 
     if (response.data.success && response.data.result) {
-      console.log(`✅ DNS record created: ${fullDomain} -> ${target}`);
+      logger.info(`✅ DNS record created: ${fullDomain} -> ${target}`);
       return {
         success: true,
         recordId: response.data.result.id,
       };
     } else {
-      console.error('❌ Cloudflare API error:', response.data.errors);
+      logger.error('❌ Cloudflare API error:', response.data.errors);
       return {
         success: false,
         error: response.data.errors?.[0]?.message || 'Unknown Cloudflare error',
       };
     }
   } catch (error: any) {
-    console.error('❌ Error creating Cloudflare DNS record:', error.message);
+    logger.error('❌ Error creating Cloudflare DNS record:', error.message);
 
     // Check if subdomain already exists
     if (error.response?.data?.errors?.[0]?.code === 81057) {
-      console.log(`⚠️ DNS record already exists for ${subdomain}`);
+      logger.info(`⚠️ DNS record already exists for ${subdomain}`);
       return {
         success: true,  // Treat as success since record exists
         recordId: 'existing',
@@ -122,7 +123,7 @@ export async function deleteSubdomainDNS(
     );
 
     if (response.data.success) {
-      console.log(`✅ DNS record deleted: ${recordId}`);
+      logger.info(`✅ DNS record deleted: ${recordId}`);
       return { success: true };
     } else {
       return {
@@ -131,7 +132,7 @@ export async function deleteSubdomainDNS(
       };
     }
   } catch (error: any) {
-    console.error('❌ Error deleting Cloudflare DNS record:', error.message);
+    logger.error('❌ Error deleting Cloudflare DNS record:', error.message);
     return {
       success: false,
       error: error.message,
@@ -152,7 +153,7 @@ export async function verifySubdomain(subdomain: string): Promise<boolean> {
 
     return response.status === 200;
   } catch (error) {
-    console.log(`⚠️  Subdomain ${subdomain} not yet accessible`);
+    logger.info(`⚠️  Subdomain ${subdomain} not yet accessible`);
     return false;
   }
 }
@@ -178,7 +179,7 @@ export async function getZoneInfo(): Promise<any> {
 
     return response.data.result;
   } catch (error: any) {
-    console.error('❌ Error fetching zone info:', error.message);
+    logger.error('❌ Error fetching zone info:', error.message);
     throw error;
   }
 }

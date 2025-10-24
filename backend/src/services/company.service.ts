@@ -8,6 +8,7 @@ import { Company, UserCompanyAccess, User } from '@prisma/client';
 import { rbacService } from './rbac.service';
 import jwt from 'jsonwebtoken';
 import { config } from '@/config/env';
+import { logger } from '@/infrastructure/logger';
 
 interface CreateCompanyDTO {
   companyCode: string;
@@ -179,7 +180,7 @@ class CompanyService {
 
       return company;
     } catch (error) {
-      console.error('Error creating company:', error);
+      logger.error('Error creating company:', error);
       throw error;
     }
   }
@@ -213,7 +214,7 @@ class CompanyService {
         role: access.role || undefined,
       }));
     } catch (error) {
-      console.error('Error getting user companies:', error);
+      logger.error('Error getting user companies:', error);
       return [];
     }
   }
@@ -227,7 +228,7 @@ class CompanyService {
         where: { id: companyId },
       });
     } catch (error) {
-      console.error('Error getting company:', error);
+      logger.error('Error getting company:', error);
       return null;
     }
   }
@@ -269,7 +270,7 @@ class CompanyService {
         },
       });
     } catch (error) {
-      console.error('Error getting company with details:', error);
+      logger.error('Error getting company with details:', error);
       return null;
     }
   }
@@ -314,7 +315,7 @@ class CompanyService {
 
       return company;
     } catch (error) {
-      console.error('Error updating company:', error);
+      logger.error('Error updating company:', error);
       throw error;
     }
   }
@@ -377,7 +378,7 @@ class CompanyService {
         },
       });
     } catch (error) {
-      console.error('Error deleting company:', error);
+      logger.error('Error deleting company:', error);
       throw error;
     }
   }
@@ -456,7 +457,7 @@ class CompanyService {
 
       return access;
     } catch (error) {
-      console.error('Error granting company access:', error);
+      logger.error('Error granting company access:', error);
       throw error;
     }
   }
@@ -504,7 +505,7 @@ class CompanyService {
         },
       });
     } catch (error) {
-      console.error('Error revoking company access:', error);
+      logger.error('Error revoking company access:', error);
       throw error;
     }
   }
@@ -536,7 +537,7 @@ class CompanyService {
 
       return !!access;
     } catch (error) {
-      console.error('Error verifying company access:', error);
+      logger.error('Error verifying company access:', error);
       return false;
     }
   }
@@ -638,7 +639,7 @@ class CompanyService {
         },
       };
     } catch (error) {
-      console.error('Error switching company:', error);
+      logger.error('Error switching company:', error);
       throw error;
     }
   }
@@ -682,7 +683,7 @@ class CompanyService {
         },
       });
     } catch (error) {
-      console.error('Error setting default company:', error);
+      logger.error('Error setting default company:', error);
       throw error;
     }
   }
@@ -713,7 +714,7 @@ class CompanyService {
 
       return access?.company || null;
     } catch (error) {
-      console.error('Error getting default company:', error);
+      logger.error('Error getting default company:', error);
       return null;
     }
   }
@@ -735,7 +736,7 @@ class CompanyService {
         },
       });
     } catch (error) {
-      console.error('Error getting organization companies:', error);
+      logger.error('Error getting organization companies:', error);
       return [];
     }
   }
@@ -777,7 +778,7 @@ class CompanyService {
         vendorCount,
       };
     } catch (error) {
-      console.error('Error getting company stats:', error);
+      logger.error('Error getting company stats:', error);
       return null;
     }
   }

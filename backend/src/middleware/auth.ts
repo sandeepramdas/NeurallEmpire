@@ -5,6 +5,7 @@ import { AuthenticatedRequest, JwtPayload, AuthUser } from '@/types';
 import { rbacService } from '@/services/rbac.service';
 import { config } from '@/config/env';
 import { jwtBlacklistService } from '@/services/jwt-blacklist.service';
+import { logger } from '@/infrastructure/logger';
 
 const JWT_SECRET = config.JWT_SECRET;
 
@@ -150,7 +151,7 @@ export const authenticate = async (
       return;
     }
 
-    console.error('Authentication error:', error);
+    logger.error('Authentication error:', error);
     res.status(500).json({
       success: false,
       error: 'Authentication failed',

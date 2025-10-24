@@ -7,6 +7,7 @@
 import { prisma } from '@/server';
 import { Account, AccountType } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
+import { logger } from '@/infrastructure/logger';
 
 interface CreateAccountDTO {
   accountCode: string;
@@ -132,7 +133,7 @@ class ChartOfAccountsService {
 
       return account;
     } catch (error) {
-      console.error('Error creating account:', error);
+      logger.error('Error creating account:', error);
       throw error;
     }
   }
@@ -238,7 +239,7 @@ class ChartOfAccountsService {
 
       return account;
     } catch (error) {
-      console.error('Error updating account:', error);
+      logger.error('Error updating account:', error);
       throw error;
     }
   }
@@ -305,7 +306,7 @@ class ChartOfAccountsService {
         },
       });
     } catch (error) {
-      console.error('Error deleting account:', error);
+      logger.error('Error deleting account:', error);
       throw error;
     }
   }
@@ -326,7 +327,7 @@ class ChartOfAccountsService {
         },
       });
     } catch (error) {
-      console.error('Error getting account:', error);
+      logger.error('Error getting account:', error);
       return null;
     }
   }
@@ -346,7 +347,7 @@ class ChartOfAccountsService {
         },
       });
     } catch (error) {
-      console.error('Error getting account by code:', error);
+      logger.error('Error getting account by code:', error);
       return null;
     }
   }
@@ -385,7 +386,7 @@ class ChartOfAccountsService {
         },
       });
     } catch (error) {
-      console.error('Error getting accounts:', error);
+      logger.error('Error getting accounts:', error);
       return [];
     }
   }
@@ -447,7 +448,7 @@ class ChartOfAccountsService {
 
       return rootAccounts;
     } catch (error) {
-      console.error('Error getting account tree:', error);
+      logger.error('Error getting account tree:', error);
       return [];
     }
   }
@@ -499,7 +500,7 @@ class ChartOfAccountsService {
         netBalance,
       };
     } catch (error) {
-      console.error('Error getting account balance:', error);
+      logger.error('Error getting account balance:', error);
       return null;
     }
   }
@@ -520,7 +521,7 @@ class ChartOfAccountsService {
 
       return balances.filter(balance => balance !== null) as AccountBalance[];
     } catch (error) {
-      console.error('Error getting account balances by type:', error);
+      logger.error('Error getting account balances by type:', error);
       return [];
     }
   }
@@ -550,7 +551,7 @@ class ChartOfAccountsService {
         take: limit,
       });
     } catch (error) {
-      console.error('Error searching accounts:', error);
+      logger.error('Error searching accounts:', error);
       return [];
     }
   }
@@ -587,7 +588,7 @@ class ChartOfAccountsService {
 
       return path;
     } catch (error) {
-      console.error('Error getting account path:', error);
+      logger.error('Error getting account path:', error);
       return [];
     }
   }
@@ -624,10 +625,10 @@ class ChartOfAccountsService {
         accountIdMap.set(accountData.key, account.id);
       }
 
-      console.log(`✅ Seeded ${createdAccounts.length} default accounts for company ${companyId}`);
+      logger.info(`✅ Seeded ${createdAccounts.length} default accounts for company ${companyId}`);
       return createdAccounts;
     } catch (error) {
-      console.error('Error seeding default accounts:', error);
+      logger.error('Error seeding default accounts:', error);
       throw error;
     }
   }

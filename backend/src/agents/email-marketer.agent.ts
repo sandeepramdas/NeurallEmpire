@@ -1,12 +1,13 @@
 import { BaseAgent, AgentExecutionResult } from './index';
 import { AgentType } from '@prisma/client';
+import { logger } from '@/infrastructure/logger';
 
 export class EmailMarketerAgent extends BaseAgent {
   async execute(input?: any): Promise<AgentExecutionResult> {
     const startTime = Date.now();
 
     try {
-      console.log(`[Email Marketer] Starting execution with config:`, this.config);
+      logger.info(`[Email Marketer] Starting execution with config:`, this.config);
 
       const emailProvider = this.config.configuration?.emailProvider || 'sendgrid';
       const templates = this.config.configuration?.templates || [];
@@ -55,11 +56,11 @@ export class EmailMarketerAgent extends BaseAgent {
         },
       };
 
-      console.log(`[Email Marketer] Sent ${personalizedEmails.length} emails with ${results.openRate}% open rate`);
+      logger.info(`[Email Marketer] Sent ${personalizedEmails.length} emails with ${results.openRate}% open rate`);
       return this.createSuccessResult(output, metrics);
 
     } catch (error) {
-      console.error(`[Email Marketer] Execution failed:`, error);
+      logger.error(`[Email Marketer] Execution failed:`, error);
       const metrics = this.generateMetrics(startTime, 0);
       return this.createErrorResult(
         error instanceof Error ? error.message : 'Email marketing failed',
@@ -182,7 +183,7 @@ export class EmailMarketerAgent extends BaseAgent {
   }
 
   private async simulateEmailSending(provider: string, emails: any[]) {
-    console.log(`[Email Marketer] Sending ${emails.length} emails via ${provider}`);
+    logger.info(`[Email Marketer] Sending ${emails.length} emails via ${provider}`);
 
     // Simulate different providers with different speeds
     const providerDelays: any = {
@@ -197,7 +198,7 @@ export class EmailMarketerAgent extends BaseAgent {
 
     for (let i = 0; i < batches; i++) {
       await this.simulateApiCall(delay);
-      console.log(`[Email Marketer] Sent batch ${i + 1}/${batches}`);
+      logger.info(`[Email Marketer] Sent batch ${i + 1}/${batches}`);
     }
   }
 

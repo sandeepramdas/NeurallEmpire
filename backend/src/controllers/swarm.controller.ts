@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { swarmService } from '@/services/swarm.service';
 import { AuthenticatedRequest } from '@/types';
 import { SwarmType, SwarmRole } from '@prisma/client';
+import { logger } from '@/infrastructure/logger';
 
 export class SwarmController {
   async createSwarm(req: AuthenticatedRequest, res: Response): Promise<Response | void> {
@@ -36,7 +37,7 @@ export class SwarmController {
         message: 'Swarm created successfully',
       });
     } catch (error) {
-      console.error('Error creating swarm:', error);
+      logger.error('Error creating swarm:', error);
       return res.status(500).json({
         success: false,
         message: 'Failed to create swarm',
@@ -54,7 +55,7 @@ export class SwarmController {
         data: swarms,
       });
     } catch (error) {
-      console.error('Error listing swarms:', error);
+      logger.error('Error listing swarms:', error);
       return res.status(500).json({
         success: false,
         message: 'Failed to list swarms',
@@ -72,7 +73,7 @@ export class SwarmController {
         data: swarm,
       });
     } catch (error) {
-      console.error('Error getting swarm:', error);
+      logger.error('Error getting swarm:', error);
 
       if (error instanceof Error && error.message === 'Swarm not found') {
         return res.status(404).json({
@@ -119,7 +120,7 @@ export class SwarmController {
         message: 'Agent added to swarm successfully',
       });
     } catch (error) {
-      console.error('Error adding agent to swarm:', error);
+      logger.error('Error adding agent to swarm:', error);
 
       if (error instanceof Error) {
         if (error.message.includes('not found')) {
@@ -154,7 +155,7 @@ export class SwarmController {
         message: 'Agent removed from swarm successfully',
       });
     } catch (error) {
-      console.error('Error removing agent from swarm:', error);
+      logger.error('Error removing agent from swarm:', error);
       return res.status(500).json({
         success: false,
         message: 'Failed to remove agent from swarm',
@@ -175,7 +176,7 @@ export class SwarmController {
         message: 'Swarm executed successfully',
       });
     } catch (error) {
-      console.error('Error executing swarm:', error);
+      logger.error('Error executing swarm:', error);
 
       if (error instanceof Error) {
         if (error.message.includes('not found')) {
@@ -212,7 +213,7 @@ export class SwarmController {
         data: swarmTypes,
       });
     } catch (error) {
-      console.error('Error getting swarm types:', error);
+      logger.error('Error getting swarm types:', error);
       return res.status(500).json({
         success: false,
         message: 'Failed to get swarm types',
@@ -233,7 +234,7 @@ export class SwarmController {
         data: swarmRoles,
       });
     } catch (error) {
-      console.error('Error getting swarm roles:', error);
+      logger.error('Error getting swarm roles:', error);
       return res.status(500).json({
         success: false,
         message: 'Failed to get swarm roles',

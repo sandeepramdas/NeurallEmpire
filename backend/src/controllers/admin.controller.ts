@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
+import { logger } from '@/infrastructure/logger';
 
 const prisma = new PrismaClient();
 
@@ -64,7 +65,7 @@ export class AdminController {
         }
       });
     } catch (error) {
-      console.error('Get organizations error:', error);
+      logger.error('Get organizations error:', error);
       res.status(500).json({ error: 'Failed to fetch organizations' });
     }
   }
@@ -138,7 +139,7 @@ export class AdminController {
         data: updated
       });
     } catch (error) {
-      console.error('Update organization status error:', error);
+      logger.error('Update organization status error:', error);
       res.status(500).json({ error: 'Failed to update organization status' });
     }
   }
@@ -185,7 +186,7 @@ export class AdminController {
         data: organization
       });
     } catch (error) {
-      console.error('Update organization plan error:', error);
+      logger.error('Update organization plan error:', error);
       res.status(500).json({ error: 'Failed to update organization plan' });
     }
   }
@@ -247,7 +248,7 @@ export class AdminController {
         }
       });
     } catch (error) {
-      console.error('Get users error:', error);
+      logger.error('Get users error:', error);
       res.status(500).json({ error: 'Failed to fetch users' });
     }
   }
@@ -302,7 +303,7 @@ export class AdminController {
         data: updated
       });
     } catch (error) {
-      console.error('Update user status error:', error);
+      logger.error('Update user status error:', error);
       res.status(500).json({ error: 'Failed to update user status' });
     }
   }
@@ -370,7 +371,7 @@ export class AdminController {
         data: stats
       });
     } catch (error) {
-      console.error('Get platform stats error:', error);
+      logger.error('Get platform stats error:', error);
       res.status(500).json({ error: 'Failed to fetch platform statistics' });
     }
   }
@@ -437,7 +438,7 @@ export class AdminController {
         }
       });
     } catch (error) {
-      console.error('Get audit logs error:', error);
+      logger.error('Get audit logs error:', error);
       res.status(500).json({ error: 'Failed to fetch audit logs' });
     }
   }
@@ -480,7 +481,7 @@ export class AdminController {
         }
       });
     } catch (error) {
-      console.error('Create admin error:', error);
+      logger.error('Create admin error:', error);
       res.status(500).json({ error: 'Failed to create admin' });
     }
   }

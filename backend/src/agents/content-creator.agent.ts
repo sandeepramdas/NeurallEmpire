@@ -1,12 +1,13 @@
 import { BaseAgent, AgentExecutionResult } from './index';
 import { AgentType } from '@prisma/client';
+import { logger } from '@/infrastructure/logger';
 
 export class ContentCreatorAgent extends BaseAgent {
   async execute(input?: any): Promise<AgentExecutionResult> {
     const startTime = Date.now();
 
     try {
-      console.log(`[Content Creator] Starting execution`);
+      logger.info(`[Content Creator] Starting execution`);
 
       const contentTypes = this.config.configuration?.contentTypes || ['blog_post'];
       const writing = this.config.configuration?.writing || {};

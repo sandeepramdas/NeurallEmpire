@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '@/server';
 import { AuthenticatedRequest } from '@/types';
+import { logger } from '@/infrastructure/logger';
 
 export const tenantResolver = async (
   req: AuthenticatedRequest,
@@ -104,7 +105,7 @@ export const tenantResolver = async (
 
     next();
   } catch (error) {
-    console.error('Tenant resolution error:', error);
+    logger.error('Tenant resolution error:', error);
     return res.status(500).json({
       success: false,
       error: 'Internal server error during tenant resolution',

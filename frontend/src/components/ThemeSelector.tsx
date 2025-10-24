@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Check, Palette, Sparkles } from 'lucide-react';
 
 interface ColorScheme {
@@ -118,6 +118,7 @@ const ThemeSelector: React.FC<ThemeSelectorProps> = ({ isOpen, onClose }) => {
 
     // Store in localStorage
     localStorage.setItem('neurallempire-color-scheme', JSON.stringify(scheme));
+    localStorage.setItem('neurallempire-selected-scheme', scheme.id);
 
     setSelectedScheme(scheme.id);
   };
@@ -129,10 +130,46 @@ const ThemeSelector: React.FC<ThemeSelectorProps> = ({ isOpen, onClose }) => {
     root.style.setProperty('--color-accent', customColors.accent);
 
     localStorage.setItem('neurallempire-custom-colors', JSON.stringify(customColors));
+    localStorage.setItem('neurallempire-selected-scheme', 'custom');
     setSelectedScheme('custom');
   };
 
-  if (!isOpen) return null;
+  // Load saved theme on mount
+  useEffect(() => {
+    // Load saved color scheme
+    const savedScheme = localStorage.getItem('neurallempire-color-scheme');
+    if (savedScheme) {
+      try {
+        const scheme = JSON.parse(savedScheme) as ColorScheme;
+        applyColorScheme(scheme);
+      } catch (error) {
+        console.error('Failed to load saved color scheme:', error);
+      }
+    }
+
+    // Load saved custom colors
+    const savedCustomColors = localStorage.getItem('neurallempire-custom-colors');
+    if (savedCustomColors) {
+      try {
+        const colors = JSON.parse(savedCustomColors);
+        setCustomColors(colors);
+        // If custom was selected, apply it
+        if (localStorage.getItem('neurallempire-selected-scheme') === 'custom') {
+          const root = document.documentElement;
+          root.style.setProperty('--color-primary', colors.primary);
+          root.style.setProperty('--color-secondary', colors.secondary);
+          root.style.setProperty('--color-accent', colors.accent);
+          setSelectedScheme('custom');
+        }
+      } catch (error) {
+        console.error('Failed to load custom colors:', error);
+      }
+    }
+  }, []);
+
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">

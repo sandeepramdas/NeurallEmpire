@@ -1,6 +1,7 @@
 import { prisma } from '@/server';
 import { Request } from 'express';
 import { AuthenticatedRequest } from '@/types';
+import { logger } from '@/infrastructure/logger';
 
 /**
  * Security Audit Logging Service
@@ -101,7 +102,7 @@ class AuditService {
 
       // For critical events, also log to console for immediate alerting
       if (data.severity === AuditSeverity.CRITICAL) {
-        console.error('🚨 CRITICAL SECURITY EVENT:', {
+        logger.error('🚨 CRITICAL SECURITY EVENT:', {
           eventType: data.eventType,
           userId: data.userId,
           details: data.details,
@@ -109,7 +110,7 @@ class AuditService {
       }
     } catch (error) {
       // Don't let audit logging failures break the app
-      console.error('Failed to create audit log:', error);
+      logger.error('Failed to create audit log:', error);
     }
   }
 

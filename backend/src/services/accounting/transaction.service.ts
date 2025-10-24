@@ -7,6 +7,7 @@
 import { prisma } from '@/server';
 import { Transaction, JournalEntry, TransactionType, TransactionStatus } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
+import { logger } from '@/infrastructure/logger';
 
 interface CreateTransactionDTO {
   transactionType: TransactionType;
@@ -140,7 +141,7 @@ class TransactionService {
 
       return transaction;
     } catch (error) {
-      console.error('Error creating transaction:', error);
+      logger.error('Error creating transaction:', error);
       throw error;
     }
   }
@@ -248,7 +249,7 @@ class TransactionService {
 
       return transaction;
     } catch (error) {
-      console.error('Error updating transaction:', error);
+      logger.error('Error updating transaction:', error);
       throw error;
     }
   }
@@ -333,7 +334,7 @@ class TransactionService {
 
       return result;
     } catch (error) {
-      console.error('Error posting transaction:', error);
+      logger.error('Error posting transaction:', error);
       throw error;
     }
   }
@@ -444,7 +445,7 @@ class TransactionService {
 
       return result;
     } catch (error) {
-      console.error('Error voiding transaction:', error);
+      logger.error('Error voiding transaction:', error);
       throw error;
     }
   }
@@ -500,7 +501,7 @@ class TransactionService {
         },
       });
     } catch (error) {
-      console.error('Error deleting transaction:', error);
+      logger.error('Error deleting transaction:', error);
       throw error;
     }
   }
@@ -529,7 +530,7 @@ class TransactionService {
         },
       });
     } catch (error) {
-      console.error('Error getting transaction:', error);
+      logger.error('Error getting transaction:', error);
       return null;
     }
   }
@@ -597,7 +598,7 @@ class TransactionService {
         skip: options?.offset || 0,
       });
     } catch (error) {
-      console.error('Error getting transactions:', error);
+      logger.error('Error getting transactions:', error);
       return [];
     }
   }
@@ -662,7 +663,7 @@ class TransactionService {
 
       return Array.from(transactionMap.values());
     } catch (error) {
-      console.error('Error getting account transactions:', error);
+      logger.error('Error getting account transactions:', error);
       return [];
     }
   }
@@ -718,7 +719,7 @@ class TransactionService {
         byStatus: byStatus as Record<TransactionStatus, number>,
       };
     } catch (error) {
-      console.error('Error getting transaction summary:', error);
+      logger.error('Error getting transaction summary:', error);
       return {
         totalTransactions: 0,
         totalDebit: 0,
@@ -762,7 +763,7 @@ class TransactionService {
         take: limit,
       }) as any;
     } catch (error) {
-      console.error('Error searching transactions:', error);
+      logger.error('Error searching transactions:', error);
       return [];
     }
   }
@@ -899,7 +900,7 @@ class TransactionService {
       const count = await prisma.transaction.count({ where: { companyId } });
       return `TXN-${(count + 1).toString().padStart(4, '0')}`;
     } catch (error) {
-      console.error('Error generating transaction number:', error);
+      logger.error('Error generating transaction number:', error);
       return `TXN-${Date.now()}`;
     }
   }

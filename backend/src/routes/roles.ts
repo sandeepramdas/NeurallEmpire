@@ -9,6 +9,7 @@ import { authenticate } from '@/middleware/auth';
 import { requirePermission, requireRole } from '@/middleware/rbac';
 import { requireCompanyContext } from '@/middleware/company-context';
 import { rbacService } from '@/services/rbac.service';
+import { logger } from '@/infrastructure/logger';
 
 const router = Router();
 
@@ -29,7 +30,7 @@ router.get(
         data: roles,
       });
     } catch (error: any) {
-      console.error('Error fetching roles:', error);
+      logger.error('Error fetching roles:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch roles',
@@ -72,7 +73,7 @@ router.get(
         data: role,
       });
     } catch (error: any) {
-      console.error('Error fetching role:', error);
+      logger.error('Error fetching role:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch role',
@@ -125,7 +126,7 @@ router.post(
         message: 'Role created successfully',
       });
     } catch (error: any) {
-      console.error('Error creating role:', error);
+      logger.error('Error creating role:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to create role',
@@ -155,7 +156,7 @@ router.put(
         message: 'Role updated successfully',
       });
     } catch (error: any) {
-      console.error('Error updating role:', error);
+      logger.error('Error updating role:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to update role',
@@ -183,7 +184,7 @@ router.delete(
         message: 'Role deleted successfully',
       });
     } catch (error: any) {
-      console.error('Error deleting role:', error);
+      logger.error('Error deleting role:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to delete role',
@@ -209,7 +210,7 @@ router.get(
         data: permissions,
       });
     } catch (error: any) {
-      console.error('Error fetching permissions:', error);
+      logger.error('Error fetching permissions:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch permissions',
@@ -235,7 +236,7 @@ router.get(
         data: permissions,
       });
     } catch (error: any) {
-      console.error('Error fetching permissions by module:', error);
+      logger.error('Error fetching permissions by module:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch permissions',
@@ -276,7 +277,7 @@ router.post(
         message: 'Role assigned successfully',
       });
     } catch (error: any) {
-      console.error('Error assigning role:', error);
+      logger.error('Error assigning role:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to assign role',
@@ -312,7 +313,7 @@ router.delete(
         message: 'Role removed successfully',
       });
     } catch (error: any) {
-      console.error('Error removing role:', error);
+      logger.error('Error removing role:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to remove role',
@@ -356,7 +357,7 @@ router.get(
         data: roles,
       });
     } catch (error: any) {
-      console.error('Error fetching user roles:', error);
+      logger.error('Error fetching user roles:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch user roles',
@@ -400,7 +401,7 @@ router.get(
         data: permissions,
       });
     } catch (error: any) {
-      console.error('Error fetching user permissions:', error);
+      logger.error('Error fetching user permissions:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch user permissions',
@@ -441,7 +442,7 @@ router.post(
         message: 'Permissions granted successfully',
       });
     } catch (error: any) {
-      console.error('Error granting permissions:', error);
+      logger.error('Error granting permissions:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to grant permissions',
@@ -482,7 +483,7 @@ router.post(
         message: 'Permissions revoked successfully',
       });
     } catch (error: any) {
-      console.error('Error revoking permissions:', error);
+      logger.error('Error revoking permissions:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to revoke permissions',
@@ -509,7 +510,7 @@ router.post(
         message: 'Default roles seeded successfully',
       });
     } catch (error: any) {
-      console.error('Error seeding default roles:', error);
+      logger.error('Error seeding default roles:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to seed default roles',

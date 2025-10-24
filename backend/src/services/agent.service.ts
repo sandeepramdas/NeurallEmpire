@@ -1,6 +1,7 @@
 import { prisma } from '@/server';
 import { AgentType, AgentStatus, ExecutionStatus } from '@prisma/client';
 import { EventEmitter } from 'events';
+import { logger } from '@/infrastructure/logger';
 
 export interface AgentConfig {
   type: AgentType;
@@ -44,7 +45,7 @@ class AgentService extends EventEmitter {
       this.emit('agentCreated', { agentId: agent.id, organizationId });
       return agent;
     } catch (error) {
-      console.error('Failed to create agent:', error);
+      logger.error('Failed to create agent:', error);
       throw new Error('Failed to create agent');
     }
   }
@@ -59,7 +60,7 @@ class AgentService extends EventEmitter {
       this.emit('agentUpdated', { agentId, updates });
       return agent;
     } catch (error) {
-      console.error('Failed to update agent:', error);
+      logger.error('Failed to update agent:', error);
       throw new Error('Failed to update agent');
     }
   }
@@ -97,7 +98,7 @@ class AgentService extends EventEmitter {
       this.emit('agentStarted', { agentId });
       return true;
     } catch (error) {
-      console.error('Failed to start agent:', error);
+      logger.error('Failed to start agent:', error);
 
       // Update agent status to error
       await prisma.agent.update({
@@ -135,7 +136,7 @@ class AgentService extends EventEmitter {
       this.emit('agentStopped', { agentId });
       return true;
     } catch (error) {
-      console.error('Failed to stop agent:', error);
+      logger.error('Failed to stop agent:', error);
       throw error;
     }
   }
@@ -213,7 +214,7 @@ class AgentService extends EventEmitter {
       // Update agent metrics
       await this.updateAgentMetrics(agentId, false, duration);
 
-      console.error('Agent execution failed:', error);
+      logger.error('Agent execution failed:', error);
 
       return {
         success: false,
@@ -291,11 +292,11 @@ class AgentService extends EventEmitter {
           };
         }
       } catch (factoryError) {
-        console.warn(`AgentFactory failed, using simulation:`, factoryError);
+        logger.warn(`AgentFactory failed, using simulation:`, factoryError);
       }
 
       // Final fallback to simulation
-      console.warn(`Falling back to simulation for agent ${agent.type}:`, error);
+      logger.warn(`Falling back to simulation for agent ${agent.type}:`, error);
       return this.executeSimpleAgent(agent, input);
     }
   }
@@ -405,7 +406,7 @@ class AgentService extends EventEmitter {
 
       return agentResponse;
     } catch (error: any) {
-      console.error('Execute with RAG context error:', error);
+      logger.error('Execute with RAG context error:', error);
       throw new Error(error.message || 'Failed to execute agent with RAG context');
     }
   }
@@ -460,7 +461,7 @@ class AgentService extends EventEmitter {
 
       return context;
     } catch (error: any) {
-      console.error('Get agent context error:', error);
+      logger.error('Get agent context error:', error);
       throw new Error('Failed to get agent context');
     }
   }
@@ -500,7 +501,7 @@ class AgentService extends EventEmitter {
         createdBy: createdBy || agentId
       });
     } catch (error: any) {
-      console.error('Add agent knowledge error:', error);
+      logger.error('Add agent knowledge error:', error);
       throw new Error('Failed to add agent knowledge');
     }
   }
@@ -532,7 +533,7 @@ class AgentService extends EventEmitter {
         minSimilarity: 0.6
       });
     } catch (error: any) {
-      console.error('Search agent knowledge error:', error);
+      logger.error('Search agent knowledge error:', error);
       throw new Error('Failed to search agent knowledge');
     }
   }
@@ -581,7 +582,7 @@ class AgentService extends EventEmitter {
         `;
       }
     } catch (error: any) {
-      console.error('Get conversation history error:', error);
+      logger.error('Get conversation history error:', error);
       throw new Error('Failed to get conversation history');
     }
   }

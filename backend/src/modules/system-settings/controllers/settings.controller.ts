@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import SystemSettingsService from '../services/settings.service';
 import { captureException } from '@/config/sentry';
+import { logger } from '@/infrastructure/logger';
 
 export class SystemSettingsController {
   /**
@@ -26,7 +27,7 @@ export class SystemSettingsController {
         data: { key, value },
       });
     } catch (error: any) {
-      console.error('Error getting setting:', error);
+      logger.error('Error getting setting:', error);
       captureException(error);
       res.status(500).json({
         success: false,
@@ -58,7 +59,7 @@ export class SystemSettingsController {
         data: setting,
       });
     } catch (error: any) {
-      console.error('Error getting setting details:', error);
+      logger.error('Error getting setting details:', error);
       captureException(error);
       res.status(500).json({
         success: false,
@@ -90,7 +91,7 @@ export class SystemSettingsController {
         count: settings.length,
       });
     } catch (error: any) {
-      console.error('Error getting settings:', error);
+      logger.error('Error getting settings:', error);
       captureException(error);
       res.status(500).json({
         success: false,
@@ -116,7 +117,7 @@ export class SystemSettingsController {
         count: settings.length,
       });
     } catch (error: any) {
-      console.error('Error getting settings by category:', error);
+      logger.error('Error getting settings by category:', error);
       captureException(error);
       res.status(500).json({
         success: false,
@@ -140,7 +141,7 @@ export class SystemSettingsController {
         data: settings,
       });
     } catch (error: any) {
-      console.error('Error getting public settings:', error);
+      logger.error('Error getting public settings:', error);
       captureException(error);
       res.status(500).json({
         success: false,
@@ -179,7 +180,7 @@ export class SystemSettingsController {
         message: 'Setting updated successfully',
       });
     } catch (error: any) {
-      console.error('Error setting value:', error);
+      logger.error('Error setting value:', error);
       captureException(error);
       res.status(500).json({
         success: false,
@@ -204,7 +205,7 @@ export class SystemSettingsController {
         message: 'Setting deleted successfully',
       });
     } catch (error: any) {
-      console.error('Error deleting setting:', error);
+      logger.error('Error deleting setting:', error);
       captureException(error);
       res.status(500).json({
         success: false,
@@ -229,7 +230,7 @@ export class SystemSettingsController {
         message: 'Setting reset to default value',
       });
     } catch (error: any) {
-      console.error('Error resetting setting:', error);
+      logger.error('Error resetting setting:', error);
       captureException(error);
       res.status(500).json({
         success: false,
@@ -261,7 +262,7 @@ export class SystemSettingsController {
         message: `${settings.length} settings updated successfully`,
       });
     } catch (error: any) {
-      console.error('Error bulk updating settings:', error);
+      logger.error('Error bulk updating settings:', error);
       captureException(error);
       res.status(500).json({
         success: false,
@@ -289,7 +290,7 @@ export class SystemSettingsController {
         },
       });
     } catch (error: any) {
-      console.error('Error checking feature flag:', error);
+      logger.error('Error checking feature flag:', error);
       captureException(error);
       res.status(500).json({
         success: false,
@@ -314,7 +315,7 @@ export class SystemSettingsController {
         message: `Feature ${featureName} enabled`,
       });
     } catch (error: any) {
-      console.error('Error enabling feature:', error);
+      logger.error('Error enabling feature:', error);
       captureException(error);
       res.status(500).json({
         success: false,
@@ -339,7 +340,7 @@ export class SystemSettingsController {
         message: `Feature ${featureName} disabled`,
       });
     } catch (error: any) {
-      console.error('Error disabling feature:', error);
+      logger.error('Error disabling feature:', error);
       captureException(error);
       res.status(500).json({
         success: false,

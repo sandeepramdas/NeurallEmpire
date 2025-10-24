@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import StorageService from '@/infrastructure/storage/storage.service';
 import { captureException } from '@/config/sentry';
+import { logger } from '@/infrastructure/logger';
 
 export class FilesController {
   /**
@@ -51,7 +52,7 @@ export class FilesController {
         message: 'File uploaded successfully',
       });
     } catch (error: any) {
-      console.error('Error uploading file:', error);
+      logger.error('Error uploading file:', error);
       captureException(error);
       res.status(500).json({
         success: false,
@@ -84,7 +85,7 @@ export class FilesController {
         count: files.length,
       });
     } catch (error: any) {
-      console.error('Error listing files:', error);
+      logger.error('Error listing files:', error);
       captureException(error);
       res.status(500).json({
         success: false,
@@ -116,7 +117,7 @@ export class FilesController {
         data: file,
       });
     } catch (error: any) {
-      console.error('Error getting file:', error);
+      logger.error('Error getting file:', error);
       captureException(error);
       res.status(404).json({
         success: false,
@@ -148,7 +149,7 @@ export class FilesController {
         data: { url },
       });
     } catch (error: any) {
-      console.error('Error getting download URL:', error);
+      logger.error('Error getting download URL:', error);
       captureException(error);
       res.status(404).json({
         success: false,
@@ -180,7 +181,7 @@ export class FilesController {
         message: 'File deleted successfully',
       });
     } catch (error: any) {
-      console.error('Error deleting file:', error);
+      logger.error('Error deleting file:', error);
       captureException(error);
       res.status(500).json({
         success: false,
@@ -211,7 +212,7 @@ export class FilesController {
         data: usage,
       });
     } catch (error: any) {
-      console.error('Error getting storage usage:', error);
+      logger.error('Error getting storage usage:', error);
       captureException(error);
       res.status(500).json({
         success: false,

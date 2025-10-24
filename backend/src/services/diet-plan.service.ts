@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import { logger } from '@/infrastructure/logger';
 
 /**
  * Diet Plan Generator Service
@@ -15,10 +16,10 @@ export class DietPlanService {
       this.openai = new OpenAI({
         apiKey: apiKey
       });
-      console.log('✅ DietPlanService: OpenAI API key configured successfully');
+      logger.info('✅ DietPlanService: OpenAI API key configured successfully');
     } else {
-      console.warn('⚠️  DietPlanService: OPENAI_API_KEY is not configured or is a placeholder. Diet plan generation will not work.');
-      console.warn('⚠️  Current API key value:', apiKey ? `${apiKey.substring(0, 10)}...` : 'undefined');
+      logger.warn('⚠️  DietPlanService: OPENAI_API_KEY is not configured or is a placeholder. Diet plan generation will not work.');
+      logger.warn('⚠️  Current API key value:', apiKey ? `${apiKey.substring(0, 10)}...` : 'undefined');
     }
   }
 
@@ -189,7 +190,7 @@ Provide ONLY the JSON response, no additional text.`;
         }
       };
     } catch (error: any) {
-      console.error('Diet plan generation error:', error);
+      logger.error('Diet plan generation error:', error);
       return {
         success: false,
         error: error.message || 'Failed to generate diet plan'

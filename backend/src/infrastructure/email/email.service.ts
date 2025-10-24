@@ -1,6 +1,7 @@
 import sgMail from '@sendgrid/mail';
 import { prisma } from '@/server';
 import { captureException } from '@/config/sentry';
+import { logger } from '@/infrastructure/logger';
 
 // Initialize SendGrid
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
@@ -9,9 +10,9 @@ const FROM_NAME = process.env.FROM_NAME || 'NeurallEmpire';
 
 if (SENDGRID_API_KEY) {
   sgMail.setApiKey(SENDGRID_API_KEY);
-  console.log('✅ SendGrid email service initialized');
+  logger.info('✅ SendGrid email service initialized');
 } else {
-  console.log('⚠️  SendGrid API key not configured, email sending disabled');
+  logger.info('⚠️  SendGrid API key not configured, email sending disabled');
 }
 
 export interface SendEmailOptions {
@@ -43,7 +44,7 @@ export class EmailService {
   static async send(options: SendEmailOptions): Promise<{ success: boolean; messageId?: string; error?: string }> {
     try {
       if (!SENDGRID_API_KEY) {
-        console.log('📧 Email sending disabled (no API key):', options.subject);
+        logger.info('📧 Email sending disabled (no API key):', options.subject);
         return { success: false, error: 'SendGrid not configured' };
       }
 
@@ -103,14 +104,14 @@ export class EmailService {
         },
       });
 
-      console.log(`✅ Email sent to ${toArray.join(', ')}: ${options.subject}`);
+      logger.info(`✅ Email sent to ${toArray.join(', ')}: ${options.subject}`);
 
       return {
         success: true,
         messageId: emailNotification.id,
       };
     } catch (error: any) {
-      console.error('❌ Email send error:', error);
+      logger.error('❌ Email send error:', error);
       captureException(error, { emailOptions: options });
 
       // Update status to failed
@@ -128,7 +129,7 @@ export class EmailService {
           },
         });
       } catch (dbError) {
-        console.error('Failed to update email status:', dbError);
+        logger.error('Failed to update email status:', dbError);
       }
 
       return {

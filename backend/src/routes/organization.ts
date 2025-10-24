@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '@/server';
+import { logger } from '@/infrastructure/logger';
 
 const router = Router();
 
@@ -34,7 +35,7 @@ router.get('/', async (req: Request, res: Response) => {
       data: organization
     });
   } catch (error) {
-    console.error('Get organization error:', error);
+    logger.error('Get organization error:', error);
     res.status(500).json({ error: 'Failed to fetch organization' });
   }
 });
@@ -69,7 +70,7 @@ router.put('/', async (req: Request, res: Response) => {
       data: updated
     });
   } catch (error) {
-    console.error('Update organization error:', error);
+    logger.error('Update organization error:', error);
     res.status(500).json({ error: 'Failed to update organization' });
   }
 });
@@ -101,7 +102,7 @@ router.get('/users', async (req: Request, res: Response) => {
       data: users
     });
   } catch (error) {
-    console.error('Get organization users error:', error);
+    logger.error('Get organization users error:', error);
     res.status(500).json({ error: 'Failed to fetch users' });
   }
 });
@@ -147,7 +148,7 @@ router.post('/users/invite', async (req: Request, res: Response) => {
       message: `Invitation sent to ${email}`
     });
   } catch (error) {
-    console.error('Invite user error:', error);
+    logger.error('Invite user error:', error);
     res.status(500).json({ error: 'Failed to invite user' });
   }
 });
@@ -198,7 +199,7 @@ router.put('/users/:id', async (req: Request, res: Response) => {
       data: updated
     });
   } catch (error) {
-    console.error('Update user error:', error);
+    logger.error('Update user error:', error);
     res.status(500).json({ error: 'Failed to update user' });
   }
 });
@@ -252,7 +253,7 @@ router.delete('/users/:id', async (req: Request, res: Response) => {
       message: 'User removed from organization'
     });
   } catch (error) {
-    console.error('Remove user error:', error);
+    logger.error('Remove user error:', error);
     res.status(500).json({ error: 'Failed to remove user' });
   }
 });
@@ -327,7 +328,7 @@ router.get('/usage', async (req: Request, res: Response) => {
       data: usage
     });
   } catch (error) {
-    console.error('Get usage metrics error:', error);
+    logger.error('Get usage metrics error:', error);
     res.status(500).json({ error: 'Failed to fetch usage metrics' });
   }
 });
@@ -368,7 +369,7 @@ router.get('/billing', async (req: Request, res: Response) => {
       }
     });
   } catch (error) {
-    console.error('Get billing info error:', error);
+    logger.error('Get billing info error:', error);
     res.status(500).json({ error: 'Failed to fetch billing information' });
   }
 });

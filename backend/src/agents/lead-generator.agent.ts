@@ -1,12 +1,13 @@
 import { BaseAgent, AgentExecutionResult } from './index';
 import { AgentType } from '@prisma/client';
+import { logger } from '@/infrastructure/logger';
 
 export class LeadGeneratorAgent extends BaseAgent {
   async execute(input?: any): Promise<AgentExecutionResult> {
     const startTime = Date.now();
 
     try {
-      console.log(`[Lead Generator] Starting execution with config:`, this.config);
+      logger.info(`[Lead Generator] Starting execution with config:`, this.config);
 
       // Simulate API calls to various lead sources
       const sources = this.config.configuration?.sources || ['website', 'social_media', 'linkedin'];
@@ -44,11 +45,11 @@ export class LeadGeneratorAgent extends BaseAgent {
         },
       };
 
-      console.log(`[Lead Generator] Generated ${leads.length} leads, ${qualifiedLeads.length} qualified`);
+      logger.info(`[Lead Generator] Generated ${leads.length} leads, ${qualifiedLeads.length} qualified`);
       return this.createSuccessResult(output, metrics);
 
     } catch (error) {
-      console.error(`[Lead Generator] Execution failed:`, error);
+      logger.error(`[Lead Generator] Execution failed:`, error);
       const metrics = this.generateMetrics(startTime, 0);
       return this.createErrorResult(
         error instanceof Error ? error.message : 'Lead generation failed',

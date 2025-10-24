@@ -4,6 +4,7 @@ import { subdomainService } from '@/services/subdomain.service';
 import { authenticate } from '@/middleware/auth';
 import { tenantResolver, requireTenant } from '@/middleware/tenant';
 import { authorize } from '@/middleware/auth';
+import { logger } from '@/infrastructure/logger';
 
 const router = Router();
 
@@ -50,7 +51,7 @@ router.post('/create', authorize('OWNER', 'ADMIN'), async (req, res) => {
     });
 
   } catch (error: any) {
-    console.error('Subdomain creation error:', error);
+    logger.error('Subdomain creation error:', error);
 
     res.status(400).json({
       success: false,
@@ -76,7 +77,7 @@ router.get('/status', requireTenant, async (req, res) => {
     });
 
   } catch (error: any) {
-    console.error('Subdomain status error:', error);
+    logger.error('Subdomain status error:', error);
 
     res.status(500).json({
       success: false,
@@ -133,7 +134,7 @@ router.post('/verify', authorize('OWNER', 'ADMIN'), async (req, res) => {
     });
 
   } catch (error: any) {
-    console.error('Subdomain verification error:', error);
+    logger.error('Subdomain verification error:', error);
 
     res.status(500).json({
       success: false,
@@ -191,7 +192,7 @@ router.delete('/', authorize('OWNER'), async (req, res) => {
     });
 
   } catch (error: any) {
-    console.error('Subdomain deletion error:', error);
+    logger.error('Subdomain deletion error:', error);
 
     res.status(400).json({
       success: false,
@@ -228,7 +229,7 @@ router.get('/metrics', requireTenant, async (req, res) => {
     });
 
   } catch (error: any) {
-    console.error('Subdomain metrics error:', error);
+    logger.error('Subdomain metrics error:', error);
 
     res.status(500).json({
       success: false,
@@ -297,7 +298,7 @@ router.get('/check-availability/:slug', async (req, res) => {
     });
 
   } catch (error: any) {
-    console.error('Subdomain availability check error:', error);
+    logger.error('Subdomain availability check error:', error);
 
     res.status(500).json({
       success: false,
@@ -328,7 +329,7 @@ router.get('/admin/list', async (req, res) => {
     });
 
   } catch (error: any) {
-    console.error('Subdomain admin list error:', error);
+    logger.error('Subdomain admin list error:', error);
 
     res.status(500).json({
       success: false,

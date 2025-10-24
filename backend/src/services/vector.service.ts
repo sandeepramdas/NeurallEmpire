@@ -6,6 +6,7 @@
 
 import { prisma } from '@/server';
 import { config } from '@/config/env';
+import { logger } from '@/infrastructure/logger';
 
 export interface EmbeddingOptions {
   model?: string;
@@ -41,7 +42,7 @@ export async function generateEmbedding(
   // Check if OpenAI API key is configured
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    console.warn('OpenAI API key not configured. Using mock embedding.');
+    logger.warn('OpenAI API key not configured. Using mock embedding.');
     // Return mock embedding (1536 dimensions for text-embedding-ada-002)
     return Array(1536).fill(0).map(() => Math.random());
   }
@@ -67,7 +68,7 @@ export async function generateEmbedding(
     const data: any = await response.json();
     return data.data[0].embedding;
   } catch (error) {
-    console.error('Error generating embedding:', error);
+    logger.error('Error generating embedding:', error);
     // Fallback to mock embedding
     return Array(1536).fill(0).map(() => Math.random());
   }

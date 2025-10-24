@@ -6,6 +6,7 @@
 
 import { prisma } from '@/server';
 import { Permission, Role } from '@prisma/client';
+import { logger } from '@/infrastructure/logger';
 
 interface UserPermissions {
   userId: string;
@@ -80,7 +81,7 @@ class RBACService {
 
       return Array.from(permissionsSet);
     } catch (error) {
-      console.error('Error getting user permissions:', error);
+      logger.error('Error getting user permissions:', error);
       return [];
     }
   }
@@ -121,7 +122,7 @@ class RBACService {
 
       return userAccess?.role ? [userAccess.role] : [];
     } catch (error) {
-      console.error('Error getting user roles:', error);
+      logger.error('Error getting user roles:', error);
       return [];
     }
   }
@@ -198,7 +199,7 @@ class RBACService {
         },
       });
     } catch (error) {
-      console.error('Error assigning role:', error);
+      logger.error('Error assigning role:', error);
       throw error;
     }
   }
@@ -247,7 +248,7 @@ class RBACService {
         },
       });
     } catch (error) {
-      console.error('Error removing role:', error);
+      logger.error('Error removing role:', error);
       throw error;
     }
   }
@@ -303,7 +304,7 @@ class RBACService {
 
       return role;
     } catch (error) {
-      console.error('Error creating role:', error);
+      logger.error('Error creating role:', error);
       throw error;
     }
   }
@@ -374,7 +375,7 @@ class RBACService {
 
       return role;
     } catch (error) {
-      console.error('Error updating role:', error);
+      logger.error('Error updating role:', error);
       throw error;
     }
   }
@@ -422,7 +423,7 @@ class RBACService {
         },
       });
     } catch (error) {
-      console.error('Error deleting role:', error);
+      logger.error('Error deleting role:', error);
       throw error;
     }
   }
@@ -440,7 +441,7 @@ class RBACService {
         ],
       });
     } catch (error) {
-      console.error('Error getting organization roles:', error);
+      logger.error('Error getting organization roles:', error);
       return [];
     }
   }
@@ -454,7 +455,7 @@ class RBACService {
         where: { id: roleId },
       });
     } catch (error) {
-      console.error('Error getting role:', error);
+      logger.error('Error getting role:', error);
       return null;
     }
   }
@@ -472,7 +473,7 @@ class RBACService {
         ],
       });
     } catch (error) {
-      console.error('Error getting permissions:', error);
+      logger.error('Error getting permissions:', error);
       return [];
     }
   }
@@ -495,7 +496,7 @@ class RBACService {
 
       return grouped;
     } catch (error) {
-      console.error('Error getting permissions by module:', error);
+      logger.error('Error getting permissions by module:', error);
       return {};
     }
   }
@@ -551,7 +552,7 @@ class RBACService {
         },
       });
     } catch (error) {
-      console.error('Error granting permissions:', error);
+      logger.error('Error granting permissions:', error);
       throw error;
     }
   }
@@ -607,7 +608,7 @@ class RBACService {
         },
       });
     } catch (error) {
-      console.error('Error revoking permissions:', error);
+      logger.error('Error revoking permissions:', error);
       throw error;
     }
   }
@@ -652,10 +653,10 @@ class RBACService {
         createdRoles.push(role);
       }
 
-      console.log(`✅ Seeded ${createdRoles.length} default roles for organization ${organizationId}`);
+      logger.info(`✅ Seeded ${createdRoles.length} default roles for organization ${organizationId}`);
       return createdRoles;
     } catch (error) {
-      console.error('Error seeding default roles:', error);
+      logger.error('Error seeding default roles:', error);
       throw error;
     }
   }

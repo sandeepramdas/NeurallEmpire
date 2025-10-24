@@ -7,6 +7,7 @@
 import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '@/types';
 import { rbacService } from '@/services/rbac.service';
+import { logger } from '@/infrastructure/logger';
 
 /**
  * Check if user has specific permission(s)
@@ -59,7 +60,7 @@ export const requirePermission = (required: string | string[]) => {
 
       next();
     } catch (error) {
-      console.error('Permission check error:', error);
+      logger.error('Permission check error:', error);
       return res.status(500).json({
         success: false,
         error: 'Permission check failed',
@@ -118,7 +119,7 @@ export const requireAnyPermission = (required: string[]) => {
 
       next();
     } catch (error) {
-      console.error('Permission check error:', error);
+      logger.error('Permission check error:', error);
       return res.status(500).json({
         success: false,
         error: 'Permission check failed',
@@ -180,7 +181,7 @@ export const requireRole = (required: string | string[]) => {
 
       next();
     } catch (error) {
-      console.error('Role check error:', error);
+      logger.error('Role check error:', error);
       return res.status(500).json({
         success: false,
         error: 'Role check failed',
@@ -257,7 +258,7 @@ export const requireOwnerOrAdmin = (getResourceOwnerId: (req: AuthenticatedReque
         error: 'Access denied',
       });
     } catch (error) {
-      console.error('Owner/admin check error:', error);
+      logger.error('Owner/admin check error:', error);
       return res.status(500).json({
         success: false,
         error: 'Access check failed',
@@ -297,7 +298,7 @@ export const loadPermissionsAndRoles = async (
 
     next();
   } catch (error) {
-    console.error('Error loading permissions and roles:', error);
+    logger.error('Error loading permissions and roles:', error);
     next(); // Don't block request on error
   }
 };

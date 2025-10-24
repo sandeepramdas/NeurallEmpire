@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import validator from 'validator';
+import { logger } from '@/infrastructure/logger';
 
 /**
  * Input Sanitization Middleware
@@ -58,7 +59,7 @@ export const sanitizeInput = (req: Request, res: Response, next: NextFunction): 
 
     next();
   } catch (error) {
-    console.error('Error in sanitization middleware:', error);
+    logger.error('Error in sanitization middleware:', error);
     next(error);
   }
 };

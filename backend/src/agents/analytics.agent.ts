@@ -1,12 +1,13 @@
 import { BaseAgent, AgentExecutionResult } from './index';
 import { AgentType } from '@prisma/client';
+import { logger } from '@/infrastructure/logger';
 
 export class AnalyticsAgent extends BaseAgent {
   async execute(input?: any): Promise<AgentExecutionResult> {
     const startTime = Date.now();
 
     try {
-      console.log(`[Analytics] Starting execution`);
+      logger.info(`[Analytics] Starting execution`);
 
       const dataSources = this.config.configuration?.dataSources || ['google_analytics'];
       const metrics = this.config.configuration?.metrics || ['traffic', 'conversions'];

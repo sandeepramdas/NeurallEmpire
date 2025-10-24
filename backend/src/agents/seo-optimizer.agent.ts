@@ -1,12 +1,13 @@
 import { BaseAgent, AgentExecutionResult } from './index';
 import { AgentType } from '@prisma/client';
+import { logger } from '@/infrastructure/logger';
 
 export class SEOOptimizerAgent extends BaseAgent {
   async execute(input?: any): Promise<AgentExecutionResult> {
     const startTime = Date.now();
 
     try {
-      console.log(`[SEO Optimizer] Starting execution`);
+      logger.info(`[SEO Optimizer] Starting execution`);
 
       const targets = this.config.configuration?.targets || {};
       const optimization = this.config.configuration?.optimization || {};

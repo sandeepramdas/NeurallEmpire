@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { prisma } from '@/server';
 import { dietPlanService } from '@/services/diet-plan.service';
 import { AuthenticatedRequest } from '@/types';
+import { logger } from '@/infrastructure/logger';
 
 type AuthRequest = AuthenticatedRequest;
 
@@ -52,7 +53,7 @@ class DietPlanController {
         }
       });
     } catch (error: any) {
-      console.error('Error fetching diet plans:', error);
+      logger.error('Error fetching diet plans:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to fetch diet plans',
@@ -89,7 +90,7 @@ class DietPlanController {
         data: dietPlan
       });
     } catch (error: any) {
-      console.error('Error fetching diet plan:', error);
+      logger.error('Error fetching diet plan:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to fetch diet plan',
@@ -140,7 +141,7 @@ class DietPlanController {
       }
 
       // Generate diet plan using AI
-      console.log(`🔄 Generating ${numberOfDays}-day diet plan for patient:`, patientName);
+      logger.info(`🔄 Generating ${numberOfDays}-day diet plan for patient:`, patientName);
       const result = await dietPlanService.generateDietPlan({
         patientName,
         patientAge,
@@ -157,14 +158,14 @@ class DietPlanController {
       });
 
       if (!result.success || !result.dietPlan) {
-        console.error('❌ Diet plan generation failed:', result.error);
+        logger.error('❌ Diet plan generation failed:', result.error);
         return res.status(500).json({
           success: false,
           message: result.error || 'Failed to generate diet plan'
         });
       }
 
-      console.log('✅ Diet plan generated successfully');
+      logger.info('✅ Diet plan generated successfully');
 
       // Calculate validity period
       const validUntil = new Date();
@@ -203,7 +204,7 @@ class DietPlanController {
         message: 'Diet plan generated successfully'
       });
     } catch (error: any) {
-      console.error('Error generating diet plan:', error);
+      logger.error('Error generating diet plan:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to generate diet plan',
@@ -249,7 +250,7 @@ class DietPlanController {
         message: 'Diet plan status updated successfully'
       });
     } catch (error: any) {
-      console.error('Error updating diet plan:', error);
+      logger.error('Error updating diet plan:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to update diet plan',
@@ -286,7 +287,7 @@ class DietPlanController {
         message: 'Diet plan deleted successfully'
       });
     } catch (error: any) {
-      console.error('Error deleting diet plan:', error);
+      logger.error('Error deleting diet plan:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to delete diet plan',

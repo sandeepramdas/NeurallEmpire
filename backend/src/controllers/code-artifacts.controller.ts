@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { prisma } from '@/server';
 import { z } from 'zod';
 import { CodeGenerationService } from '@/services/code-generation.service';
+import { logger } from '@/infrastructure/logger';
 
 // Validation schemas
 const createArtifactSchema = z.object({
@@ -58,7 +59,7 @@ export class CodeArtifactsController {
 
       return res.json(artifacts);
     } catch (error: any) {
-      console.error('Get artifacts error:', error);
+      logger.error('Get artifacts error:', error);
       return res.status(500).json({ error: error.message || 'Failed to fetch artifacts' });
     }
   }
@@ -84,7 +85,7 @@ export class CodeArtifactsController {
 
       return res.json(artifact);
     } catch (error: any) {
-      console.error('Get artifact error:', error);
+      logger.error('Get artifact error:', error);
       return res.status(500).json({ error: error.message || 'Failed to fetch artifact' });
     }
   }
@@ -107,7 +108,7 @@ export class CodeArtifactsController {
 
       return res.status(201).json(result);
     } catch (error: any) {
-      console.error('Create artifact error:', error);
+      logger.error('Create artifact error:', error);
 
       if (error.name === 'ZodError') {
         return res.status(400).json({
@@ -153,7 +154,7 @@ export class CodeArtifactsController {
         message: `Artifact ${validatedData.approved ? 'approved' : 'reviewed'}`,
       });
     } catch (error: any) {
-      console.error('Review artifact error:', error);
+      logger.error('Review artifact error:', error);
       return res.status(500).json({ error: error.message || 'Failed to review artifact' });
     }
   }
@@ -188,7 +189,7 @@ export class CodeArtifactsController {
 
       return res.json(result);
     } catch (error: any) {
-      console.error('Deploy artifact error:', error);
+      logger.error('Deploy artifact error:', error);
       return res.status(500).json({ error: error.message || 'Failed to deploy artifact' });
     }
   }
@@ -216,7 +217,7 @@ export class CodeArtifactsController {
 
       return res.json(history);
     } catch (error: any) {
-      console.error('Get version history error:', error);
+      logger.error('Get version history error:', error);
       return res.status(500).json({ error: error.message || 'Failed to fetch version history' });
     }
   }
@@ -257,7 +258,7 @@ export class CodeArtifactsController {
 
       return res.status(201).json(result);
     } catch (error: any) {
-      console.error('Create version error:', error);
+      logger.error('Create version error:', error);
       return res.status(500).json({ error: error.message || 'Failed to create version' });
     }
   }
@@ -283,7 +284,7 @@ export class CodeArtifactsController {
 
       return res.json(validation);
     } catch (error: any) {
-      console.error('Validate code error:', error);
+      logger.error('Validate code error:', error);
       return res.status(500).json({ error: error.message || 'Failed to validate code' });
     }
   }
@@ -319,7 +320,7 @@ export class CodeArtifactsController {
 
       return res.json(stats);
     } catch (error: any) {
-      console.error('Get stats error:', error);
+      logger.error('Get stats error:', error);
       return res.status(500).json({ error: error.message || 'Failed to get statistics' });
     }
   }

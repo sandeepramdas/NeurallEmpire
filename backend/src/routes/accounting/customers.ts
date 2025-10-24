@@ -9,6 +9,7 @@ import { authenticate } from '@/middleware/auth';
 import { requirePermission } from '@/middleware/rbac';
 import { requireCompanyContext, requireActiveCompany } from '@/middleware/company-context';
 import { customerService } from '@/services/accounting/customer.service';
+import { logger } from '@/infrastructure/logger';
 
 const router = Router();
 
@@ -40,7 +41,7 @@ router.get(
         data: customers,
       });
     } catch (error: any) {
-      console.error('Error fetching customers:', error);
+      logger.error('Error fetching customers:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch customers',
@@ -65,7 +66,7 @@ router.get(
         data: stats,
       });
     } catch (error: any) {
-      console.error('Error fetching customer stats:', error);
+      logger.error('Error fetching customer stats:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch customer stats',
@@ -103,7 +104,7 @@ router.get(
         data: customers,
       });
     } catch (error: any) {
-      console.error('Error searching customers:', error);
+      logger.error('Error searching customers:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to search customers',
@@ -137,7 +138,7 @@ router.get(
         data: customer,
       });
     } catch (error: any) {
-      console.error('Error fetching customer:', error);
+      logger.error('Error fetching customer:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch customer',
@@ -171,7 +172,7 @@ router.get(
         data: balance,
       });
     } catch (error: any) {
-      console.error('Error fetching customer balance:', error);
+      logger.error('Error fetching customer balance:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch customer balance',
@@ -208,7 +209,7 @@ router.get(
         data: transactions,
       });
     } catch (error: any) {
-      console.error('Error fetching customer transactions:', error);
+      logger.error('Error fetching customer transactions:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch customer transactions',
@@ -273,7 +274,7 @@ router.post(
         message: 'Customer created successfully',
       });
     } catch (error: any) {
-      console.error('Error creating customer:', error);
+      logger.error('Error creating customer:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to create customer',
@@ -307,7 +308,7 @@ router.put(
         message: 'Customer updated successfully',
       });
     } catch (error: any) {
-      console.error('Error updating customer:', error);
+      logger.error('Error updating customer:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to update customer',
@@ -334,7 +335,7 @@ router.delete(
         message: 'Customer deleted successfully',
       });
     } catch (error: any) {
-      console.error('Error deleting customer:', error);
+      logger.error('Error deleting customer:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to delete customer',

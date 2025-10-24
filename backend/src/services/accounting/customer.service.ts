@@ -7,6 +7,7 @@
 import { prisma } from '@/server';
 import { Customer } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
+import { logger } from '@/infrastructure/logger';
 
 interface CreateCustomerDTO {
   customerNumber?: string;
@@ -140,7 +141,7 @@ class CustomerService {
 
       return customer;
     } catch (error) {
-      console.error('Error creating customer:', error);
+      logger.error('Error creating customer:', error);
       throw error;
     }
   }
@@ -225,7 +226,7 @@ class CustomerService {
 
       return customer;
     } catch (error) {
-      console.error('Error updating customer:', error);
+      logger.error('Error updating customer:', error);
       throw error;
     }
   }
@@ -286,7 +287,7 @@ class CustomerService {
         },
       });
     } catch (error) {
-      console.error('Error deleting customer:', error);
+      logger.error('Error deleting customer:', error);
       throw error;
     }
   }
@@ -303,7 +304,7 @@ class CustomerService {
         },
       });
     } catch (error) {
-      console.error('Error getting customer:', error);
+      logger.error('Error getting customer:', error);
       return null;
     }
   }
@@ -323,7 +324,7 @@ class CustomerService {
         },
       });
     } catch (error) {
-      console.error('Error getting customer by number:', error);
+      logger.error('Error getting customer by number:', error);
       return null;
     }
   }
@@ -358,7 +359,7 @@ class CustomerService {
         skip: options?.offset || 0,
       });
     } catch (error) {
-      console.error('Error getting customers:', error);
+      logger.error('Error getting customers:', error);
       return [];
     }
   }
@@ -390,7 +391,7 @@ class CustomerService {
         take: limit,
       });
     } catch (error) {
-      console.error('Error searching customers:', error);
+      logger.error('Error searching customers:', error);
       return [];
     }
   }
@@ -428,7 +429,7 @@ class CustomerService {
         currency: customer.company.currencyCode,
       };
     } catch (error) {
-      console.error('Error getting customer balance:', error);
+      logger.error('Error getting customer balance:', error);
       return null;
     }
   }
@@ -478,7 +479,7 @@ class CustomerService {
         skip: options?.offset || 0,
       });
     } catch (error) {
-      console.error('Error getting customer transactions:', error);
+      logger.error('Error getting customer transactions:', error);
       return [];
     }
   }
@@ -529,7 +530,7 @@ class CustomerService {
 
       return updatedCustomer;
     } catch (error) {
-      console.error('Error updating customer balance:', error);
+      logger.error('Error updating customer balance:', error);
       throw error;
     }
   }
@@ -560,7 +561,7 @@ class CustomerService {
         totalReceivables,
       };
     } catch (error) {
-      console.error('Error getting customer stats:', error);
+      logger.error('Error getting customer stats:', error);
       return {
         totalCustomers: 0,
         activeCustomers: 0,
@@ -597,7 +598,7 @@ class CustomerService {
       const count = await prisma.customer.count({ where: { companyId } });
       return `CUST-${(count + 1).toString().padStart(4, '0')}`;
     } catch (error) {
-      console.error('Error generating customer number:', error);
+      logger.error('Error generating customer number:', error);
       return `CUST-${Date.now()}`;
     }
   }

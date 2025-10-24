@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { logger } from '@/infrastructure/logger';
 
 const prisma = new PrismaClient();
 
@@ -159,7 +160,7 @@ export class CostTrackingController {
         },
       });
     } catch (error: any) {
-      console.error('Error fetching cost overview:', error);
+      logger.error('Error fetching cost overview:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch cost overview',
@@ -183,7 +184,7 @@ export class CostTrackingController {
         alerts,
       });
     } catch (error: any) {
-      console.error('Error fetching budget alerts:', error);
+      logger.error('Error fetching budget alerts:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch budget alerts',
@@ -213,7 +214,7 @@ export class CostTrackingController {
         },
       });
     } catch (error: any) {
-      console.error('Error creating budget alert:', error);
+      logger.error('Error creating budget alert:', error);
 
       if (error instanceof z.ZodError) {
         return res.status(400).json({
@@ -251,7 +252,7 @@ export class CostTrackingController {
         },
       });
     } catch (error: any) {
-      console.error('Error updating budget alert:', error);
+      logger.error('Error updating budget alert:', error);
 
       if (error instanceof z.ZodError) {
         return res.status(400).json({
@@ -283,7 +284,7 @@ export class CostTrackingController {
         message: 'Budget alert deleted successfully',
       });
     } catch (error: any) {
-      console.error('Error deleting budget alert:', error);
+      logger.error('Error deleting budget alert:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to delete budget alert',
@@ -349,7 +350,7 @@ export class CostTrackingController {
         },
       });
     } catch (error: any) {
-      console.error('Error calculating projections:', error);
+      logger.error('Error calculating projections:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to calculate cost projections',

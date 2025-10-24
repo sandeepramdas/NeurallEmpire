@@ -9,6 +9,7 @@ import { authenticate } from '@/middleware/auth';
 import { requirePermission } from '@/middleware/rbac';
 import { requireCompanyContext, requireActiveCompany } from '@/middleware/company-context';
 import { vendorService } from '@/services/accounting/vendor.service';
+import { logger } from '@/infrastructure/logger';
 
 const router = Router();
 
@@ -40,7 +41,7 @@ router.get(
         data: vendors,
       });
     } catch (error: any) {
-      console.error('Error fetching vendors:', error);
+      logger.error('Error fetching vendors:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch vendors',
@@ -65,7 +66,7 @@ router.get(
         data: stats,
       });
     } catch (error: any) {
-      console.error('Error fetching vendor stats:', error);
+      logger.error('Error fetching vendor stats:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch vendor stats',
@@ -103,7 +104,7 @@ router.get(
         data: vendors,
       });
     } catch (error: any) {
-      console.error('Error searching vendors:', error);
+      logger.error('Error searching vendors:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to search vendors',
@@ -137,7 +138,7 @@ router.get(
         data: vendor,
       });
     } catch (error: any) {
-      console.error('Error fetching vendor:', error);
+      logger.error('Error fetching vendor:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch vendor',
@@ -171,7 +172,7 @@ router.get(
         data: balance,
       });
     } catch (error: any) {
-      console.error('Error fetching vendor balance:', error);
+      logger.error('Error fetching vendor balance:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch vendor balance',
@@ -208,7 +209,7 @@ router.get(
         data: transactions,
       });
     } catch (error: any) {
-      console.error('Error fetching vendor transactions:', error);
+      logger.error('Error fetching vendor transactions:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch vendor transactions',
@@ -269,7 +270,7 @@ router.post(
         message: 'Vendor created successfully',
       });
     } catch (error: any) {
-      console.error('Error creating vendor:', error);
+      logger.error('Error creating vendor:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to create vendor',
@@ -303,7 +304,7 @@ router.put(
         message: 'Vendor updated successfully',
       });
     } catch (error: any) {
-      console.error('Error updating vendor:', error);
+      logger.error('Error updating vendor:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to update vendor',
@@ -330,7 +331,7 @@ router.delete(
         message: 'Vendor deleted successfully',
       });
     } catch (error: any) {
-      console.error('Error deleting vendor:', error);
+      logger.error('Error deleting vendor:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to delete vendor',

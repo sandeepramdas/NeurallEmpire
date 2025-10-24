@@ -10,6 +10,7 @@ import { requirePermission } from '@/middleware/rbac';
 import { requireCompanyContext, requireActiveCompany } from '@/middleware/company-context';
 import { chartOfAccountsService } from '@/services/accounting/chart-of-accounts.service';
 import { AccountType } from '@prisma/client';
+import { logger } from '@/infrastructure/logger';
 
 const router = Router();
 
@@ -40,7 +41,7 @@ router.get(
         data: accounts,
       });
     } catch (error: any) {
-      console.error('Error fetching accounts:', error);
+      logger.error('Error fetching accounts:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch accounts',
@@ -65,7 +66,7 @@ router.get(
         data: accountTree,
       });
     } catch (error: any) {
-      console.error('Error fetching account tree:', error);
+      logger.error('Error fetching account tree:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch account tree',
@@ -99,7 +100,7 @@ router.get(
         data: account,
       });
     } catch (error: any) {
-      console.error('Error fetching account:', error);
+      logger.error('Error fetching account:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch account',
@@ -133,7 +134,7 @@ router.get(
         data: balance,
       });
     } catch (error: any) {
-      console.error('Error fetching account balance:', error);
+      logger.error('Error fetching account balance:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch account balance',
@@ -160,7 +161,7 @@ router.get(
         data: path,
       });
     } catch (error: any) {
-      console.error('Error fetching account path:', error);
+      logger.error('Error fetching account path:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch account path',
@@ -190,7 +191,7 @@ router.get(
         data: accounts,
       });
     } catch (error: any) {
-      console.error('Error fetching accounts by type:', error);
+      logger.error('Error fetching accounts by type:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch accounts',
@@ -220,7 +221,7 @@ router.get(
         data: balances,
       });
     } catch (error: any) {
-      console.error('Error fetching account balances:', error);
+      logger.error('Error fetching account balances:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to fetch account balances',
@@ -258,7 +259,7 @@ router.get(
         data: accounts,
       });
     } catch (error: any) {
-      console.error('Error searching accounts:', error);
+      logger.error('Error searching accounts:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to search accounts',
@@ -317,7 +318,7 @@ router.post(
         message: 'Account created successfully',
       });
     } catch (error: any) {
-      console.error('Error creating account:', error);
+      logger.error('Error creating account:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to create account',
@@ -351,7 +352,7 @@ router.put(
         message: 'Account updated successfully',
       });
     } catch (error: any) {
-      console.error('Error updating account:', error);
+      logger.error('Error updating account:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to update account',
@@ -378,7 +379,7 @@ router.delete(
         message: 'Account deleted successfully',
       });
     } catch (error: any) {
-      console.error('Error deleting account:', error);
+      logger.error('Error deleting account:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to delete account',
@@ -407,7 +408,7 @@ router.post(
         message: 'Default chart of accounts seeded successfully',
       });
     } catch (error: any) {
-      console.error('Error seeding default accounts:', error);
+      logger.error('Error seeding default accounts:', error);
       res.status(400).json({
         success: false,
         error: error.message || 'Failed to seed default accounts',

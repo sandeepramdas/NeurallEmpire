@@ -1,5 +1,6 @@
 import { prisma } from '@/server';
 import { captureException } from '@/config/sentry';
+import { logger } from '@/infrastructure/logger';
 
 export interface TrackEventOptions {
   eventName: string;
@@ -65,9 +66,9 @@ export class AnalyticsService {
         },
       });
 
-      console.log(`📊 Event tracked: ${options.eventName}`);
+      logger.info(`📊 Event tracked: ${options.eventName}`);
     } catch (error: any) {
-      console.error('❌ Error tracking event:', error);
+      logger.error('❌ Error tracking event:', error);
       captureException(error, { eventOptions: options });
       // Don't throw - analytics should never break the app
     }
@@ -111,7 +112,7 @@ export class AnalyticsService {
 
       return events;
     } catch (error: any) {
-      console.error('❌ Error getting events:', error);
+      logger.error('❌ Error getting events:', error);
       captureException(error, { organizationId, filter });
       throw new Error(`Failed to get events: ${error.message}`);
     }
@@ -149,7 +150,7 @@ export class AnalyticsService {
         count: e._count.id,
       }));
     } catch (error: any) {
-      console.error('❌ Error getting event counts:', error);
+      logger.error('❌ Error getting event counts:', error);
       captureException(error, { organizationId, filter });
       throw new Error(`Failed to get event counts: ${error.message}`);
     }
@@ -193,7 +194,7 @@ export class AnalyticsService {
         recentEvents: events.slice(0, 10),
       };
     } catch (error: any) {
-      console.error('❌ Error getting user activity:', error);
+      logger.error('❌ Error getting user activity:', error);
       captureException(error, { organizationId, userId, filter });
       throw new Error(`Failed to get user activity: ${error.message}`);
     }
@@ -233,7 +234,7 @@ export class AnalyticsService {
         views: pv._count.id,
       }));
     } catch (error: any) {
-      console.error('❌ Error getting page views:', error);
+      logger.error('❌ Error getting page views:', error);
       captureException(error, { organizationId, filter });
       throw new Error(`Failed to get page views: ${error.message}`);
     }
@@ -278,7 +279,7 @@ export class AnalyticsService {
         dropoffRate: index === 0 ? 0 : ((results[index - 1].count - step.count) / results[index - 1].count) * 100,
       }));
     } catch (error: any) {
-      console.error('❌ Error getting funnel data:', error);
+      logger.error('❌ Error getting funnel data:', error);
       captureException(error, { organizationId, funnelSteps, filter });
       throw new Error(`Failed to get funnel data: ${error.message}`);
     }
@@ -339,7 +340,7 @@ export class AnalyticsService {
         period: `Last ${days} days`,
       };
     } catch (error: any) {
-      console.error('❌ Error getting dashboard summary:', error);
+      logger.error('❌ Error getting dashboard summary:', error);
       captureException(error, { organizationId, days });
       throw new Error(`Failed to get dashboard summary: ${error.message}`);
     }
