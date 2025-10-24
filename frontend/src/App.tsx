@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
-import { useThemeInit } from '@/hooks/useThemeInit';
 import {
   getOrganizationFromUrl,
   redirectToMainSite
@@ -167,9 +166,6 @@ const DashboardRedirect: React.FC = () => {
 const App: React.FC = () => {
   const { refreshProfile } = useAuthStore();
   const [isInitialized, setIsInitialized] = useState(false);
-
-  // Initialize theme from localStorage
-  useThemeInit();
 
   // Initialize auth state on app load
   useEffect(() => {

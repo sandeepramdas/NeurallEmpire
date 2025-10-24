@@ -42,7 +42,7 @@ interface OrganizationHeaderProps {
 
 const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }) => {
   const { user, organization, logout } = useAuthStore();
-  const { theme, toggleTheme } = useTheme();
+  const { mode, toggleMode } = useTheme();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -112,8 +112,8 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
 
   // Theme toggle handler
   const handleToggleTheme = () => {
-    toggleTheme();
-    onThemeChange?.(theme === 'light' ? 'dark' : 'light');
+    toggleMode();
+    onThemeChange?.(mode === 'light' ? 'dark' : 'light');
   };
 
   // Keyboard shortcut listener
@@ -428,9 +428,9 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
             <button
               onClick={handleToggleTheme}
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors group"
-              title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
+              title={`Switch to ${mode === 'light' ? 'Dark' : 'Light'} Mode`}
             >
-              {theme === 'light' ? (
+              {mode === 'light' ? (
                 <Moon className="w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
               ) : (
                 <Sun className="w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:text-yellow-500 transition-colors" />
