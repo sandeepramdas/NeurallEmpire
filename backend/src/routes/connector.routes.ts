@@ -36,7 +36,7 @@ const router = Router();
  * Ensure user is authenticated
  * This assumes you have auth middleware that sets req.user
  */
-function requireAuth(req: any, res: Response, next: any) {
+function requireAuth(req: Request, res: Response, next: () => void) {
   if (!req.user) {
     return res.status(401).json({
       success: false,
@@ -49,7 +49,7 @@ function requireAuth(req: any, res: Response, next: any) {
 /**
  * Ensure organization context
  */
-function requireOrganization(req: any, res: Response, next: any) {
+function requireOrganization(req: Request, res: Response, next: () => void) {
   if (!req.user?.organizationId) {
     return res.status(403).json({
       success: false,
@@ -71,7 +71,7 @@ router.use(requireOrganization);
  */
 router.post(
   '/',
-  asyncHandler(async (req: any, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     // Validate input
     const input = CreateConnectorSchema.parse(req.body);
 
@@ -95,10 +95,10 @@ router.post(
  */
 router.get(
   '/',
-  asyncHandler(async (req: any, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const { type, status, enabled } = req.query;
 
-    const filters: any = {};
+    const filters: Record<string, unknown> = {};
     if (type) filters.type = type;
     if (status) filters.status = status;
     if (enabled !== undefined) filters.enabled = enabled === 'true';
@@ -124,7 +124,7 @@ router.get(
  */
 router.get(
   '/:id',
-  asyncHandler(async (req: any, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const connector = await connectorService.getConnector(
       req.params.id,
       req.user.organizationId
@@ -143,7 +143,7 @@ router.get(
  */
 router.put(
   '/:id',
-  asyncHandler(async (req: any, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     // Validate partial input
     const updates = req.body;
 
@@ -167,7 +167,7 @@ router.put(
  */
 router.delete(
   '/:id',
-  asyncHandler(async (req: any, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     await connectorService.deleteConnector(
       req.params.id,
       req.user.organizationId,
@@ -187,7 +187,7 @@ router.delete(
  */
 router.post(
   '/:id/test',
-  asyncHandler(async (req: any, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const result = await connectorService.testConnector(
       req.params.id,
       req.user.organizationId
@@ -206,7 +206,7 @@ router.post(
  */
 router.get(
   '/:id/schema',
-  asyncHandler(async (req: any, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const schema = await connectorService.getConnectorSchema(
       req.params.id,
       req.user.organizationId
@@ -225,7 +225,7 @@ router.get(
  */
 router.post(
   '/:id/query',
-  asyncHandler(async (req: any, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     // Validate query params
     const params = QueryParamsSchema.parse(req.body);
 
@@ -250,7 +250,7 @@ router.post(
  */
 router.post(
   '/:id/execute',
-  asyncHandler(async (req: any, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     // Validate action
     const action = ActionSchema.parse(req.body);
 
@@ -276,7 +276,7 @@ router.post(
  */
 router.get(
   '/:id/stats',
-  asyncHandler(async (req: any, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const stats = await connectorService.getConnectorStats(
       req.params.id,
       req.user.organizationId
@@ -295,7 +295,7 @@ router.get(
  */
 router.get(
   '/:id/queries',
-  asyncHandler(async (req: any, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const { limit = '50', offset = '0' } = req.query;
 
     const { PrismaClient } = await import('@prisma/client');
@@ -334,7 +334,7 @@ router.get(
  */
 router.get(
   '/:id/audit-logs',
-  asyncHandler(async (req: any, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const { limit = '50', offset = '0' } = req.query;
 
     const { PrismaClient } = await import('@prisma/client');

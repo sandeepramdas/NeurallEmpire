@@ -43,15 +43,15 @@ export interface TradingSignalInput {
     spotPrice: number;
     vixLevel: number;
     vixHistory: number[];
-    historicalData: any[];
-    oneHourData: any[];
-    fifteenMinData: any[];
-    fiveMinData: any[];
+    historicalData: Record<string, unknown>[];
+    oneHourData: Record<string, unknown>[];
+    fifteenMinData: Record<string, unknown>[];
+    fiveMinData: Record<string, unknown>[];
   };
 
   // Option chain data for Layer 5
   optionChain: {
-    strikes: any[];
+    strikes: Record<string, unknown>[];
     atmStrike: number;
     targetStrike: number;
   };
@@ -62,7 +62,7 @@ export interface TradingSignalInput {
     marketOpenTime: Date;
     marketCloseTime: Date;
     isExpiryDay: boolean;
-    upcomingEvents: any[];
+    upcomingEvents: Record<string, unknown>[];
     currentVolume: number;
     avgVolume: number;
     circuitBreaker: boolean;
@@ -73,8 +73,8 @@ export interface TradingSignalInput {
   portfolioData: {
     totalCapital: number;
     availableCapital: number;
-    openPositions: any[];
-    tradingHistory: any;
+    openPositions: Record<string, unknown>[];
+    tradingHistory: Record<string, unknown>;
     riskPerTrade: number;
     maxOpenPositions: number;
   };
@@ -82,15 +82,15 @@ export interface TradingSignalInput {
 
 export interface TradingSignalOutput {
   success: boolean;
-  signal: any; // Database signal record
+  signal: Record<string, unknown>; // Database signal record
   analysis: {
-    layer1: any;
-    layer2: any;
-    layer3: any;
-    layer4: any;
-    layer5: any;
-    layer6: any;
-    layer7: any;
+    layer1: Record<string, unknown>;
+    layer2: Record<string, unknown>;
+    layer3: Record<string, unknown>;
+    layer4: Record<string, unknown>;
+    layer5: Record<string, unknown>;
+    layer6: Record<string, unknown> | null;
+    layer7: Record<string, unknown> | null;
   };
   overallScore: number;
   recommendation: 'EXECUTE' | 'REJECT' | 'WAIT';
@@ -273,7 +273,15 @@ export class TradingStrategyService {
   /**
    * Calculate overall score (weighted average)
    */
-  private calculateOverallScore(scores: any): number {
+  private calculateOverallScore(scores: {
+    layer1: number;
+    layer2: number;
+    layer3: number;
+    layer4: number;
+    layer5: number;
+    layer6: number;
+    layer7: number;
+  }): number {
     // Weighted scoring:
     // Layer 5 (Writer Ratio) has double weight as it's the gatekeeper
     const weights = {
@@ -328,12 +336,12 @@ export class TradingStrategyService {
   /**
    * Get rejection reason
    */
-  private getRejectionReason(recommendation: string, layer6: any, layer7: any): string {
+  private getRejectionReason(recommendation: string, layer6: Record<string, unknown>, layer7: Record<string, unknown>): string {
     if (recommendation === 'WAIT') {
-      return layer6.overallRestriction || 'WEAK_SIGNAL';
+      return (layer6.overallRestriction as string) || 'WEAK_SIGNAL';
     }
     if (!layer7.positionAllowed) {
-      return layer7.warning || 'PORTFOLIO_LIMITS';
+      return (layer7.warning as string) || 'PORTFOLIO_LIMITS';
     }
     return 'LOW_OVERALL_SCORE';
   }
@@ -341,7 +349,13 @@ export class TradingStrategyService {
   /**
    * Save approved signal to database
    */
-  private async saveApprovedSignal(input: any, analysis: any, overallScore: number, trade: any, layer7: any): Promise<TradingSignalOutput> {
+  private async saveApprovedSignal(
+    input: TradingSignalInput,
+    analysis: TradingSignalOutput['analysis'],
+    overallScore: number,
+    trade: Record<string, unknown>,
+    layer7: Record<string, unknown>
+  ): Promise<TradingSignalOutput> {
     const signal = await prisma.tradingSignal.create({
       data: {
         organizationId: input.organizationId,
@@ -352,29 +366,29 @@ export class TradingStrategyService {
         optionType: input.optionType,
         signalType: input.signalType,
         signalStrength: overallScore,
-        entryPrice: trade.entryPrice,
-        targetPrice: trade.target,
-        stopLoss: trade.stopLoss,
-        quantity: layer7.positionSizeRecommended,
+        entryPrice: trade.entryPrice as number,
+        targetPrice: trade.target as number,
+        stopLoss: trade.stopLoss as number,
+        quantity: layer7.positionSizeRecommended as number,
 
         // Layer scores
-        layer1Score: analysis.layer1.score,
-        layer2Score: analysis.layer2.score,
-        layer3Score: analysis.layer3.score,
-        layer4Score: analysis.layer4.score,
-        layer5Score: analysis.layer5.score,
-        layer6Score: analysis.layer6.score,
-        layer7Score: analysis.layer7.score,
+        layer1Score: analysis.layer1.score as number,
+        layer2Score: analysis.layer2.score as number,
+        layer3Score: analysis.layer3.score as number,
+        layer4Score: analysis.layer4.score as number,
+        layer5Score: analysis.layer5.score as number,
+        layer6Score: analysis.layer6!.score as number,
+        layer7Score: analysis.layer7!.score as number,
 
         // Writer ratio (CRITICAL)
-        writerRatio: analysis.layer5.writerRatio,
-        writerRatioPassed: analysis.layer5.writerRatioPassed,
-        callWriters: analysis.layer5.callWriters,
-        putWriters: analysis.layer5.putWriters,
+        writerRatio: analysis.layer5.writerRatio as number,
+        writerRatioPassed: analysis.layer5.writerRatioPassed as boolean,
+        callWriters: analysis.layer5.callWriters as number,
+        putWriters: analysis.layer5.putWriters as number,
 
         // Market context
         vixLevel: input.marketData.vixLevel,
-        marketRegime: analysis.layer1.regimeType,
+        marketRegime: analysis.layer1.regimeType as string,
         timeframe: '15M',
 
         // Analysis data
@@ -396,12 +410,12 @@ export class TradingStrategyService {
       overallScore,
       recommendation: 'EXECUTE',
       executionDetails: {
-        entryPrice: trade.entryPrice,
-        target: trade.target,
-        stopLoss: trade.stopLoss,
-        quantity: layer7.positionSizeRecommended,
-        capitalToAllocate: layer7.capitalToAllocate,
-        riskAmount: layer7.riskAmount,
+        entryPrice: trade.entryPrice as number,
+        target: trade.target as number,
+        stopLoss: trade.stopLoss as number,
+        quantity: layer7.positionSizeRecommended as number,
+        capitalToAllocate: layer7.capitalToAllocate as number,
+        riskAmount: layer7.riskAmount as number,
       },
     };
   }
@@ -409,7 +423,11 @@ export class TradingStrategyService {
   /**
    * Save rejected signal to database
    */
-  private async saveRejectedSignal(input: any, analysis: any, rejectionReason: string): Promise<TradingSignalOutput> {
+  private async saveRejectedSignal(
+    input: TradingSignalInput,
+    analysis: TradingSignalOutput['analysis'],
+    rejectionReason: string
+  ): Promise<TradingSignalOutput> {
     const signal = await prisma.tradingSignal.create({
       data: {
         organizationId: input.organizationId,
@@ -459,15 +477,15 @@ export class TradingStrategyService {
   /**
    * Helper: Get ATM Implied Volatility
    */
-  private getATMImpliedVolatility(strikes: any[], atmStrike: number): number {
-    const atmOption = strikes.find(s => s.strike === atmStrike);
-    return atmOption?.callIV || 20; // Default 20% if not found
+  private getATMImpliedVolatility(strikes: Record<string, unknown>[], atmStrike: number): number {
+    const atmOption = strikes.find((s: Record<string, unknown>) => s.strike === atmStrike);
+    return (atmOption as Record<string, unknown>)?.callIV as number || 20; // Default 20% if not found
   }
 
   /**
    * Helper: Calculate stop loss based on price action zones
    */
-  private calculateStopLoss(entryPrice: number, signalType: SignalType, layer2: any): number {
+  private calculateStopLoss(entryPrice: number, signalType: SignalType, layer2: Record<string, unknown>): number {
     // For BUY CALL: Stop below demand zone
     // For BUY PUT: Stop above supply zone
 
@@ -483,7 +501,7 @@ export class TradingStrategyService {
   /**
    * Helper: Calculate target based on risk-reward ratio
    */
-  private calculateTarget(entryPrice: number, signalType: SignalType, layer2: any): number {
+  private calculateTarget(entryPrice: number, signalType: SignalType, layer2: Record<string, unknown>): number {
     const targetPercentage = 0.05; // 5% target (2.5:1 R:R)
 
     if (signalType === 'BUY_CALL') {

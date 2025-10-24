@@ -8,7 +8,7 @@ export interface SwarmConfig {
   name: string;
   description?: string;
   coordinatorType: SwarmType;
-  configuration?: any;
+  configuration?: Record<string, unknown>;
 }
 
 export interface SwarmMemberConfig {
@@ -19,8 +19,8 @@ export interface SwarmMemberConfig {
 
 export interface SwarmExecutionContext {
   swarmId: string;
-  input?: any;
-  sharedData?: Map<string, any>;
+  input?: Record<string, unknown>;
+  sharedData?: Map<string, unknown>;
   executionId: string;
 }
 
@@ -36,7 +36,7 @@ class SwarmService extends EventEmitter {
           name: config.name,
           description: config.description,
           type: config.coordinatorType,
-          configuration: config.configuration as any,
+          configuration: config.configuration as Record<string, unknown>,
         },
       });
 
@@ -105,7 +105,7 @@ class SwarmService extends EventEmitter {
     }
   }
 
-  async executeSwarm(swarmId: string, input?: any): Promise<any> {
+  async executeSwarm(swarmId: string, input?: Record<string, unknown>): Promise<Record<string, unknown>> {
     try {
       const swarm = await prisma.agentSwarm.findUnique({
         where: { id: swarmId },
@@ -173,20 +173,22 @@ class SwarmService extends EventEmitter {
     }
   }
 
-  private async executeSequential(swarm: any, context: SwarmExecutionContext): Promise<any> {
-    const results: any[] = [];
+  private async executeSequential(swarm: Record<string, unknown>, context: SwarmExecutionContext): Promise<Record<string, unknown>> {
+    const results: Record<string, unknown>[] = [];
     let currentInput = context.input;
+    const members = (swarm.members as Record<string, unknown>[]) || [];
 
-    for (const member of swarm.members) {
-      if (member.agent.status !== AgentStatus.READY && member.agent.status !== AgentStatus.RUNNING) {
-        logger.warn(`Skipping agent ${member.agentId} - not ready (status: ${member.agent.status})`);
+    for (const member of members) {
+      const agent = member.agent as Record<string, unknown>;
+      if (agent.status !== AgentStatus.READY && agent.status !== AgentStatus.RUNNING) {
+        logger.warn(`Skipping agent ${member.agentId} - not ready (status: ${agent.status})`);
         continue;
       }
 
       try {
         logger.info(`Executing agent ${member.agentId} (${member.role}) in sequential mode`);
 
-        const agentResult = await agentService.executeAgent(member.agentId, {
+        const agentResult = await agentService.executeAgent(member.agentId as string, {
           ...currentInput,
           swarmContext: {
             swarmId: context.swarmId,
@@ -208,8 +210,10 @@ class SwarmService extends EventEmitter {
           currentInput = agentResult.output;
 
           // Update shared data if agent provides it
-          if (agentResult.output.sharedData) {
-            Object.entries(agentResult.output.sharedData).forEach(([key, value]) => {
+          const output = agentResult.output as Record<string, unknown>;
+          if (output.sharedData) {
+            const sharedData = output.sharedData as Record<string, unknown>;
+            Object.entries(sharedData).forEach(([key, value]) => {
               context.sharedData!.set(key, value);
             });
           }
@@ -234,16 +238,18 @@ class SwarmService extends EventEmitter {
     };
   }
 
-  private async executeParallel(swarm: any, context: SwarmExecutionContext): Promise<any> {
-    const promises = swarm.members
-      .filter((member: any) =>
-        member.agent.status === AgentStatus.READY || member.agent.status === AgentStatus.RUNNING
-      )
-      .map(async (member: any) => {
+  private async executeParallel(swarm: Record<string, unknown>, context: SwarmExecutionContext): Promise<Record<string, unknown>> {
+    const members = (swarm.members as Record<string, unknown>[]) || [];
+    const promises = members
+      .filter((member: Record<string, unknown>) => {
+        const agent = member.agent as Record<string, unknown>;
+        return agent.status === AgentStatus.READY || agent.status === AgentStatus.RUNNING;
+      })
+      .map(async (member: Record<string, unknown>) => {
         try {
           logger.info(`Executing agent ${member.agentId} (${member.role}) in parallel mode`);
 
-          const agentResult = await agentService.executeAgent(member.agentId, {
+          const agentResult = await agentService.executeAgent(member.agentId as string, {
             ...context.input,
             swarmContext: {
               swarmId: context.swarmId,
@@ -282,20 +288,24 @@ class SwarmService extends EventEmitter {
   }
 
 
-  private async executeCollaborative(swarm: any, context: SwarmExecutionContext): Promise<any> {
-    const results: any[] = [];
-    const coordinators = swarm.members.filter((m: any) => m.role === SwarmRole.COORDINATOR);
-    const workers = swarm.members.filter((m: any) => m.role === SwarmRole.WORKER);
-    const leaders = swarm.members.filter((m: any) => m.role === SwarmRole.LEADER);
+  private async executeCollaborative(swarm: Record<string, unknown>, context: SwarmExecutionContext): Promise<Record<string, unknown>> {
+    const results: Record<string, unknown>[] = [];
+    const members = (swarm.members as Record<string, unknown>[]) || [];
+    const coordinators = members.filter((m: Record<string, unknown>) => m.role === SwarmRole.COORDINATOR);
+    const workers = members.filter((m: Record<string, unknown>) => m.role === SwarmRole.WORKER);
+    const leaders = members.filter((m: Record<string, unknown>) => m.role === SwarmRole.LEADER);
 
     // Phase 1: Coordinators plan and distribute work
     if (coordinators.length > 0) {
       for (const coordinator of coordinators) {
         try {
-          const planResult = await agentService.executeAgent(coordinator.agentId, {
+          const planResult = await agentService.executeAgent(coordinator.agentId as string, {
             ...context.input,
             phase: 'planning',
-            workers: workers.map((w: any) => ({ id: w.agentId, capabilities: w.agent.capabilities })),
+            workers: workers.map((w: Record<string, unknown>) => {
+              const agent = w.agent as Record<string, unknown>;
+              return { id: w.agentId, capabilities: agent.capabilities };
+            }),
             swarmContext: {
               swarmId: context.swarmId,
               executionId: context.executionId,
@@ -321,12 +331,13 @@ class SwarmService extends EventEmitter {
     }
 
     // Phase 2: Workers execute assigned tasks
-    const workPlan = context.sharedData!.get('workPlan') || {};
-    const workerPromises = workers.map(async (worker: any) => {
+    const workPlan = (context.sharedData!.get('workPlan') as Record<string, unknown>) || {};
+    const workerPromises = workers.map(async (worker: Record<string, unknown>) => {
       try {
-        const assignedTask = workPlan[worker.agentId] || context.input;
+        const agentId = worker.agentId as string;
+        const assignedTask = (workPlan[agentId] as Record<string, unknown>) || context.input;
 
-        const workResult = await agentService.executeAgent(worker.agentId, {
+        const workResult = await agentService.executeAgent(agentId, {
           ...assignedTask,
           phase: 'execution',
           swarmContext: {
@@ -365,10 +376,11 @@ class SwarmService extends EventEmitter {
     };
   }
 
-  private async executeHierarchical(swarm: any, context: SwarmExecutionContext): Promise<any> {
+  private async executeHierarchical(swarm: Record<string, unknown>, context: SwarmExecutionContext): Promise<Record<string, unknown>> {
     // Build hierarchy tree
-    const hierarchy = this.buildHierarchy(swarm.members);
-    const results: any[] = [];
+    const members = (swarm.members as Record<string, unknown>[]) || [];
+    const hierarchy = this.buildHierarchy(members);
+    const results: Record<string, unknown>[] = [];
 
     // Execute from top to bottom
     await this.executeHierarchyLevel(hierarchy, context, results);
@@ -380,13 +392,14 @@ class SwarmService extends EventEmitter {
     };
   }
 
-  private buildHierarchy(members: any[]): any {
-    const nodeMap = new Map();
-    const roots: any[] = [];
+  private buildHierarchy(members: Record<string, unknown>[]): Record<string, unknown>[] {
+    const nodeMap = new Map<string, Record<string, unknown>>();
+    const roots: Record<string, unknown>[] = [];
 
     // Create nodes
     members.forEach(member => {
-      nodeMap.set(member.agentId, {
+      const agentId = member.agentId as string;
+      nodeMap.set(agentId, {
         ...member,
         children: [],
       });
@@ -394,23 +407,25 @@ class SwarmService extends EventEmitter {
 
     // Build parent-child relationships
     members.forEach(member => {
-      const node = nodeMap.get(member.agentId);
-      if (member.agent.parentAgentId && nodeMap.has(member.agent.parentAgentId)) {
-        const parent = nodeMap.get(member.agent.parentAgentId);
-        parent.children.push(node);
+      const agentId = member.agentId as string;
+      const agent = member.agent as Record<string, unknown>;
+      const node = nodeMap.get(agentId);
+      if (agent.parentAgentId && nodeMap.has(agent.parentAgentId as string)) {
+        const parent = nodeMap.get(agent.parentAgentId as string);
+        (parent!.children as Record<string, unknown>[]).push(node!);
       } else {
-        roots.push(node);
+        roots.push(node!);
       }
     });
 
     return roots;
   }
 
-  private async executeHierarchyLevel(nodes: any[], context: SwarmExecutionContext, results: any[]): Promise<void> {
+  private async executeHierarchyLevel(nodes: Record<string, unknown>[], context: SwarmExecutionContext, results: Record<string, unknown>[]): Promise<void> {
     // Execute all nodes at this level in parallel
     const promises = nodes.map(async (node) => {
       try {
-        const agentResult = await agentService.executeAgent(node.agentId, {
+        const agentResult = await agentService.executeAgent(node.agentId as string, {
           ...context.input,
           swarmContext: {
             swarmId: context.swarmId,
@@ -429,8 +444,8 @@ class SwarmService extends EventEmitter {
         });
 
         // Execute children after parent completes
-        if (node.children && node.children.length > 0) {
-          await this.executeHierarchyLevel(node.children, context, results);
+        if (node.children && (node.children as Record<string, unknown>[]).length > 0) {
+          await this.executeHierarchyLevel(node.children as Record<string, unknown>[], context, results);
         }
 
       } catch (error) {
@@ -448,10 +463,11 @@ class SwarmService extends EventEmitter {
     await Promise.all(promises);
   }
 
-  private async evaluateConditions(member: any, context: SwarmExecutionContext, previousResults: any[]): Promise<boolean> {
+  private async evaluateConditions(member: Record<string, unknown>, context: SwarmExecutionContext, previousResults: Record<string, unknown>[]): Promise<boolean> {
     // Default condition evaluation - can be extended
-    const config = member.agent.configuration || {};
-    const conditions = config.executionConditions || {};
+    const agent = member.agent as Record<string, unknown>;
+    const config = (agent.configuration as Record<string, unknown>) || {};
+    const conditions = (config.executionConditions as Record<string, unknown>) || {};
 
     // Check if previous agents succeeded
     if (conditions.requirePreviousSuccess) {
@@ -461,15 +477,17 @@ class SwarmService extends EventEmitter {
 
     // Check shared data conditions
     if (conditions.requiredData) {
-      for (const key of conditions.requiredData) {
+      const requiredData = conditions.requiredData as string[];
+      for (const key of requiredData) {
         if (!context.sharedData!.has(key)) return false;
       }
     }
 
     // Check role-based conditions
     if (conditions.roleConditions) {
-      const roleCondition = conditions.roleConditions[member.role];
-      if (roleCondition && !this.evaluateRoleCondition(roleCondition, context, previousResults)) {
+      const roleConditions = conditions.roleConditions as Record<string, unknown>;
+      const roleCondition = roleConditions[member.role as string];
+      if (roleCondition && !this.evaluateRoleCondition(roleCondition as Record<string, unknown>, context, previousResults)) {
         return false;
       }
     }
@@ -477,31 +495,34 @@ class SwarmService extends EventEmitter {
     return true;
   }
 
-  private evaluateRoleCondition(condition: any, context: SwarmExecutionContext, previousResults: any[]): boolean {
+  private evaluateRoleCondition(condition: Record<string, unknown>, context: SwarmExecutionContext, previousResults: Record<string, unknown>[]): boolean {
     // Implement role-specific condition logic
     switch (condition.type) {
       case 'threshold':
-        const metric = this.extractMetric(previousResults, condition.metric);
-        return metric >= condition.value;
+        const metric = this.extractMetric(previousResults, condition.metric as string);
+        return metric >= (condition.value as number);
 
       case 'dependency':
-        return previousResults.some(r =>
-          r.agentId === condition.agentId && r.result?.success
-        );
+        return previousResults.some(r => {
+          const result = r.result as Record<string, unknown>;
+          return r.agentId === condition.agentId && result?.success;
+        });
 
       default:
         return true;
     }
   }
 
-  private extractMetric(results: any[], metricName: string): number {
+  private extractMetric(results: Record<string, unknown>[], metricName: string): number {
     // Extract specific metrics from previous results
     let total = 0;
     let count = 0;
 
     results.forEach(result => {
-      if (result.result?.output && result.result.output[metricName] !== undefined) {
-        total += Number(result.result.output[metricName]) || 0;
+      const resultData = result.result as Record<string, unknown>;
+      const output = resultData?.output as Record<string, unknown>;
+      if (output && output[metricName] !== undefined) {
+        total += Number(output[metricName]) || 0;
         count++;
       }
     });

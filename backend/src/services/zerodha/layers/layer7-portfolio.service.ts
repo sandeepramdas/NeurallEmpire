@@ -163,22 +163,26 @@ export class PortfolioService {
    * Kelly % = (Win% × Avg Win / Avg Loss) - (1 - Win%)
    */
   private calculateKellyCriterion(
-    history: any,
-    proposedTrade: any
-  ): { kellyFraction: number; kellyPositionSize: number } {
-    if (history.totalTrades < 20) {
+    history: Record<string, unknown>,
+    proposedTrade: Record<string, unknown>
+  ): { kellyFraction: number; kellyPositionSize: number} {
+    const totalTrades = history.totalTrades as number;
+    if (totalTrades < 20) {
       // Not enough history, use conservative sizing
       return { kellyFraction: 0.02, kellyPositionSize: 0.02 }; // 2%
     }
 
-    const winRate = history.winningTrades / history.totalTrades;
+    const winningTrades = history.winningTrades as number;
+    const winRate = winningTrades / totalTrades;
     const lossRate = 1 - winRate;
 
-    if (history.avgLoss === 0) {
+    const avgLoss = history.avgLoss as number;
+    if (avgLoss === 0) {
       return { kellyFraction: 0.02, kellyPositionSize: 0.02 };
     }
 
-    const winLossRatio = Math.abs(history.avgWin / history.avgLoss);
+    const avgWin = history.avgWin as number;
+    const winLossRatio = Math.abs(avgWin / avgLoss);
 
     // Kelly Formula
     let kellyFraction = (winRate * winLossRatio - lossRate) / winLossRatio;
@@ -200,8 +204,8 @@ export class PortfolioService {
    */
   private calculatePortfolioRisk(
     totalCapital: number,
-    openPositions: any[],
-    proposedTrade: any,
+    openPositions: Record<string, unknown>[],
+    proposedTrade: Record<string, unknown>,
     riskPerTrade: number
   ): {
     currentRisk: number;
@@ -211,7 +215,7 @@ export class PortfolioService {
   } {
     // Calculate current risk (sum of capital at risk in open positions)
     const currentRiskAmount = openPositions.reduce((total, pos) => {
-      return total + pos.capitalAllocated;
+      return total + (pos.capitalAllocated as number);
     }, 0);
 
     const currentRisk = (currentRiskAmount / totalCapital) * 100;
@@ -254,14 +258,14 @@ export class PortfolioService {
   private calculateCapitalAllocation(
     totalCapital: number,
     availableCapital: number,
-    openPositions: any[]
+    openPositions: Record<string, unknown>[]
   ): {
     total: number;
     allocated: number;
     available: number;
     percentAllocated: number;
   } {
-    const allocated = openPositions.reduce((total, pos) => total + pos.capitalAllocated, 0);
+    const allocated = openPositions.reduce((total, pos) => total + (pos.capitalAllocated as number), 0);
     const percentAllocated = (allocated / totalCapital) * 100;
 
     return {
@@ -276,10 +280,10 @@ export class PortfolioService {
    * Determine if position is allowed based on all constraints
    */
   private determinePositionAllowed(
-    portfolioRisk: any,
-    diversification: any,
+    portfolioRisk: Record<string, unknown>,
+    diversification: Record<string, unknown>,
     kellyFraction: number,
-    tradingHistory: any
+    tradingHistory: Record<string, unknown>
   ): boolean {
     // Check all constraints
     if (!portfolioRisk.withinLimits) return false; // Portfolio risk too high
@@ -289,10 +293,13 @@ export class PortfolioService {
     if (kellyFraction <= 0) return false;
 
     // Check minimum win rate and profit factor
-    if (tradingHistory.totalTrades >= 20) {
-      const winRate = tradingHistory.winningTrades / tradingHistory.totalTrades;
+    const totalTrades = tradingHistory.totalTrades as number;
+    if (totalTrades >= 20) {
+      const winningTrades = tradingHistory.winningTrades as number;
+      const winRate = winningTrades / totalTrades;
       if (winRate < this.MIN_WIN_RATE) return false;
-      if (tradingHistory.profitFactor < this.MIN_PROFIT_FACTOR) return false;
+      const profitFactor = tradingHistory.profitFactor as number;
+      if (profitFactor < this.MIN_PROFIT_FACTOR) return false;
     }
 
     return true;
@@ -304,10 +311,10 @@ export class PortfolioService {
   private calculatePositionSize(
     totalCapital: number,
     availableCapital: number,
-    proposedTrade: any,
+    proposedTrade: Record<string, unknown>,
     riskPerTrade: number,
     kellyFraction: number,
-    portfolioRisk: any,
+    portfolioRisk: Record<string, unknown>,
     positionAllowed: boolean
   ): {
     quantity: number;
@@ -327,30 +334,32 @@ export class PortfolioService {
     const riskAmount = totalCapital * riskPercentage;
 
     // Calculate distance to stop loss
-    const stopDistance = Math.abs(proposedTrade.entryPrice - proposedTrade.stopLoss);
-    const stopPercentage = stopDistance / proposedTrade.entryPrice;
+    const entryPrice = proposedTrade.entryPrice as number;
+    const stopLoss = proposedTrade.stopLoss as number;
+    const stopDistance = Math.abs(entryPrice - stopLoss);
+    const stopPercentage = stopDistance / entryPrice;
 
     // Calculate position size based on risk
     // Position Size = Risk Amount / (Entry Price × Stop %)
-    let quantity = Math.floor(riskAmount / (proposedTrade.entryPrice * stopPercentage));
+    let quantity = Math.floor(riskAmount / (entryPrice * stopPercentage));
 
     // Apply Kelly sizing if available
     if (kellyFraction > 0) {
-      const kellySize = Math.floor((totalCapital * kellyFraction * this.KELLY_MULTIPLIER) / proposedTrade.entryPrice);
+      const kellySize = Math.floor((totalCapital * kellyFraction * this.KELLY_MULTIPLIER) / entryPrice);
       quantity = Math.min(quantity, kellySize); // Take the more conservative size
     }
 
     // Calculate capital to allocate
-    const capitalToAllocate = quantity * proposedTrade.entryPrice;
+    const capitalToAllocate = quantity * entryPrice;
 
     // Ensure we don't exceed available capital
     if (capitalToAllocate > availableCapital) {
-      quantity = Math.floor(availableCapital / proposedTrade.entryPrice);
+      quantity = Math.floor(availableCapital / entryPrice);
     }
 
     return {
       quantity: Math.max(0, quantity),
-      capitalToAllocate: quantity * proposedTrade.entryPrice,
+      capitalToAllocate: quantity * entryPrice,
       riskAmount,
     };
   }
@@ -361,10 +370,10 @@ export class PortfolioService {
   private calculatePortfolioScore(
     positionAllowed: boolean,
     kellyFraction: number,
-    portfolioRisk: any,
-    diversification: any,
-    capitalAllocation: any,
-    tradingHistory: any
+    portfolioRisk: Record<string, unknown>,
+    diversification: Record<string, unknown>,
+    capitalAllocation: Record<string, unknown>,
+    tradingHistory: Record<string, unknown>
   ): number {
     if (!positionAllowed) {
       return 0; // No position allowed = 0 score
@@ -373,17 +382,21 @@ export class PortfolioService {
     let score = 100;
 
     // Portfolio risk penalty
-    if (portfolioRisk.projectedRisk > 8) score -= 20;
-    else if (portfolioRisk.projectedRisk > 6) score -= 10;
+    const projectedRisk = portfolioRisk.projectedRisk as number;
+    if (projectedRisk > 8) score -= 20;
+    else if (projectedRisk > 6) score -= 10;
 
     // Diversification penalty
-    const diversificationRatio = diversification.currentPositions / diversification.maxPositions;
+    const currentPositions = diversification.currentPositions as number;
+    const maxPositions = diversification.maxPositions as number;
+    const diversificationRatio = currentPositions / maxPositions;
     if (diversificationRatio > 0.8) score -= 15; // Using 80%+ of allowed positions
     else if (diversificationRatio > 0.6) score -= 5;
 
     // Capital allocation penalty
-    if (capitalAllocation.percentAllocated > 80) score -= 15;
-    else if (capitalAllocation.percentAllocated > 60) score -= 5;
+    const percentAllocated = capitalAllocation.percentAllocated as number;
+    if (percentAllocated > 80) score -= 15;
+    else if (percentAllocated > 60) score -= 5;
 
     // Kelly fraction bonus/penalty
     if (kellyFraction > 0.15) score += 10; // Strong edge
@@ -391,9 +404,11 @@ export class PortfolioService {
     else if (kellyFraction < 0.05) score -= 10; // Weak edge
 
     // Trading history bonus (if profitable)
-    if (tradingHistory.totalTrades >= 20) {
-      if (tradingHistory.profitFactor > 2.0) score += 10;
-      else if (tradingHistory.profitFactor > 1.5) score += 5;
+    const totalTrades = tradingHistory.totalTrades as number;
+    if (totalTrades >= 20) {
+      const profitFactor = tradingHistory.profitFactor as number;
+      if (profitFactor > 2.0) score += 10;
+      else if (profitFactor > 1.5) score += 5;
     }
 
     return Math.max(0, Math.min(100, score));
@@ -402,18 +417,23 @@ export class PortfolioService {
   /**
    * Generate warning message
    */
-  private generateWarning(portfolioRisk: any, diversification: any, kelly: any): string {
+  private generateWarning(portfolioRisk: Record<string, unknown>, diversification: Record<string, unknown>, kelly: Record<string, unknown>): string {
     const reasons: string[] = [];
 
     if (!portfolioRisk.withinLimits) {
-      reasons.push(`Portfolio risk too high (${portfolioRisk.projectedRisk.toFixed(1)}% > ${portfolioRisk.maxRiskAllowed}%)`);
+      const projectedRisk = portfolioRisk.projectedRisk as number;
+      const maxRiskAllowed = portfolioRisk.maxRiskAllowed as number;
+      reasons.push(`Portfolio risk too high (${projectedRisk.toFixed(1)}% > ${maxRiskAllowed}%)`);
     }
 
     if (!diversification.withinLimits) {
-      reasons.push(`Max positions reached (${diversification.currentPositions}/${diversification.maxPositions})`);
+      const currentPos = diversification.currentPositions as number;
+      const maxPos = diversification.maxPositions as number;
+      reasons.push(`Max positions reached (${currentPos}/${maxPos})`);
     }
 
-    if (kelly.kellyFraction <= 0) {
+    const kellyFraction = kelly.kellyFraction as number;
+    if (kellyFraction <= 0) {
       reasons.push('Negative Kelly Criterion (no statistical edge)');
     }
 
@@ -426,8 +446,8 @@ export class PortfolioService {
   private explainScore(
     score: number,
     positionAllowed: boolean,
-    portfolioRisk: any,
-    diversification: any,
+    portfolioRisk: Record<string, unknown>,
+    diversification: Record<string, unknown>,
     kellyFraction: number
   ): string {
     const reasons: string[] = [];
@@ -442,8 +462,12 @@ export class PortfolioService {
       }
     } else {
       reasons.push('✅ Position allowed');
-      reasons.push(`Portfolio risk: ${portfolioRisk.projectedRisk.toFixed(1)}% (limit: ${portfolioRisk.maxRiskAllowed}%)`);
-      reasons.push(`Open positions: ${diversification.currentPositions}/${diversification.maxPositions}`);
+      const projectedRisk = portfolioRisk.projectedRisk as number;
+      const maxRiskAllowed = portfolioRisk.maxRiskAllowed as number;
+      const currentPos = diversification.currentPositions as number;
+      const maxPos = diversification.maxPositions as number;
+      reasons.push(`Portfolio risk: ${projectedRisk.toFixed(1)}% (limit: ${maxRiskAllowed}%)`);
+      reasons.push(`Open positions: ${currentPos}/${maxPos}`);
       reasons.push(`Kelly fraction: ${(kellyFraction * 100).toFixed(1)}%`);
 
       if (score >= 80) {

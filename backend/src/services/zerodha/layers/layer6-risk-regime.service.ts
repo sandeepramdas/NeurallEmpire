@@ -167,17 +167,18 @@ export class RiskRegimeService {
    */
   private checkEventRestrictions(
     currentTime: Date,
-    upcomingEvents: any[]
+    upcomingEvents: Record<string, unknown>[]
   ): { majorEventNear: boolean; eventType?: string; timeToEvent?: number; allowed: boolean } {
     // Check if any major event is within 2 hours
     for (const event of upcomingEvents) {
-      const timeToEvent = (event.eventTime.getTime() - currentTime.getTime()) / (1000 * 60); // minutes
+      const eventTime = event.eventTime as Date;
+      const timeToEvent = (eventTime.getTime() - currentTime.getTime()) / (1000 * 60); // minutes
 
       if (event.severity === 'HIGH' && timeToEvent <= 120 && timeToEvent >= -60) {
         // Major event within 2 hours before or 1 hour after
         return {
           majorEventNear: true,
-          eventType: event.eventType,
+          eventType: event.eventType as string,
           timeToEvent,
           allowed: false,
         };
@@ -250,10 +251,10 @@ export class RiskRegimeService {
    * Determine if trading is allowed overall
    */
   private determineTradingAllowed(
-    time: any,
-    event: any,
-    market: any,
-    day: any
+    time: Record<string, unknown>,
+    event: Record<string, unknown>,
+    market: Record<string, unknown>,
+    day: Record<string, unknown>
   ): boolean {
     // All categories must allow trading
     return time.allowed && event.allowed && market.allowed && day.allowed;
@@ -263,10 +264,10 @@ export class RiskRegimeService {
    * Calculate overall risk level
    */
   private calculateRiskLevel(
-    time: any,
-    event: any,
-    market: any,
-    day: any
+    time: Record<string, unknown>,
+    event: Record<string, unknown>,
+    market: Record<string, unknown>,
+    day: Record<string, unknown>
   ): 'VERY_LOW' | 'LOW' | 'MEDIUM' | 'HIGH' | 'EXTREME' {
     let riskPoints = 0;
 
@@ -282,8 +283,9 @@ export class RiskRegimeService {
     if (market.lowLiquidity) riskPoints += 2;
 
     // Day restrictions
-    if (day.riskLevel === 'HIGH') riskPoints += 3;
-    else if (day.riskLevel === 'MEDIUM') riskPoints += 1;
+    const dayRiskLevel = day.riskLevel as string;
+    if (dayRiskLevel === 'HIGH') riskPoints += 3;
+    else if (dayRiskLevel === 'MEDIUM') riskPoints += 1;
 
     if (riskPoints >= 6) return 'EXTREME';
     if (riskPoints >= 4) return 'HIGH';
@@ -296,10 +298,10 @@ export class RiskRegimeService {
    * Identify main restriction reason
    */
   private identifyMainRestriction(
-    time: any,
-    event: any,
-    market: any,
-    day: any
+    time: Record<string, unknown>,
+    event: Record<string, unknown>,
+    market: Record<string, unknown>,
+    day: Record<string, unknown>
   ): string {
     if (market.circuitBreaker) return 'CIRCUIT_BREAKER';
     if (event.majorEventNear) return 'MAJOR_EVENT_NEAR';
@@ -320,10 +322,10 @@ export class RiskRegimeService {
   private calculateRiskRegimeScore(
     riskLevel: string,
     tradingAllowed: boolean,
-    time: any,
-    event: any,
-    market: any,
-    day: any
+    time: Record<string, unknown>,
+    event: Record<string, unknown>,
+    market: Record<string, unknown>,
+    day: Record<string, unknown>
   ): number {
     // If trading not allowed, score is automatically low
     if (!tradingAllowed) {

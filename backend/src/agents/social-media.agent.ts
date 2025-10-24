@@ -3,7 +3,7 @@ import { AgentType } from '@prisma/client';
 import { logger } from '@/infrastructure/logger';
 
 export class SocialMediaAgent extends BaseAgent {
-  async execute(input?: any): Promise<AgentExecutionResult> {
+  async execute(input?: Record<string, unknown>): Promise<AgentExecutionResult> {
     const startTime = Date.now();
 
     try {
@@ -65,19 +65,19 @@ export class SocialMediaAgent extends BaseAgent {
     }
   }
 
-  private async generateContent(contentGeneration: any, input?: any) {
-    const tone = contentGeneration.tone || 'professional';
-    const topics = contentGeneration.topics || ['AI', 'Business', 'Technology'];
-    const hashtags = contentGeneration.hashtags || { enabled: true, maxCount: 5 };
+  private async generateContent(contentGeneration: Record<string, unknown>, input?: Record<string, unknown>) {
+    const tone = (contentGeneration.tone as string) || 'professional';
+    const topics = (contentGeneration.topics as string[]) || ['AI', 'Business', 'Technology'];
+    const hashtags = (contentGeneration.hashtags as Record<string, unknown>) || { enabled: true, maxCount: 5 };
 
     // Use input from previous agents if available
-    const contextData = input?.sharedData || {};
+    const contextData = (input?.sharedData as Record<string, unknown>) || {};
 
     await this.simulateApiCall(800); // Content generation API
 
     const content = {
       posts: this.generatePosts(tone, topics, contextData),
-      hashtags: hashtags.enabled ? this.generateHashtags(topics, hashtags.maxCount) : [],
+      hashtags: (hashtags.enabled as boolean) ? this.generateHashtags(topics, hashtags.maxCount as number) : [],
       tone: tone,
       topics: topics,
     };
@@ -85,9 +85,9 @@ export class SocialMediaAgent extends BaseAgent {
     return content;
   }
 
-  private generatePosts(tone: string, topics: string[], contextData: any) {
-    const posts: any[] = [];
-    const toneStyles: any = {
+  private generatePosts(tone: string, topics: string[], contextData: Record<string, unknown>) {
+    const posts: Record<string, unknown>[] = [];
+    const toneStyles: Record<string, Record<string, string[]>> = {
       professional: {
         starters: ['Excited to share', 'Thrilled to announce', 'Pleased to present'],
         endings: ['Thoughts?', 'What do you think?', 'Let\'s discuss!'],
@@ -114,11 +114,11 @@ export class SocialMediaAgent extends BaseAgent {
     return posts.slice(0, Math.floor(Math.random() * 5) + 3); // 3-7 posts
   }
 
-  private createEducationalPost(topic: string, style: any, contextData: any) {
+  private createEducationalPost(topic: string, style: Record<string, string[]>, contextData: Record<string, unknown>) {
     const leadCount = contextData.leadCount || 'hundreds of';
     const conversions = contextData.emailsSent || 'thousands of';
 
-    const educationalTemplates: any = {
+    const educationalTemplates: Record<string, string> = {
       AI: `${style.starters[0]} insights on how AI is transforming ${topic}. Our agents have already generated ${leadCount} qualified leads this month! 🤖 Here's what we learned...`,
       Business: `${style.starters[1]} how ${topic} automation can scale your operations. We've seen ${conversions} successful interactions! 📈`,
       Technology: `${style.starters[2]} the latest in ${topic}. The future of automation is here! 🚀`,
@@ -133,7 +133,7 @@ export class SocialMediaAgent extends BaseAgent {
     };
   }
 
-  private createEngagementPost(topic: string, style: any) {
+  private createEngagementPost(topic: string, style: Record<string, string[]>) {
     const questions = [
       `What's your biggest challenge with ${topic}?`,
       `How do you think ${topic} will evolve in the next 5 years?`,
@@ -146,11 +146,11 @@ export class SocialMediaAgent extends BaseAgent {
       content: questions[Math.floor(Math.random() * questions.length)],
       length: 'short',
       includeImage: false,
-      pollOptions: Math.random() > 0.7 ? [`Option A for ${topic}`, `Option B for ${topic}`] : null,
+      pollOptions: Math.random() > 0.7 ? [`Option A for ${topic}`, `Option B for ${topic}`] : undefined,
     };
   }
 
-  private createNewsPost(topic: string, style: any) {
+  private createNewsPost(topic: string, style: Record<string, string[]>) {
     const newsTemplates = [
       `Breaking: Major breakthrough in ${topic}! This could change everything... 🔥`,
       `Industry Update: ${topic} adoption reaches new heights! Here's what it means for your business...`,
@@ -168,7 +168,7 @@ export class SocialMediaAgent extends BaseAgent {
   }
 
   private generateHashtags(topics: string[], maxCount: number) {
-    const hashtagMap: any = {
+    const hashtagMap: Record<string, string[]> = {
       AI: ['#AI', '#MachineLearning', '#ArtificialIntelligence', '#Automation', '#Tech'],
       Business: ['#Business', '#Entrepreneur', '#Growth', '#Strategy', '#Innovation'],
       Technology: ['#Technology', '#Tech', '#Digital', '#Future', '#Innovation'],
@@ -180,12 +180,13 @@ export class SocialMediaAgent extends BaseAgent {
     return uniqueHashtags.slice(0, maxCount);
   }
 
-  private createPosts(content: any, platforms: string[], postTypes: string[]) {
-    const posts: any[] = [];
+  private createPosts(content: Record<string, unknown>, platforms: string[], postTypes: string[]) {
+    const posts: Record<string, unknown>[] = [];
+    const contentPosts = content.posts as Record<string, unknown>[];
 
-    content.posts.forEach((post: any) => {
+    contentPosts.forEach((post: Record<string, unknown>) => {
       platforms.forEach(platform => {
-        const platformPost = this.adaptPostForPlatform(post, platform, content.hashtags);
+        const platformPost = this.adaptPostForPlatform(post, platform, content.hashtags as string[]);
         posts.push({
           ...platformPost,
           id: `post_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
@@ -198,8 +199,8 @@ export class SocialMediaAgent extends BaseAgent {
     return posts;
   }
 
-  private adaptPostForPlatform(post: any, platform: string, hashtags: string[]) {
-    const platformAdaptations: any = {
+  private adaptPostForPlatform(post: Record<string, unknown>, platform: string, hashtags: string[]) {
+    const platformAdaptations: Record<string, Record<string, unknown>> = {
       twitter: {
         maxLength: 280,
         hashtagStyle: 'inline',
@@ -225,11 +226,12 @@ export class SocialMediaAgent extends BaseAgent {
     };
 
     const adaptation = platformAdaptations[platform] || platformAdaptations.twitter;
-    let content = post.content;
+    let content = post.content as string;
 
     // Truncate if necessary
-    if (content.length > adaptation.maxLength) {
-      content = content.substring(0, adaptation.maxLength - 3) + '...';
+    const maxLength = adaptation.maxLength as number;
+    if (content.length > maxLength) {
+      content = content.substring(0, maxLength - 3) + '...';
     }
 
     // Add hashtags based on platform style
@@ -251,7 +253,7 @@ export class SocialMediaAgent extends BaseAgent {
     };
   }
 
-  private async publishPosts(posts: any[]) {
+  private async publishPosts(posts: Record<string, unknown>[]) {
     const results = [];
 
     for (const post of posts) {
@@ -275,12 +277,12 @@ export class SocialMediaAgent extends BaseAgent {
     return results;
   }
 
-  private async handleEngagement(engagement: any, platforms: string[]) {
+  private async handleEngagement(engagement: Record<string, unknown>, platforms: string[]): Promise<Record<string, number> | Record<string, string>> {
     if (!engagement.autoLike && !engagement.autoComment && !engagement.autoFollow) {
       return { message: 'Auto-engagement disabled' };
     }
 
-    const results: any = {
+    const results: Record<string, number> = {
       likes: 0,
       comments: 0,
       follows: 0,
@@ -309,13 +311,15 @@ export class SocialMediaAgent extends BaseAgent {
     return results;
   }
 
-  private generateSocialAnalytics(postResults: any[], engagementResults: any) {
+  private generateSocialAnalytics(postResults: Record<string, unknown>[], engagementResults: Record<string, number> | Record<string, string>) {
     const successfulPosts = postResults.filter(p => p.success);
-    const totalReach = successfulPosts.reduce((sum, post) => sum + post.reach, 0);
-    const totalImpressions = successfulPosts.reduce((sum, post) => sum + post.impressions, 0);
+    const totalReach = successfulPosts.reduce((sum, post) => sum + (post.reach as number), 0);
+    const totalImpressions = successfulPosts.reduce((sum, post) => sum + (post.impressions as number), 0);
 
     const platformBreakdown = this.calculatePlatformBreakdown(successfulPosts);
-    const engagementRate = totalReach > 0 ? ((engagementResults.likes + engagementResults.comments) / totalReach * 100) : 0;
+    const likes = typeof engagementResults === 'object' && 'likes' in engagementResults ? (engagementResults.likes as number) : 0;
+    const comments = typeof engagementResults === 'object' && 'comments' in engagementResults ? (engagementResults.comments as number) : 0;
+    const engagementRate = totalReach > 0 ? ((likes + comments) / totalReach * 100) : 0;
 
     return {
       totalPosts: postResults.length,
@@ -334,32 +338,33 @@ export class SocialMediaAgent extends BaseAgent {
     };
   }
 
-  private calculatePlatformBreakdown(posts: any[]) {
-    const breakdown: any = {};
+  private calculatePlatformBreakdown(posts: Record<string, unknown>[]) {
+    const breakdown: Record<string, Record<string, number>> = {};
 
     posts.forEach(post => {
-      if (!breakdown[post.platform]) {
-        breakdown[post.platform] = {
+      const platform = post.platform as string;
+      if (!breakdown[platform]) {
+        breakdown[platform] = {
           posts: 0,
           reach: 0,
           impressions: 0,
         };
       }
 
-      breakdown[post.platform].posts++;
-      breakdown[post.platform].reach += post.reach;
-      breakdown[post.platform].impressions += post.impressions;
+      breakdown[platform].posts++;
+      breakdown[platform].reach += post.reach as number;
+      breakdown[platform].impressions += post.impressions as number;
     });
 
     return breakdown;
   }
 
-  private findTopPerformingPost(posts: any[]) {
+  private findTopPerformingPost(posts: Record<string, unknown>[]) {
     if (posts.length === 0) return null;
 
     return posts.reduce((best, current) => {
-      const currentScore = current.reach + (current.impressions * 0.1);
-      const bestScore = best.reach + (best.impressions * 0.1);
+      const currentScore = (current.reach as number) + ((current.impressions as number) * 0.1);
+      const bestScore = (best.reach as number) + ((best.impressions as number) * 0.1);
       return currentScore > bestScore ? current : best;
     });
   }

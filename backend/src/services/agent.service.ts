@@ -7,24 +7,24 @@ export interface AgentConfig {
   type: AgentType;
   name: string;
   description?: string;
-  configuration: any;
-  triggers?: any;
-  actions?: any;
-  capabilities?: any;
+  configuration: Record<string, unknown>;
+  triggers?: Record<string, unknown>;
+  actions?: Record<string, unknown>;
+  capabilities?: Record<string, unknown>;
 }
 
 export interface ExecutionResult {
   success: boolean;
-  output?: any;
+  output?: Record<string, unknown>;
   error?: string;
   metrics?: {
     duration: number;
-    resourceUsage: any;
+    resourceUsage: Record<string, unknown>;
   };
 }
 
 class AgentService extends EventEmitter {
-  private runningAgents = new Map<string, any>();
+  private runningAgents = new Map<string, Record<string, unknown>>();
 
   async createAgent(organizationId: string, config: AgentConfig) {
     try {
@@ -37,7 +37,7 @@ class AgentService extends EventEmitter {
           type: config.type,
           description: config.description,
           systemPrompt: 'You are a helpful AI assistant.',
-          capabilities: config.capabilities as any,
+          capabilities: config.capabilities as Record<string, unknown>,
           status: AgentStatus.DRAFT,
         },
       });
@@ -141,7 +141,7 @@ class AgentService extends EventEmitter {
     }
   }
 
-  async executeAgent(agentId: string, input?: any): Promise<ExecutionResult> {
+  async executeAgent(agentId: string, input?: Record<string, unknown>): Promise<ExecutionResult> {
     const startTime = Date.now();
     let interaction;
 
@@ -248,7 +248,7 @@ class AgentService extends EventEmitter {
     };
   }
 
-  async listAgents(organizationId: string, filters?: any) {
+  async listAgents(organizationId: string, filters?: Record<string, unknown>) {
     return prisma.agent.findMany({
       where: {
         organizationId,
@@ -264,7 +264,7 @@ class AgentService extends EventEmitter {
     });
   }
 
-  private async executeAgentLogic(agent: any, input?: any): Promise<any> {
+  private async executeAgentLogic(agent: Record<string, unknown>, input?: Record<string, unknown>): Promise<Record<string, unknown>> {
     // Try real AI execution first
     try {
       const { agentExecutor } = await import('./agent-executor.service');
@@ -301,7 +301,7 @@ class AgentService extends EventEmitter {
     }
   }
 
-  private async executeSimpleAgent(agent: any, input?: any): Promise<any> {
+  private async executeSimpleAgent(agent: Record<string, unknown>, input?: Record<string, unknown>): Promise<Record<string, unknown>> {
     // Simple fallback execution for basic simulation
     await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
 
@@ -430,7 +430,7 @@ class AgentService extends EventEmitter {
       }
 
       const { VectorService } = await import('./vector.service');
-      const context: any = {};
+      const context: Record<string, unknown> = {};
 
       if (contextTypes.includes('knowledge')) {
         context.knowledge = await VectorService.searchKnowledge({
@@ -527,7 +527,7 @@ class AgentService extends EventEmitter {
       const { VectorService } = await import('./vector.service');
 
       return await VectorService.searchKnowledge({
-        organizationId: agent.organizationId,
+        organizationId: agent.organizationId as string,
         query,
         limit,
         minSimilarity: 0.6
