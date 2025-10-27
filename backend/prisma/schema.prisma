@@ -182,6 +182,9 @@ model Organization {
   analyticsEvents  AnalyticsEvent[] @relation("OrgEvents") // NEW: Analytics events
   patientDietPlans PatientDietPlan[] @relation("OrgDietPlans") // NEW: Patient diet plans
   aiModels         AIModelConfig[] @relation("OrgAIModels") // NEW: AI model configurations
+  agentAPIKeys     AgentAPIKey[] // NEW: Agent API keys for integrations
+  agentWebhooks    AgentWebhook[] // NEW: Agent webhooks
+  agentIntegrations AgentIntegrationConfig[] // NEW: Agent third-party integrations
 
   @@index([status])
   @@index([planType])
@@ -1127,6 +1130,9 @@ model Agent {
   workflows       AgentWorkflow[]
   templates       AgentTemplate[]
   swarmMembers    SwarmMember[]
+  apiKeys         AgentAPIKey[]
+  webhooks        AgentWebhook[]
+  integrationConfigs AgentIntegrationConfig[]
 
   @@index([organizationId, status])
   @@index([isPublic, category])
@@ -1368,6 +1374,190 @@ model AgentTemplate {
 
   @@index([isPublic, category])
   @@map("agent_templates")
+}
+
+// ==================== AGENT INTEGRATION & API MANAGEMENT ====================
+
+model AgentAPIKey {
+  id              String   @id @default(cuid())
+  organizationId  String
+  agentId         String
+
+  // Key Info
+  name            String
+  key             String   @unique
+  hashedKey       String   // Store hashed version for security
+  prefix          String   // First 8 chars for identification
+
+  // Permissions
+  permissions     String[] @default(["execute"])
+  rateLimit       Int      @default(100) // Requests per minute
+
+  // Usage Tracking
+  usageCount      Int      @default(0)
+  lastUsedAt      DateTime?
+
+  // Security
+  expiresAt       DateTime?
+  isActive        Boolean  @default(true)
+  ipWhitelist     String[] @default([])
+
+  // Metadata
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  agent           Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  usageLogs       AgentAPIUsageLog[]
+
+  @@index([organizationId])
+  @@index([agentId])
+  @@index([key])
+  @@index([isActive])
+  @@map("agent_api_keys")
+}
+
+model AgentAPIUsageLog {
+  id              String   @id @default(cuid())
+  apiKeyId        String
+  agentId         String
+
+  // Request Info
+  method          String
+  endpoint        String
+  statusCode      Int
+  responseTime    Int      // milliseconds
+
+  // Tracking
+  ipAddress       String?
+  userAgent       String?
+  timestamp       DateTime @default(now())
+
+  // Data
+  requestSize     Int?     // bytes
+  responseSize    Int?     // bytes
+  errorMessage    String?
+
+  // Relations
+  apiKey          AgentAPIKey @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+
+  @@index([apiKeyId])
+  @@index([agentId])
+  @@index([timestamp])
+  @@map("agent_api_usage_logs")
+}
+
+model AgentWebhook {
+  id              String   @id @default(cuid())
+  organizationId  String
+  agentId         String
+
+  // Webhook Config
+  name            String
+  url             String
+  method          String   @default("POST") // POST, PUT, PATCH
+  headers         Json?    // Custom headers
+
+  // Events to trigger webhook
+  events          String[] @default(["execution.completed", "execution.failed"])
+
+  // Security
+  secret          String?  // For signature verification
+  isActive        Boolean  @default(true)
+
+  // Retry Config
+  retryOnFailure  Boolean  @default(true)
+  maxRetries      Int      @default(3)
+  retryDelay      Int      @default(5000) // milliseconds
+
+  // Status
+  lastTriggeredAt DateTime?
+  failureCount    Int      @default(0)
+  successCount    Int      @default(0)
+
+  // Metadata
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  agent           Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  deliveries      WebhookDelivery[]
+
+  @@index([organizationId])
+  @@index([agentId])
+  @@index([isActive])
+  @@map("agent_webhooks")
+}
+
+model WebhookDelivery {
+  id              String   @id @default(cuid())
+  webhookId       String
+
+  // Delivery Info
+  event           String
+  payload         Json
+  statusCode      Int?
+  response        String?
+
+  // Status
+  status          String   // pending, success, failed
+  attempts        Int      @default(1)
+  errorMessage    String?
+
+  // Timing
+  deliveredAt     DateTime @default(now())
+  nextRetryAt     DateTime?
+
+  // Relations
+  webhook         AgentWebhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@index([webhookId])
+  @@index([status])
+  @@index([deliveredAt])
+  @@map("webhook_deliveries")
+}
+
+model AgentIntegrationConfig {
+  id              String   @id @default(cuid())
+  organizationId  String
+  agentId         String
+
+  // Integration Details
+  integrationType String   // slack, discord, zapier, custom, api
+  name            String
+
+  // Configuration
+  config          Json     // Integration-specific config
+  credentials     Json?    // Encrypted credentials
+
+  // Settings
+  isEnabled       Boolean  @default(true)
+  autoSync        Boolean  @default(false)
+  syncInterval    Int?     // minutes
+
+  // Status
+  lastSyncAt      DateTime?
+  syncStatus      String?  // success, failed, syncing
+  errorMessage    String?
+
+  // Metadata
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  agent           Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([agentId])
+  @@index([integrationType])
+  @@index([isEnabled])
+  @@map("agent_integration_configs")
 }
 
 model WorkflowTemplate {

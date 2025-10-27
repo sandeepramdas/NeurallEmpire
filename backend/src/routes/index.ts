@@ -41,6 +41,13 @@ import analyticsRoutes from '../modules/analytics/routes/analytics.routes';
 // Import orchestrator routes
 import orchestratorRoutes from './orchestrator.routes';
 
+// Import agent integration routes
+import agentAPIKeysRoutes from './agent-api-keys.routes';
+import publicAgentAPIRoutes from './public-agent-api.routes';
+
+// Import dashboard routes
+import dashboardRoutes from './dashboard.routes';
+
 const router = Router();
 
 // Health check
@@ -62,8 +69,12 @@ router.get('/test-sentry', (req, res) => {
 router.use('/auth', authRoutes);
 router.use('/marketplace/public', marketplaceRoutes);
 
+// Public Agent API (requires API key authentication)
+router.use('/public/agents', publicAgentAPIRoutes);
+
 // Protected routes (require authentication)
 router.use('/agents', authenticate, agentsRoutes);
+router.use('/agents', agentAPIKeysRoutes); // Agent API key management
 router.use('/workflows', authenticate, workflowsRoutes);
 router.use('/organization', authenticate, organizationRoutes);
 
@@ -109,6 +120,9 @@ router.use('/analytics', analyticsRoutes);
 
 // Orchestrator routes (require authentication)
 router.use('/orchestrator', authenticate, orchestratorRoutes);
+
+// Dashboard routes (require authentication)
+router.use('/dashboard', dashboardRoutes);
 
 // API documentation
 router.get('/', (req, res) => {
