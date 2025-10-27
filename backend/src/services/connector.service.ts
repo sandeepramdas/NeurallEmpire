@@ -407,7 +407,7 @@ export class ConnectorService {
       errorRate: queryCount > 0 ? errorCount / queryCount : 0,
       avgResponseTimeMs: avgDuration._avg.durationMs || 0,
       memoryStats,
-    } as any,
+    } as any;
   }
 
   // ==================== PRIVATE METHODS ====================
@@ -463,7 +463,7 @@ export class ConnectorService {
       provider: connector.provider,
       config: connector.config,
       credentials: connector.credentials,
-    } as any,
+    } as any;
 
     switch (connector.type) {
       case 'DATABASE':
