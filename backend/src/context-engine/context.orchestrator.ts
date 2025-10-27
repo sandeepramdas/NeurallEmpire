@@ -326,7 +326,7 @@ export class ContextOrchestrator {
             tool: true,
           },
         },
-      },
+      } as any,
     });
 
     if (!agent) {
@@ -338,10 +338,10 @@ export class ContextOrchestrator {
       name: agent.name,
       config: {
         systemPrompt: agent.systemPrompt,
-        modelConfig: agent.modelConfig,
+        modelConfig: (agent as any).modelConfig,
         capabilities: agent.capabilities,
       },
-      tools: agent.tools.map((at) => ({
+      tools: ((agent as any).tools || []).map((at: any) => ({
         id: at.tool.id,
         name: at.tool.name,
         type: at.tool.type,
@@ -365,7 +365,7 @@ export class ContextOrchestrator {
     }>
   > {
     // Get connectors linked to agent
-    const agentConnectors = await prisma.agentConnector.findMany({
+    const agentConnectors = await (prisma as any).agentConnector.findMany({
       where: { agentId },
       include: { connector: true },
     });

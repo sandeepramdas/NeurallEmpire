@@ -157,7 +157,7 @@ export class ToolPermissionsService {
       }
 
       // Get user's roles
-      const userRoles = await (prisma as any).userRole.findMany({
+      const userRoles = await prisma.userRole.findMany({
         where: { userId, organizationId },
         include: { role: true },
       });
@@ -385,7 +385,7 @@ export class ToolPermissionsService {
   ): Promise<string[]> {
     try {
       // Get user's roles
-      const userRoles = await (prisma as any).userRole.findMany({
+      const userRoles = await prisma.userRole.findMany({
         where: { userId, organizationId },
       });
 
@@ -398,7 +398,7 @@ export class ToolPermissionsService {
           OR: [{ userId }, { roleId: { in: roleIds } }],
           actions: {
             has: action,
-          } as any,
+          },
         },
         select: {
           toolId: true,

@@ -687,7 +687,7 @@ export class MarketplaceService {
           name: `${item.name} (${organizationId})`,
           description: item.description,
           organizationId,
-          llmModel: agentTemplate.llmModel || 'gpt-4',
+          model: (agentTemplate as any).llmModel || 'gpt-4',
           systemPrompt: agentTemplate.systemPrompt,
           config: agentTemplate.config as any,
           isActive: true,

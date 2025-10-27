@@ -136,7 +136,7 @@ export class SessionMemoryService {
     }
 
     // Reconstruct session data
-    const messages = await (prisma as any).conversationMessage.findMany({
+    const messages = await prisma.conversationMessage.findMany({
       where: { sessionId },
       orderBy: { createdAt: 'asc' },
       take: this.MAX_MESSAGES,
@@ -220,7 +220,7 @@ export class SessionMemoryService {
     );
 
     // Save to database
-    await (prisma as any).conversationMessage.create({
+    await prisma.conversationMessage.create({
       data: {
         sessionId,
         role: message.role,

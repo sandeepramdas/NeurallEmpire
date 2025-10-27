@@ -659,7 +659,7 @@ export class WorkflowEngine {
         return null;
       }
 
-      return workflow.definition as WorkflowDefinition;
+      return workflow.definition as unknown as WorkflowDefinition;
     } catch (error) {
       logger.error('Failed to get workflow', { error, workflowId });
       throw error;
@@ -676,7 +676,7 @@ export class WorkflowEngine {
         orderBy: { createdAt: 'desc' },
       });
 
-      return workflows.map((w) => w.definition as WorkflowDefinition);
+      return workflows.map((w) => w.definition as unknown as WorkflowDefinition);
     } catch (error) {
       logger.error('Failed to list workflows', { error, organizationId });
       throw error;
@@ -769,6 +769,9 @@ export class WorkflowEngine {
     error?: any
   ): Promise<void> {
     try {
+      // Map lowercase status to ExecutionStatus enum
+      const executionStatus = status === 'started' ? 'RUNNING' : status === 'completed' ? 'COMPLETED' : 'FAILED';
+
       await prisma.workflowExecution.create({
         data: {
           workflowId,
@@ -776,7 +779,7 @@ export class WorkflowEngine {
           userId: context.userId,
           organizationId: context.organizationId,
           agentId: context.agentId,
-          status,
+          status: executionStatus as any,
           duration: duration || 0,
           errorMessage: error ? (error instanceof Error ? error.message : String(error)) : null,
           executedAt: new Date(),

@@ -478,6 +478,9 @@ class RedisClient {
 // Singleton instance
 export const redis = new RedisClient();
 
+// Export the class
+export { RedisClient };
+
 // Auto-connect on module load
 redis.connect().catch((error) => {
   logger.error('Failed to auto-connect Redis', { error });

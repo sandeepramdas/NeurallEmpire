@@ -274,7 +274,7 @@ export class UserPreferencesService {
     const { userId, organizationId, type, resource, resourceId, metadata } = event;
 
     // Store interaction in database
-    await (prisma as any).userInteraction.create({
+    await prisma.userInteraction.create({
       data: {
         userId,
         organizationId,
@@ -345,7 +345,7 @@ export class UserPreferencesService {
     organizationId: string
   ): Promise<AdaptiveInsights> {
     // Get recent interactions (last 30 days)
-    const interactions = await (prisma as any).userInteraction.findMany({
+    const interactions = await prisma.userInteraction.findMany({
       where: {
         userId,
         organizationId,
@@ -480,7 +480,7 @@ export class UserPreferencesService {
         select: { id: true, name: true, category: true },
       }),
       prisma.connector.findMany({
-        where: { organizationId, isActive: true } as any,
+        where: { organizationId, status: 'CONNECTED' },
         select: { id: true, name: true, type: true },
       }),
     ]);

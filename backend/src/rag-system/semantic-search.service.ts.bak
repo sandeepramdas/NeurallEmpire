@@ -167,7 +167,7 @@ export class SemanticSearchService {
               relevanceReason: this.generateRelevanceReason(r.score, entry.type),
             };
           })
-          .filter((r) => r !== null) as SearchResult[];
+          .filter((r): r is SearchResult => r !== null);
       } else {
         results = filteredResults.map((r) => ({
           id: r.id,
@@ -423,7 +423,7 @@ export class SemanticSearchService {
             relevanceReason: `Similar to original (${(r.score * 100).toFixed(0)}% match)`,
           };
         })
-        .filter((r) => r !== null) as SearchResult[];
+        .filter((r): r is SearchResult => r !== null);
 
       logger.info('Similar search completed', {
         entryId,
@@ -471,7 +471,7 @@ export class SemanticSearchService {
    */
   async trackSearch(analytics: SearchAnalytics): Promise<void> {
     try {
-      await (prisma as any).searchAnalytics.create({
+      await prisma.searchAnalytics.create({
         data: {
           query: analytics.query,
           organizationId: analytics.organizationId,
@@ -516,7 +516,7 @@ export class SemanticSearchService {
       }
 
       const [stats, topQueries] = await Promise.all([
-        (prisma as any).searchAnalytics.aggregate({
+        prisma.searchAnalytics.aggregate({
           where,
           _count: true,
           _avg: {
@@ -525,7 +525,7 @@ export class SemanticSearchService {
             duration: true,
           },
         }),
-        (prisma as any).searchAnalytics.groupBy({
+        prisma.searchAnalytics.groupBy({
           by: ['query'],
           where,
           _count: true,

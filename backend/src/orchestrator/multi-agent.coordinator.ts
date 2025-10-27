@@ -564,7 +564,7 @@ export class MultiAgentCoordinator {
 
     try {
       // Build context for this agent
-      const agentContext = await contextOrchestrator.buildAgentContext(
+      const agentContext = await contextOrchestrator.buildContext(
         organizationId,
         task.agentId,
         userId,
@@ -741,7 +741,7 @@ export class MultiAgentCoordinator {
         return null;
       }
 
-      return collaboration.definition as AgentCollaboration;
+      return collaboration.definition as unknown as AgentCollaboration;
     } catch (error) {
       logger.error('Failed to get collaboration', { error, collaborationId });
       throw error;

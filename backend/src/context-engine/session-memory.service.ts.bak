@@ -88,7 +88,7 @@ export class SessionMemoryService {
     );
 
     // Store in database for persistence
-    await (prisma as any).sessionMemory.create({
+    await prisma.sessionMemory.create({
       data: {
         sessionId,
         userId,
@@ -127,7 +127,7 @@ export class SessionMemoryService {
     }
 
     // Fallback to database
-    const dbSession = await (prisma as any).sessionMemory.findUnique({
+    const dbSession = await prisma.sessionMemory.findUnique({
       where: { sessionId },
     });
 
@@ -136,7 +136,7 @@ export class SessionMemoryService {
     }
 
     // Reconstruct session data
-    const messages = await (prisma as any).conversationMessage.findMany({
+    const messages = await prisma.conversationMessage.findMany({
       where: { sessionId },
       orderBy: { createdAt: 'asc' },
       take: this.MAX_MESSAGES,
@@ -220,7 +220,7 @@ export class SessionMemoryService {
     );
 
     // Save to database
-    await (prisma as any).conversationMessage.create({
+    await prisma.conversationMessage.create({
       data: {
         sessionId,
         role: message.role,
@@ -235,7 +235,7 @@ export class SessionMemoryService {
     });
 
     // Update session memory stats
-    await (prisma as any).sessionMemory.update({
+    await prisma.sessionMemory.update({
       where: { sessionId },
       data: {
         messageCount: session.metadata.totalMessages,
@@ -295,7 +295,7 @@ export class SessionMemoryService {
     );
 
     // Update database
-    await (prisma as any).sessionMemory.update({
+    await prisma.sessionMemory.update({
       where: { sessionId },
       data: {
         context: session.context,
@@ -329,7 +329,7 @@ export class SessionMemoryService {
     }
 
     // Update database
-    await (prisma as any).sessionMemory.updateMany({
+    await prisma.sessionMemory.updateMany({
       where: { sessionId },
       data: {
         lastActivity: new Date(),
@@ -346,7 +346,7 @@ export class SessionMemoryService {
     await redis.delete(this.getSessionKey(sessionId));
 
     // Mark as expired in database (don't delete for audit)
-    await (prisma as any).sessionMemory.updateMany({
+    await prisma.sessionMemory.updateMany({
       where: { sessionId },
       data: {
         expiresAt: new Date(), // Expired now
@@ -364,7 +364,7 @@ export class SessionMemoryService {
     organizationId: string,
     limit: number = 10
   ): Promise<SessionData[]> {
-    const dbSessions = await (prisma as any).sessionMemory.findMany({
+    const dbSessions = await prisma.sessionMemory.findMany({
       where: {
         userId,
         organizationId,
@@ -393,7 +393,7 @@ export class SessionMemoryService {
    */
   async cleanupExpiredSessions(): Promise<number> {
     // Find expired sessions
-    const expired = await (prisma as any).sessionMemory.findMany({
+    const expired = await prisma.sessionMemory.findMany({
       where: {
         expiresAt: {
           lt: new Date(),

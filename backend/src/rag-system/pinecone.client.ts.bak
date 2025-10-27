@@ -13,7 +13,6 @@
  * @module rag-system/pinecone-client
  */
 
-// @ts-ignore
 import { Pinecone, PineconeRecord, RecordMetadata } from '@pinecone-database/pinecone';
 import { logger } from '../infrastructure/logger';
 
@@ -310,11 +309,11 @@ export class PineconeClient {
 
       if (fetchResponse.records) {
         for (const [id, record] of Object.entries(fetchResponse.records)) {
-          if ((record as any).values) {
+          if (record.values) {
             records.set(id, {
               id,
-              values: (record as any).values,
-              metadata: (record as any).metadata,
+              values: record.values,
+              metadata: record.metadata,
             });
           }
         }
