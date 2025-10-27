@@ -615,3 +615,104 @@ export const logout = async (
     });
   }
 };
+
+export const changePassword = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<Response | void> => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        error: 'User not authenticated',
+      });
+    }
+
+    const changePasswordSchema = z.object({
+      currentPassword: z.string().min(1, 'Current password is required'),
+      newPassword: strongPasswordSchema,
+    });
+
+    const validationResult = changePasswordSchema.safeParse(req.body);
+
+    if (!validationResult.success) {
+      return res.status(400).json({
+        success: false,
+        error: 'Validation failed',
+        details: validationResult.error.errors,
+      });
+    }
+
+    const { currentPassword, newPassword } = validationResult.data;
+
+    // Get user from database
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found',
+      });
+    }
+
+    // Verify current password
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.passwordHash || '');
+
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        error: 'Current password is incorrect',
+      });
+    }
+
+    // Check if new password is same as current
+    const isSamePassword = await bcrypt.compare(newPassword, user.passwordHash || '');
+    if (isSamePassword) {
+      return res.status(400).json({
+        success: false,
+        error: 'New password must be different from current password',
+      });
+    }
+
+    // Hash new password
+    const saltRounds = 12;
+    const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
+
+    // Update password
+    await prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: user.id },
+        data: {
+          passwordHash: newPasswordHash,
+          updatedAt: new Date(),
+        },
+      });
+
+      // Log audit event
+      await tx.auditLog.create({
+        data: {
+          action: 'PASSWORD_CHANGED',
+          resourceType: 'USER',
+          resourceId: user.id,
+          userId: user.id,
+          organizationId: user.organizationId,
+          ipAddress: req.ip || null,
+          userAgent: req.headers['user-agent'] || null,
+        },
+      });
+    });
+
+    return res.json({
+      success: true,
+      message: 'Password changed successfully',
+    });
+  } catch (error) {
+    logger.error('Change password error:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to change password',
+    });
+  }
+};

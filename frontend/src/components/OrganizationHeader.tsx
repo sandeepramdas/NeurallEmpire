@@ -369,7 +369,7 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
                       ))}
                     </div>
                     <div className="px-4 py-2 border-t border-gray-100">
-                      <a href="/dashboard/notifications" className="text-xs icon-active link-hover font-medium">
+                      <a href={`/org/${organization?.slug}/notifications`} className="text-xs icon-active link-hover font-medium">
                         View all notifications →
                       </a>
                     </div>
@@ -415,7 +415,7 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
                       ))}
                     </div>
                     <div className="px-4 py-2 border-t border-gray-100">
-                      <a href="/dashboard/activity" className="text-xs icon-active link-hover font-medium">
+                      <a href={`/org/${organization?.slug}/activity`} className="text-xs icon-active link-hover font-medium">
                         View all activity →
                       </a>
                     </div>
@@ -448,7 +448,7 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
 
             {/* Settings */}
             <a
-              href="/dashboard/settings"
+              href={`/org/${organization?.slug}/settings`}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               title="Settings"
             >
@@ -493,7 +493,7 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
 
                     {/* User Menu Items */}
                     <a
-                      href="/dashboard/profile"
+                      href={`/org/${organization?.slug}/profile`}
                       className="flex items-center px-4 py-2.5 hover:bg-gray-50 transition-colors"
                       onClick={() => setShowUserMenu(false)}
                     >
@@ -501,7 +501,7 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
                       <span className="text-sm text-gray-700">Profile Settings</span>
                     </a>
                     <a
-                      href="/dashboard/billing"
+                      href={`/org/${organization?.slug}/settings/billing`}
                       className="flex items-center px-4 py-2.5 hover:bg-gray-50 transition-colors"
                       onClick={() => setShowUserMenu(false)}
                     >
@@ -613,7 +613,7 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
           {/* Right: Upgrade CTA */}
           {(organization?.planType === 'FREE' || !organization?.planType) && (
             <a
-              href="/dashboard/settings/billing"
+              href={`/org/${organization?.slug}/settings/billing`}
               className="btn-primary flex items-center space-x-2 px-4 py-2 rounded-lg shadow-sm"
             >
               <Crown className="w-4 h-4" />

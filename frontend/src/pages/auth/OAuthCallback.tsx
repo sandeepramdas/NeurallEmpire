@@ -7,7 +7,7 @@ import { useAuthStore } from '@/store/authStore';
 const OAuthCallback: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { refreshProfile } = useAuthStore();
+  const { refreshProfile, organization } = useAuthStore();
 
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
   const [message, setMessage] = useState('Processing authentication...');
@@ -57,10 +57,10 @@ const OAuthCallback: React.FC = () => {
             window.location.href = preAuthUrl;
           } else {
             // Redirect to dashboard with organization context
-            if (orgSlug && orgSlug !== 'localhost' && orgSlug !== 'www') {
-              navigate(`/dashboard`);
+            if (organization?.slug) {
+              navigate(`/org/${organization.slug}/dashboard`);
             } else {
-              navigate('/dashboard');
+              navigate('/dashboard'); // Will redirect to correct org path via ProtectedRoute
             }
           }
         }, 2000);

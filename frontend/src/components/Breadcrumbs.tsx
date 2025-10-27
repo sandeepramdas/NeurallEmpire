@@ -8,8 +8,16 @@ const Breadcrumbs: React.FC = () => {
   // Generate breadcrumb items from pathname
   const pathnames = location.pathname.split('/').filter(x => x);
 
+  // Extract org slug if path starts with /org/
+  let orgSlug = '';
+  let startIndex = 0;
+  if (pathnames[0] === 'org' && pathnames[1]) {
+    orgSlug = pathnames[1];
+    startIndex = 2; // Skip 'org' and slug in breadcrumbs
+  }
+
   // Don't show breadcrumbs on dashboard home
-  if (pathnames.length <= 1) {
+  if (pathnames.length <= startIndex + 1) {
     return null;
   }
 
@@ -42,10 +50,11 @@ const Breadcrumbs: React.FC = () => {
     'activity': 'Activity Log',
   };
 
-  const breadcrumbs = pathnames.map((value, index) => {
-    const to = `/${pathnames.slice(0, index + 1).join('/')}`;
+  const breadcrumbs = pathnames.slice(startIndex).map((value, index) => {
+    const actualIndex = index + startIndex;
+    const to = `/${pathnames.slice(0, actualIndex + 1).join('/')}`;
     const label = pathNameMap[value] || value.charAt(0).toUpperCase() + value.slice(1);
-    const isLast = index === pathnames.length - 1;
+    const isLast = actualIndex === pathnames.length - 1;
 
     return {
       to,
@@ -54,10 +63,13 @@ const Breadcrumbs: React.FC = () => {
     };
   });
 
+  // Dashboard home link with org slug
+  const dashboardLink = orgSlug ? `/org/${orgSlug}/dashboard` : '/dashboard';
+
   return (
     <nav className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 mb-6">
       <Link
-        to="/dashboard"
+        to={dashboardLink}
         className="flex items-center hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
       >
         <Home className="w-4 h-4" />

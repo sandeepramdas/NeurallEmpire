@@ -38,56 +38,56 @@ const Settings: React.FC = () => {
       icon: Building2,
       title: 'Organization',
       description: 'Manage organization profile and basic info',
-      link: '/dashboard/settings/organization',
+      link: `/org/${organization?.slug}/settings/organization`,
       color: 'bg-blue-100 text-blue-600'
     },
     {
       icon: Users,
       title: 'Team Members',
       description: 'Invite and manage team members',
-      link: '/dashboard/settings/team',
+      link: `/org/${organization?.slug}/settings/team`,
       color: 'bg-green-100 text-green-600'
     },
     {
       icon: CreditCard,
       title: 'Billing & Subscription',
       description: 'Manage your plan and billing',
-      link: '/dashboard/settings/billing',
+      link: `/org/${organization?.slug}/settings/billing`,
       color: 'bg-purple-100 text-purple-600'
     },
     {
       icon: Key,
       title: 'API Keys',
       description: 'Create and manage API keys',
-      link: '/dashboard/settings/api-keys',
+      link: `/org/${organization?.slug}/settings/api-keys`,
       color: 'bg-orange-100 text-orange-600'
     },
     {
       icon: Shield,
       title: 'Security & Compliance',
       description: 'Configure security settings',
-      link: '/dashboard/settings/security',
+      link: `/org/${organization?.slug}/settings/security`,
       color: 'bg-red-100 text-red-600'
     },
     {
       icon: Palette,
       title: 'Branding & Theme',
       description: 'Customize your branding',
-      link: '/dashboard/settings/branding',
+      link: `/org/${organization?.slug}/settings/branding`,
       color: 'bg-pink-100 text-pink-600'
     },
     {
       icon: BarChart3,
       title: 'Usage & Analytics',
       description: 'View usage metrics',
-      link: '/dashboard/settings/analytics',
+      link: `/org/${organization?.slug}/settings/analytics`,
       color: 'bg-indigo-100 text-indigo-600'
     },
     {
       icon: Globe,
       title: 'Domain Settings',
       description: 'Manage custom domains',
-      link: '/dashboard/settings/domains',
+      link: `/org/${organization?.slug}/settings/domains`,
       color: 'bg-teal-100 text-teal-600'
     }
   ];
@@ -111,7 +111,7 @@ const Settings: React.FC = () => {
       {/* Header with Breadcrumb */}
       <div className="mb-8">
         <div className="flex items-center gap-2 text-sm text-neutral-600 mb-2">
-          <Link to="/dashboard" className="hover:text-primary-600 transition-colors">
+          <Link to={`/org/${organization?.slug}/dashboard`} className="hover:text-primary-600 transition-colors">
             Dashboard
           </Link>
           <ChevronRight className="w-4 h-4" />

@@ -94,18 +94,50 @@ const UserProfile: React.FC = () => {
     alert('Profile updated successfully!');
   };
 
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       alert('Passwords do not match!');
       return;
     }
-    // Change password logic here
-    setPasswordData({
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: '',
-    });
-    alert('Password changed successfully!');
+
+    if (!passwordData.currentPassword || !passwordData.newPassword) {
+      alert('Please fill in all password fields');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert('Password changed successfully!');
+        setPasswordData({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: '',
+        });
+      } else {
+        const errorMessage = data.details
+          ? data.details.map((d: any) => d.message).join(', ')
+          : data.error || 'Failed to change password';
+        alert(`Error: ${errorMessage}`);
+      }
+    } catch (error) {
+      console.error('Password change error:', error);
+      alert('Failed to change password. Please try again.');
+    }
   };
 
   const handleNotificationToggle = (key: keyof NotificationPreferences) => {
@@ -400,11 +432,11 @@ const UserProfile: React.FC = () => {
                       <strong>Password requirements:</strong>
                     </p>
                     <ul className="mt-2 text-xs text-blue-700 space-y-1 list-disc list-inside">
-                      <li>At least 8 characters long</li>
+                      <li>At least 12 characters long</li>
                       <li>Contains at least one uppercase letter</li>
                       <li>Contains at least one lowercase letter</li>
                       <li>Contains at least one number</li>
-                      <li>Contains at least one special character</li>
+                      <li>Contains at least one special character (!@#$%^&* etc.)</li>
                     </ul>
                   </div>
 

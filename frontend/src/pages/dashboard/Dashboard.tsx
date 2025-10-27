@@ -394,7 +394,7 @@ const Dashboard: React.FC = () => {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <a
-            href="/dashboard/agents"
+            href={`/org/${organization?.slug}/agents`}
             className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg text-white hover:from-blue-600 hover:to-blue-700 transition-all"
           >
             <div>
@@ -405,7 +405,7 @@ const Dashboard: React.FC = () => {
           </a>
 
           <a
-            href="/dashboard/workflows"
+            href={`/org/${organization?.slug}/workflows`}
             className="flex items-center justify-between p-4 bg-gradient-to-r from-green-500 to-green-600 rounded-lg text-white hover:from-green-600 hover:to-green-700 transition-all"
           >
             <div>
@@ -416,7 +416,7 @@ const Dashboard: React.FC = () => {
           </a>
 
           <a
-            href="/dashboard/analytics"
+            href={`/org/${organization?.slug}/analytics`}
             className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg text-white hover:from-purple-600 hover:to-purple-700 transition-all"
           >
             <div>
@@ -427,7 +427,7 @@ const Dashboard: React.FC = () => {
           </a>
 
           <a
-            href="/dashboard/settings"
+            href={`/org/${organization?.slug}/settings`}
             className="flex items-center justify-between p-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg text-white hover:from-orange-600 hover:to-orange-700 transition-all"
           >
             <div>

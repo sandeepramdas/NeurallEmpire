@@ -344,11 +344,11 @@ const Billing: React.FC = () => {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-2 text-sm text-neutral-600 mb-2">
-          <Link to="/dashboard" className="hover:text-primary-600 transition-colors">
+          <Link to={`/org/${organization?.slug}/dashboard`} className="hover:text-primary-600 transition-colors">
             Dashboard
           </Link>
           <ChevronRight className="w-4 h-4" />
-          <Link to="/dashboard/settings" className="hover:text-primary-600 transition-colors">
+          <Link to={`/org/${organization?.slug}/settings`} className="hover:text-primary-600 transition-colors">
             Settings
           </Link>
           <ChevronRight className="w-4 h-4" />

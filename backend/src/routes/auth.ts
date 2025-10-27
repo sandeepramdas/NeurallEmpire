@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
-import { register, login, getProfile, logout, joinOrganization } from '@/controllers/auth.controller';
+import { register, login, getProfile, logout, joinOrganization, changePassword } from '@/controllers/auth.controller';
 import { authenticate, optionalAuth } from '@/middleware/auth';
 import { logger } from '@/infrastructure/logger';
 
@@ -138,5 +138,12 @@ router.get('/organizations', authenticate, async (req, res) => {
  * @access  Private
  */
 router.post('/logout', authenticate, logout);
+
+/**
+ * @route   POST /api/auth/change-password
+ * @desc    Change user password
+ * @access  Private
+ */
+router.post('/change-password', authenticate, changePassword);
 
 export default router;

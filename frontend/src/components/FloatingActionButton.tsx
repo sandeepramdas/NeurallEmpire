@@ -1,31 +1,33 @@
 import React, { useState } from 'react';
 import { Plus, Bot, Megaphone, Workflow, X, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '@/store/authStore';
 
 const FloatingActionButton: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const { organization } = useAuthStore();
 
   const quickCreateActions = [
     {
       icon: Bot,
       label: 'New Agent',
-      action: () => navigate('/dashboard/agents?create=true'),
+      action: () => navigate(`/org/${organization?.slug}/agents?create=true`),
     },
     {
       icon: Megaphone,
       label: 'New Campaign',
-      action: () => navigate('/dashboard/campaigns?create=true'),
+      action: () => navigate(`/org/${organization?.slug}/campaigns?create=true`),
     },
     {
       icon: Workflow,
       label: 'New Workflow',
-      action: () => navigate('/dashboard/workflows?create=true'),
+      action: () => navigate(`/org/${organization?.slug}/workflows?create=true`),
     },
     {
       icon: FileText,
       label: 'From Template',
-      action: () => navigate('/dashboard/templates'),
+      action: () => navigate(`/org/${organization?.slug}/templates`),
     },
   ];
 
