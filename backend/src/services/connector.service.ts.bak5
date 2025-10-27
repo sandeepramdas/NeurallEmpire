@@ -311,7 +311,7 @@ export class ConnectorService {
       const result = await instance.query(params);
 
       // Log query
-      await (prisma as any).connectorQuery.create({
+      await prisma.connectorQuery.create({
         data: {
           connectorId,
           operation: params.operation,
@@ -330,7 +330,7 @@ export class ConnectorService {
       return result;
     } catch (error) {
       // Log failed query
-      await (prisma as any).connectorQuery.create({
+      await prisma.connectorQuery.create({
         data: {
           connectorId,
           operation: params.operation,
@@ -364,7 +364,7 @@ export class ConnectorService {
     const result = await instance.execute(action);
 
     // Audit log
-    await (prisma as any).connectorAuditLog.create({
+    await prisma.connectorAuditLog.create({
       data: {
         connectorId,
         action: action.operation,
@@ -389,18 +389,18 @@ export class ConnectorService {
     const memoryStats = instance?.getStatistics();
 
     // Get database stats
-    const queryCount = await (prisma as any).connectorQuery.count({
+    const queryCount = await prisma.connectorQuery.count({
       where: { connectorId },
     });
 
-    const errorCount = await (prisma as any).connectorQuery.count({
+    const errorCount = await prisma.connectorQuery.count({
       where: {
         connectorId,
         status: 'FAILED',
       },
     });
 
-    const avgDuration = await (prisma as any).connectorQuery.aggregate({
+    const avgDuration = await prisma.connectorQuery.aggregate({
       where: { connectorId },
       _avg: { durationMs: true },
     });

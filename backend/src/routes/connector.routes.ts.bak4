@@ -340,7 +340,7 @@ router.get(
     const { PrismaClient } = await import('@prisma/client');
     const prisma = new PrismaClient();
 
-    const logs = await (prisma as any).connectorAuditLog.findMany({
+    const logs = await prisma.connectorAuditLog.findMany({
       where: {
         connectorId: req.params.id,
       },
@@ -349,7 +349,7 @@ router.get(
       orderBy: { createdAt: 'desc' },
     });
 
-    const total = await (prisma as any).connectorAuditLog.count({
+    const total = await prisma.connectorAuditLog.count({
       where: {
         connectorId: req.params.id,
       },

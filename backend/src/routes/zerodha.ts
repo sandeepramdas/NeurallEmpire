@@ -7,12 +7,12 @@
 
 import { Router } from 'express';
 import { zerodhaController } from '../controllers/zerodha.controller';
-import { authMiddleware } from '../middleware/auth';
+import { authenticate } from '../middleware/auth';
 
 const router = Router();
 
 // Apply authentication middleware to all routes
-router.use(authMiddleware);
+router.use(authenticate);
 
 // ==================== SIGNALS ====================
 

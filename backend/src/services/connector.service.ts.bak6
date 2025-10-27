@@ -364,7 +364,7 @@ export class ConnectorService {
     const result = await instance.execute(action);
 
     // Audit log
-    await (prisma as any).connectorAuditLog.create({
+    await prisma.connectorAuditLog.create({
       data: {
         connectorId,
         action: action.operation,
