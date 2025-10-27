@@ -177,11 +177,11 @@ export class TradingStrategyService {
 
       // Save rejected signal to database
       return this.saveRejectedSignal(input, {
-        layer1: layer1Result,
-        layer2: layer2Result,
-        layer3: layer3Result,
-        layer4: layer4Result,
-        layer5: layer5Result,
+        layer1: layer1Result as any,
+        layer2: layer2Result as any,
+        layer3: layer3Result as any,
+        layer4: layer4Result as any,
+        layer5: layer5Result as any,
         layer6: null,
         layer7: null,
       }, 'WRITER_RATIO_FAILED');
@@ -249,23 +249,23 @@ export class TradingStrategyService {
 
     if (recommendation === 'EXECUTE') {
       return this.saveApprovedSignal(input, {
-        layer1: layer1Result,
-        layer2: layer2Result,
-        layer3: layer3Result,
-        layer4: layer4Result,
-        layer5: layer5Result,
-        layer6: layer6Result,
-        layer7: layer7Result,
-      }, overallScore, proposedTrade, layer7Result);
+        layer1: layer1Result as any,
+        layer2: layer2Result as any,
+        layer3: layer3Result as any,
+        layer4: layer4Result as any,
+        layer5: layer5Result as any,
+        layer6: layer6Result as any,
+        layer7: layer7Result as any,
+      }, overallScore, proposedTrade as any, layer7Result as any);
     } else {
       return this.saveRejectedSignal(input, {
-        layer1: layer1Result,
-        layer2: layer2Result,
-        layer3: layer3Result,
-        layer4: layer4Result,
-        layer5: layer5Result,
-        layer6: layer6Result,
-        layer7: layer7Result,
+        layer1: layer1Result as any,
+        layer2: layer2Result as any,
+        layer3: layer3Result as any,
+        layer4: layer4Result as any,
+        layer5: layer5Result as any,
+        layer6: layer6Result as any,
+        layer7: layer7Result as any,
       }, this.getRejectionReason(recommendation, layer6Result, layer7Result));
     }
   }
@@ -353,8 +353,8 @@ export class TradingStrategyService {
     input: TradingSignalInput,
     analysis: TradingSignalOutput['analysis'],
     overallScore: number,
-    trade: Record<string, unknown>,
-    layer7: Record<string, unknown>
+    trade: any,
+    layer7: any
   ): Promise<TradingSignalOutput> {
     const signal = await prisma.tradingSignal.create({
       data: {
