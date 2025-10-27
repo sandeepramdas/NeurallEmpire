@@ -86,6 +86,7 @@ const DashboardLayout: React.FC = () => {
       icon: Workflow,
       children: [
         { path: 'agents', label: 'AI Agents', icon: Bot },
+        { path: 'agent-api-keys', label: 'Agent API Keys', icon: Key },
         { path: 'workflows', label: 'Workflows', icon: Workflow },
         { path: 'templates', label: 'Templates', icon: FileText },
       ],

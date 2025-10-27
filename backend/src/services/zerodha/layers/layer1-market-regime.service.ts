@@ -106,7 +106,7 @@ export class MarketRegimeService {
     const ema20 = this.calculateEMA(prices, 20);
     const ema50 = this.calculateEMA(prices, 50);
     const currentPrice = prices[prices.length - 1];
-    const adx = this.calculateADX(data, 14);
+    const adx = this.calculateADX(data as any, 14);
 
     let direction: 'UP' | 'DOWN' | 'SIDEWAYS' = 'SIDEWAYS';
 

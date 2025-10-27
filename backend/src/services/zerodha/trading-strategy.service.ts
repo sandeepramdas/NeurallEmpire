@@ -119,7 +119,7 @@ export class TradingStrategyService {
       symbol: input.symbol,
       spotPrice: input.marketData.spotPrice,
       vixLevel: input.marketData.vixLevel,
-      historicalData: input.marketData.historicalData,
+      historicalData: input.marketData.historicalData as any,
     });
     logger.info(`✓ Layer 1 Score: ${layer1Result.score}/100 - ${layer1Result.regimeType}`);
 
@@ -128,7 +128,7 @@ export class TradingStrategyService {
     const layer2Result = await priceActionService.analyzePriceAction({
       symbol: input.symbol,
       timeframe: '15M',
-      historicalData: input.marketData.fifteenMinData,
+      historicalData: input.marketData.fifteenMinData as any,
       currentPrice: input.marketData.spotPrice,
     });
     logger.info(`✓ Layer 2 Score: ${layer2Result.score}/100 - ${layer2Result.priceLevel}`);
@@ -137,9 +137,9 @@ export class TradingStrategyService {
     logger.info('⏰ Layer 3: Checking multi-timeframe alignment...');
     const layer3Result = await multiTimeframeService.analyzeTimeframes({
       symbol: input.symbol,
-      oneHour: input.marketData.oneHourData,
-      fifteenMin: input.marketData.fifteenMinData,
-      fiveMin: input.marketData.fiveMinData,
+      oneHour: input.marketData.oneHourData as any,
+      fifteenMin: input.marketData.fifteenMinData as any,
+      fiveMin: input.marketData.fiveMinData as any,
     });
     logger.info(`✓ Layer 3 Score: ${layer3Result.score}/100 - ${layer3Result.alignment}`);
 
@@ -151,10 +151,10 @@ export class TradingStrategyService {
     const layer4Result = await volatilityService.analyzeVolatility({
       symbol: input.symbol,
       vixCurrent: input.marketData.vixLevel,
-      vixHistory: input.marketData.vixHistory,
+      vixHistory: input.marketData.vixHistory as any,
       strikeIV: atmIV,
       atmIV: atmIV,
-      historicalData: input.marketData.historicalData,
+      historicalData: input.marketData.historicalData as any,
     });
     logger.info(`✓ Layer 4 Score: ${layer4Result.score}/100 - ${layer4Result.volRegime}`);
 
@@ -163,10 +163,10 @@ export class TradingStrategyService {
     const layer5Result = await writerRatioService.analyzeWriterRatio({
       symbol: input.symbol,
       expiry: input.expiry,
-      strikes: input.optionChain.strikes,
+      strikes: input.optionChain.strikes as any,
       atmStrike: input.optionChain.atmStrike,
       targetStrike: input.optionChain.targetStrike,
-      signalType: input.signalType,
+      signalType: input.signalType as any,
     });
 
     if (layer5Result.writerRatioPassed) {
@@ -195,7 +195,7 @@ export class TradingStrategyService {
       marketCloseTime: input.riskData.marketCloseTime,
       symbol: input.symbol,
       isExpiryDay: input.riskData.isExpiryDay,
-      upcomingEvents: input.riskData.upcomingEvents,
+      upcomingEvents: input.riskData.upcomingEvents as any,
       currentVolume: input.riskData.currentVolume,
       avgVolume: input.riskData.avgVolume,
       circuitBreaker: input.riskData.circuitBreaker,
@@ -214,13 +214,13 @@ export class TradingStrategyService {
     const proposedTrade = {
       symbol: input.symbol,
       entryPrice: input.marketData.spotPrice,
-      stopLoss: this.calculateStopLoss(input.marketData.spotPrice, input.signalType, layer2Result),
-      target: this.calculateTarget(input.marketData.spotPrice, input.signalType, layer2Result),
+      stopLoss: this.calculateStopLoss(input.marketData.spotPrice, input.signalType, layer2Result as any),
+      target: this.calculateTarget(input.marketData.spotPrice, input.signalType, layer2Result as any),
       signalStrength: (layer1Result.score + layer2Result.score + layer3Result.score + layer4Result.score + layer5Result.score + layer6Result.score) / 6,
     };
 
     const layer7Result = await portfolioService.analyzePortfolio({
-      ...input.portfolioData,
+      ...(input.portfolioData as any),
       proposedTrade,
     });
     logger.info(`✓ Layer 7 Score: ${layer7Result.score}/100 - Position: ${layer7Result.positionSizeRecommended} units`);
@@ -266,7 +266,7 @@ export class TradingStrategyService {
         layer5: layer5Result as any,
         layer6: layer6Result as any,
         layer7: layer7Result as any,
-      }, this.getRejectionReason(recommendation, layer6Result, layer7Result));
+      }, this.getRejectionReason(recommendation, layer6Result as any, layer7Result as any));
     }
   }
 
@@ -392,9 +392,9 @@ export class TradingStrategyService {
         timeframe: '15M',
 
         // Analysis data
-        priceActionZones: analysis.layer2,
-        multiTimeframeData: analysis.layer3,
-        volatilityMetrics: analysis.layer4,
+        priceActionZones: analysis.layer2 as any,
+        multiTimeframeData: analysis.layer3 as any,
+        volatilityMetrics: analysis.layer4 as any,
         riskMetrics: layer7,
 
         // Signal status
@@ -440,23 +440,23 @@ export class TradingStrategyService {
         signalStrength: 0,
 
         // Layer scores (may be partial)
-        layer1Score: analysis.layer1?.score || 0,
-        layer2Score: analysis.layer2?.score || 0,
-        layer3Score: analysis.layer3?.score || 0,
-        layer4Score: analysis.layer4?.score || 0,
-        layer5Score: analysis.layer5?.score || 0,
-        layer6Score: analysis.layer6?.score || 0,
-        layer7Score: analysis.layer7?.score || 0,
+        layer1Score: (analysis.layer1?.score as number) || 0,
+        layer2Score: (analysis.layer2?.score as number) || 0,
+        layer3Score: (analysis.layer3?.score as number) || 0,
+        layer4Score: (analysis.layer4?.score as number) || 0,
+        layer5Score: (analysis.layer5?.score as number) || 0,
+        layer6Score: (analysis.layer6?.score as number) || 0,
+        layer7Score: (analysis.layer7?.score as number) || 0,
 
         // Writer ratio
-        writerRatio: analysis.layer5?.writerRatio || 0,
+        writerRatio: (analysis.layer5?.writerRatio as number) || 0,
         writerRatioPassed: false,
-        callWriters: analysis.layer5?.callWriters || 0,
-        putWriters: analysis.layer5?.putWriters || 0,
+        callWriters: (analysis.layer5?.callWriters as number) || 0,
+        putWriters: (analysis.layer5?.putWriters as number) || 0,
 
         // Market context
         vixLevel: input.marketData.vixLevel,
-        marketRegime: analysis.layer1?.regimeType || 'UNCERTAIN',
+        marketRegime: (analysis.layer1?.regimeType as string) || 'UNCERTAIN',
 
         // Signal status
         status: SignalStatus.REJECTED,

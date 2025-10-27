@@ -226,7 +226,7 @@ export class PriceActionService {
       const next = data[i + 1];
 
       // Bullish FVG: Gap between prev.high and next.low
-      if (next.low > prev.high && current.close > current.open) {
+      if (next.low > prev.high && (current as any).close > (current as any).open) {
         gaps.push({
           type: 'FVG',
           high: next.low,
@@ -238,7 +238,7 @@ export class PriceActionService {
       }
 
       // Bearish FVG: Gap between prev.low and next.high
-      if (next.high < prev.low && current.close < current.open) {
+      if (next.high < prev.low && (current as any).close < (current as any).open) {
         gaps.push({
           type: 'FVG',
           high: prev.low,

@@ -257,7 +257,7 @@ export class RiskRegimeService {
     day: Record<string, unknown>
   ): boolean {
     // All categories must allow trading
-    return time.allowed && event.allowed && market.allowed && day.allowed;
+    return (time.allowed as boolean) && (event.allowed as boolean) && (market.allowed as boolean) && (day.allowed as boolean);
   }
 
   /**

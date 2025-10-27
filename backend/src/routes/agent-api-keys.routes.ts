@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { agentAPIKeysController } from '@/controllers/agent-api-keys.controller';
-import { authenticate } from '@/middleware/auth.middleware';
+import { authenticate } from '@/middleware/auth';
 
 const router = Router();
 
