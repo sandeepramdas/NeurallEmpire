@@ -1,4 +1,4 @@
-# Production Dockerfile for NeurallEmpire Backend (builds from root)
+# Production Dockerfile for NeurallEmpire Backend
 FROM node:20-slim
 
 # Install OpenSSL for Prisma
@@ -10,22 +10,14 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copy backend package files
-COPY backend/package*.json ./
-
-# Copy Prisma schema
-COPY backend/prisma ./prisma
+# Copy entire backend directory
+COPY backend/ ./
 
 # Install dependencies
 RUN npm install --production=false
 
 # Generate Prisma client
 RUN npx prisma generate
-
-# Copy backend source code
-COPY backend/src ./src
-COPY backend/tsconfig.json ./
-COPY backend/.env* ./ 2>/dev/null || true
 
 # Build TypeScript
 RUN npm run build || (echo "Build had errors but continuing..." && exit 0)
