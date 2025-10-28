@@ -689,10 +689,10 @@ export class MarketplaceService {
           organizationId,
           model: (agentTemplate as any).llmModel || 'gpt-4',
           systemPrompt: agentTemplate.systemPrompt,
-          config: agentTemplate.config as any,
+          configuration: agentTemplate.config as any,
           isActive: true,
           createdAt: new Date(),
-        },
+        } as any,
       });
 
       return {

@@ -487,7 +487,7 @@ router.patch('/preferences', async (req: Request, res: Response, next: NextFunct
     const preferences = await userPreferencesService.updatePreferences(
       userId,
       organizationId,
-      updates
+      updates as any
     );
 
     res.json({

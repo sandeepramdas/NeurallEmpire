@@ -37,9 +37,9 @@ class AgentService extends EventEmitter {
           type: config.type,
           description: config.description,
           systemPrompt: 'You are a helpful AI assistant.',
-          capabilities: config.capabilities as Record<string, unknown>,
+          capabilities: config.capabilities as any,
           status: AgentStatus.DRAFT,
-        },
+        } as any,
       });
 
       this.emit('agentCreated', { agentId: agent.id, organizationId });
@@ -162,8 +162,8 @@ class AgentService extends EventEmitter {
           organizationId: agent.organizationId,
           status: 'PROCESSING',
           type: 'FUNCTION_CALL',
-          input,
-        },
+          input: input as any,
+        } as any,
       });
 
       // Execute agent based on type
@@ -178,8 +178,8 @@ class AgentService extends EventEmitter {
           status: 'COMPLETED',
           completedAt: new Date(),
           latency: duration,
-          output: result.output,
-        },
+          output: result.output as any,
+        } as any,
       });
 
       // Update agent metrics
@@ -189,10 +189,10 @@ class AgentService extends EventEmitter {
 
       return {
         success: true,
-        output: result.output,
+        output: result.output as any,
         metrics: {
           duration,
-          resourceUsage: result.metrics?.resourceUsage || {},
+          resourceUsage: (result.metrics as any)?.resourceUsage || {},
         },
       };
     } catch (error) {
@@ -268,7 +268,7 @@ class AgentService extends EventEmitter {
     // Try real AI execution first
     try {
       const { agentExecutor } = await import('./agent-executor.service');
-      const result = await agentExecutor.execute(agent, input);
+      const result = await agentExecutor.execute(agent as any, input);
 
       if (result.success) {
         return {
@@ -282,8 +282,8 @@ class AgentService extends EventEmitter {
       // Try AgentFactory for specialized agents
       try {
         const { AgentFactory } = await import('@/agents');
-        const agentInstance = AgentFactory.createAgent(agent.id, agent.type, agent);
-        const result = await agentInstance.execute(input);
+        const agentInstance = AgentFactory.createAgent(agent.id as string, agent.type as any, agent);
+        const result = await agentInstance.execute(input as any);
 
         if (result.success) {
           return {

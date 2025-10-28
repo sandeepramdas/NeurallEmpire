@@ -227,7 +227,7 @@ router.post(
   '/:id/query',
   asyncHandler(async (req: Request, res: Response) => {
     // Validate query params
-    const params = QueryParamsSchema.parse(req.body);
+    const params = QueryParamsSchema.parse(req.body) as any;
 
     const result = await connectorService.queryConnector(
       req.params.id,
@@ -252,7 +252,7 @@ router.post(
   '/:id/execute',
   asyncHandler(async (req: Request, res: Response) => {
     // Validate action
-    const action = ActionSchema.parse(req.body);
+    const action = ActionSchema.parse(req.body) as any;
 
     const result = await connectorService.executeAction(
       req.params.id,

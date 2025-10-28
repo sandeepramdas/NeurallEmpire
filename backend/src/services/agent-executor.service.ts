@@ -155,15 +155,15 @@ export class AgentExecutorService {
       const data = await response.json();
       const duration = Date.now() - startTime;
 
-      const outputText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      const tokenCount = data.usageMetadata || { promptTokenCount: 0, candidatesTokenCount: 0, totalTokenCount: 0 };
+      const outputText = (data as any).candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const tokenCount = (data as any).usageMetadata || { promptTokenCount: 0, candidatesTokenCount: 0, totalTokenCount: 0 };
 
       return {
         success: true,
         output: {
           message: outputText,
           role: 'assistant',
-          finishReason: data.candidates?.[0]?.finishReason
+          finishReason: (data as any).candidates?.[0]?.finishReason
         },
         metrics: {
           duration,

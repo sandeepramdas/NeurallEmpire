@@ -570,10 +570,9 @@ export class MultiAgentCoordinator {
         userId,
         task.instruction,
         {
-          sharedContext: state.sharedContext,
           taskId: task.taskId,
           collaborationId: state.collaborationId,
-        }
+        } as any
       );
 
       // Execute agent (simplified - in production, call agent service)

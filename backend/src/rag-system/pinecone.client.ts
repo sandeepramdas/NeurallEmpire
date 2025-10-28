@@ -426,7 +426,10 @@ export class PineconeClient {
         dimension: stats.dimension || this.dimension,
         indexFullness: stats.indexFullness || 0,
         totalVectorCount: stats.totalRecordCount || 0,
-        namespaces: stats.namespaces,
+        namespaces: Object.entries(stats.namespaces || {}).reduce((acc, [key, value]) => {
+          acc[key] = { vectorCount: (value as any).recordCount || 0 };
+          return acc;
+        }, {} as Record<string, { vectorCount: number }>),
       };
     } catch (error) {
       logger.error('Failed to get index stats', {

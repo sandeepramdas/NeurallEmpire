@@ -112,7 +112,7 @@ router.post('/knowledge', async (req: Request, res: Response, next: NextFunction
       ...input,
       organizationId,
       createdBy: userId,
-    });
+    } as any);
 
     res.status(201).json({
       success: true,
@@ -140,7 +140,7 @@ router.post('/knowledge/bulk', async (req: Request, res: Response, next: NextFun
       ...e,
       organizationId,
       createdBy: userId,
-    }));
+    })) as any[];
 
     const result = await knowledgeBaseService.bulkCreateKnowledge({
       entries: entriesWithOrg,

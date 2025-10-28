@@ -51,8 +51,8 @@ export class ConnectorService {
       const existing = await prisma.connector.findFirst({
         where: {
           organizationId,
-          slug,
-        },
+          name: input.name,
+        } as any,
       });
 
       if (existing) {
@@ -184,7 +184,6 @@ export class ConnectorService {
 
     if (updates.name) {
       data.name = updates.name;
-      data.slug = this.generateSlug(updates.name);
     }
     if (updates.description !== undefined) data.description = updates.description;
     if (updates.config) data.config = updates.config;

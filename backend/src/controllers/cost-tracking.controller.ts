@@ -95,8 +95,8 @@ export class CostTrackingController {
         const totalTokens = promptTokens + completionTokens;
 
         // Calculate cost
-        const promptCost = (config.costPerPromptToken || 0) * promptTokens;
-        const completionCost = (config.costPerCompletionToken || 0) * completionTokens;
+        const promptCost = Number(config.costPerPromptToken || 0) * promptTokens;
+        const completionCost = Number(config.costPerCompletionToken || 0) * completionTokens;
         const totalCost = promptCost + completionCost;
 
         return {
@@ -132,8 +132,8 @@ export class CostTrackingController {
         dayPlans.forEach((plan) => {
           const config = configs.find((c) => c.id === plan.aiModelConfigId);
           if (config) {
-            const promptCost = (config.costPerPromptToken || 0) * 1500;
-            const completionCost = (config.costPerCompletionToken || 0) * 3000;
+            const promptCost = Number(config.costPerPromptToken || 0) * 1500;
+            const completionCost = Number(config.costPerCompletionToken || 0) * 3000;
             dayCost += promptCost + completionCost;
           }
         });
@@ -326,8 +326,8 @@ export class CostTrackingController {
       let totalCost = 0;
       dietPlans.forEach(() => {
         // Use average cost across all models
-        const avgPromptCost = configs.reduce((sum, c) => sum + (c.costPerPromptToken || 0), 0) / Math.max(configs.length, 1);
-        const avgCompletionCost = configs.reduce((sum, c) => sum + (c.costPerCompletionToken || 0), 0) / Math.max(configs.length, 1);
+        const avgPromptCost = configs.reduce((sum, c) => sum + Number(c.costPerPromptToken || 0), 0) / Math.max(configs.length, 1);
+        const avgCompletionCost = configs.reduce((sum, c) => sum + Number(c.costPerCompletionToken || 0), 0) / Math.max(configs.length, 1);
         totalCost += (avgPromptCost * 1500) + (avgCompletionCost * 3000);
       });
 

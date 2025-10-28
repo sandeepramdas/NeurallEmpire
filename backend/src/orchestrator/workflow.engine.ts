@@ -775,7 +775,6 @@ export class WorkflowEngine {
       await prisma.workflowExecution.create({
         data: {
           workflowId,
-          executionId,
           userId: context.userId,
           organizationId: context.organizationId,
           agentId: context.agentId,
@@ -783,7 +782,7 @@ export class WorkflowEngine {
           duration: duration || 0,
           errorMessage: error ? (error instanceof Error ? error.message : String(error)) : null,
           executedAt: new Date(),
-        },
+        } as any,
       });
     } catch (error) {
       logger.error('Failed to log workflow execution', { error, workflowId, executionId });

@@ -48,7 +48,7 @@ async function testDatabaseConnector() {
     );
 
     logger.info(`✓ Database connector created: ${dbConnector.id}`);
-    logger.info(`  Status: ${dbConnector.status}`);
+    logger.info(`  Status: ${(dbConnector as any).status || 'N/A'}`);
 
     // Test connection
     logger.info('\n✓ Testing database connection...');
@@ -148,7 +148,7 @@ async function testAPIConnector() {
     );
 
     logger.info(`✓ API connector created: ${apiConnector.id}`);
-    logger.info(`  Status: ${apiConnector.status}`);
+    logger.info(`  Status: ${(apiConnector as any).status || 'N/A'}`);
 
     // Test connection
     logger.info('\n✓ Testing API connection...');
