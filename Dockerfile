@@ -1,10 +1,14 @@
 FROM node:20-slim
 
-# Install OpenSSL, Python, and build tools for native modules
+# Install OpenSSL for Prisma
 RUN apt-get update && apt-get install -y \
     openssl \
     libssl3 \
     ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python and build tools for native modules (isolated-vm)
+RUN apt-get update && apt-get install -y \
     python3 \
     make \
     g++ \
