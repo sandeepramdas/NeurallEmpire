@@ -25,8 +25,7 @@ RUN npx prisma generate
 # Copy source code
 COPY . .
 
-# Build TypeScript (includes copying public folder)
-# Force build to succeed even with TypeScript errors
+# Build TypeScript
 RUN npm run build || (echo "Build had errors but continuing..." && exit 0)
 
 # Remove devDependencies
