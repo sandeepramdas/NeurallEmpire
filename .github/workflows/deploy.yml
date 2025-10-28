@@ -32,6 +32,7 @@ jobs:
         run: |
           cd frontend
           npm install
+          npm install --no-save @rollup/rollup-linux-x64-gnu
 
       - name: Build React app
         run: |
