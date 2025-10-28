@@ -79,7 +79,7 @@ const CodeArtifacts: React.FC = () => {
       case 'deployed':
         return 'bg-green-100 text-green-800';
       case 'approved':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
       case 'reviewed':
         return 'bg-purple-100 text-purple-800';
       case 'generated':
@@ -87,7 +87,7 @@ const CodeArtifacts: React.FC = () => {
       case 'failed':
         return 'bg-red-100 text-red-800';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:text-gray-200';
     }
   };
 
@@ -168,11 +168,11 @@ const CodeArtifacts: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
             <Code className="w-8 h-8" />
             AI Code Artifacts
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
             Track and manage AI-generated code with full transparency
           </p>
         </div>
@@ -180,76 +180,76 @@ const CodeArtifacts: React.FC = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow-sm p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 text-sm">Total Artifacts</p>
-              <p className="text-2xl font-bold text-gray-900">{artifacts.length}</p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">Total Artifacts</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{artifacts.length}</p>
             </div>
-            <Code className="w-8 h-8 text-blue-600" />
+            <Code className="w-8 h-8 icon-active" />
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 text-sm">Deployed</p>
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-gray-600 dark:text-gray-400 text-sm">Deployed</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {artifacts.filter(a => a.status === 'deployed').length}
               </p>
             </div>
-            <Rocket className="w-8 h-8 text-green-600" />
+            <Rocket className="w-8 h-8 text-green-600 dark:text-green-400" />
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 text-sm">Approved</p>
-              <p className="text-2xl font-bold text-blue-600">
+              <p className="text-gray-600 dark:text-gray-400 text-sm">Approved</p>
+              <p className="text-2xl font-bold icon-active">
                 {artifacts.filter(a => a.status === 'approved').length}
               </p>
             </div>
-            <CheckCircle className="w-8 h-8 text-blue-600" />
+            <CheckCircle className="w-8 h-8 icon-active" />
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 text-sm">In Review</p>
-              <p className="text-2xl font-bold text-purple-600">
+              <p className="text-gray-600 dark:text-gray-400 text-sm">In Review</p>
+              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                 {artifacts.filter(a => a.status === 'reviewed').length}
               </p>
             </div>
-            <Eye className="w-8 h-8 text-purple-600" />
+            <Eye className="w-8 h-8 text-purple-600 dark:text-purple-400" />
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 text-sm">Syntax Valid</p>
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-gray-600 dark:text-gray-400 text-sm">Syntax Valid</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {artifacts.filter(a => a.syntaxValid).length}
               </p>
             </div>
-            <CheckCircle className="w-8 h-8 text-green-600" />
+            <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 mb-6">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
             <input
               type="text"
               placeholder="Search artifacts..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
@@ -259,7 +259,7 @@ const CodeArtifacts: React.FC = () => {
               setFilterStatus(e.target.value);
               fetchArtifacts();
             }}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">All Status</option>
             <option value="generated">Generated</option>
@@ -275,7 +275,7 @@ const CodeArtifacts: React.FC = () => {
               setFilterType(e.target.value);
               fetchArtifacts();
             }}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">All Types</option>
             <option value="react_component">React Component</option>
@@ -294,51 +294,51 @@ const CodeArtifacts: React.FC = () => {
           <div className="animate-spin h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full" />
         </div>
       ) : filteredArtifacts.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-          <Code className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No artifacts found</h3>
-          <p className="text-gray-600">AI-generated code artifacts will appear here</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-12 text-center">
+          <Code className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">No artifacts found</h3>
+          <p className="text-gray-600 dark:text-gray-400">AI-generated code artifacts will appear here</p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Artifact</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Language</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Version</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Artifact</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Type</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Language</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Version</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Created</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {filteredArtifacts.map((artifact) => (
-                <tr key={artifact.id} className="hover:bg-gray-50">
+                <tr key={artifact.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">{getTypeIcon(artifact.artifactType)}</span>
                       <div>
-                        <div className="font-medium text-gray-900">{artifact.name}</div>
-                        <div className="text-sm text-gray-500 truncate max-w-md">
+                        <div className="font-medium text-gray-900 dark:text-gray-100">{artifact.name}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-md">
                           {artifact.reasoning.substring(0, 60)}...
                         </div>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
                       {artifact.artifactType.replace('_', ' ')}
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded font-mono">
+                      <span className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded font-mono">
                         {artifact.language}
                       </span>
                       {artifact.framework && (
-                        <span className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded">
+                        <span className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded">
                           {artifact.framework}
                         </span>
                       )}
@@ -351,14 +351,14 @@ const CodeArtifacts: React.FC = () => {
                         {artifact.status}
                       </span>
                       {!artifact.syntaxValid && (
-                        <AlertCircle className="w-4 h-4 text-red-600" title="Syntax errors detected" />
+                        <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" title="Syntax errors detected" />
                       )}
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
+                  <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                     v{artifact.version}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
+                  <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                     {new Date(artifact.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 text-right">
@@ -368,7 +368,7 @@ const CodeArtifacts: React.FC = () => {
                           setSelectedArtifact(artifact);
                           setShowDetailModal(true);
                         }}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                        className="p-2 text-blue-600 hover:bg-blue-50 dark:bg-blue-900/20 rounded-lg"
                         title="View Details"
                       >
                         <Eye className="w-4 h-4" />
@@ -391,7 +391,7 @@ const CodeArtifacts: React.FC = () => {
                           a.download = `${artifact.name}.${artifact.language}`;
                           a.click();
                         }}
-                        className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg"
+                        className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg"
                         title="Download"
                       >
                         <Download className="w-4 h-4" />
@@ -408,20 +408,20 @@ const CodeArtifacts: React.FC = () => {
       {/* Detail Modal */}
       {showDetailModal && selectedArtifact && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-3">
                 <span className="text-3xl">{getTypeIcon(selectedArtifact.artifactType)}</span>
                 <div>
-                  <h2 className="text-2xl font-bold">{selectedArtifact.name}</h2>
-                  <p className="text-sm text-gray-600">
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{selectedArtifact.name}</h2>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     Generated by {selectedArtifact.agentName || 'AI Agent'}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setShowDetailModal(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -430,7 +430,7 @@ const CodeArtifacts: React.FC = () => {
             <div className="flex-1 overflow-y-auto p-6">
               <div className="grid grid-cols-2 gap-6 mb-6">
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Status</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
                   <p className="mt-1">
                     <span className={`inline-flex items-center gap-1 px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(selectedArtifact.status)}`}>
                       {getStatusIcon(selectedArtifact.status)}
@@ -439,19 +439,19 @@ const CodeArtifacts: React.FC = () => {
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Version</label>
-                  <p className="mt-1 text-gray-900">v{selectedArtifact.version}</p>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Version</label>
+                  <p className="mt-1 text-gray-900 dark:text-gray-100">v{selectedArtifact.version}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Language</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Language</label>
                   <p className="mt-1">
-                    <span className="px-2 py-1 text-sm bg-gray-100 text-gray-700 rounded font-mono">
+                    <span className="px-2 py-1 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded font-mono">
                       {selectedArtifact.language}
                     </span>
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Syntax Valid</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Syntax Valid</label>
                   <p className="mt-1 flex items-center gap-2">
                     {selectedArtifact.syntaxValid ? (
                       <>
@@ -469,14 +469,14 @@ const CodeArtifacts: React.FC = () => {
               </div>
 
               <div className="mb-6">
-                <label className="text-sm font-medium text-gray-700 mb-2 block">AI Reasoning</label>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-gray-900">{selectedArtifact.reasoning}</p>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">AI Reasoning</label>
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+                  <p className="text-gray-900 dark:text-gray-100">{selectedArtifact.reasoning}</p>
                 </div>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">Generated Code</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">Generated Code</label>
                 <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
                   <pre className="text-sm text-gray-100 font-mono">
                     <code>{selectedArtifact.code}</code>
@@ -485,7 +485,7 @@ const CodeArtifacts: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center justify-between p-6 border-t border-gray-200 bg-gray-50">
+            <div className="flex items-center justify-between p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
               <div className="flex gap-3">
                 {selectedArtifact.status === 'approved' && (
                   <button
@@ -505,7 +505,7 @@ const CodeArtifacts: React.FC = () => {
                     a.download = `${selectedArtifact.name}.${selectedArtifact.language}`;
                     a.click();
                   }}
-                  className="flex items-center gap-2 px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="flex items-center gap-2 px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
                 >
                   <Download className="w-5 h-5" />
                   Download
@@ -513,7 +513,7 @@ const CodeArtifacts: React.FC = () => {
               </div>
               <button
                 onClick={() => setShowDetailModal(false)}
-                className="px-6 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+                className="px-6 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100"
               >
                 Close
               </button>

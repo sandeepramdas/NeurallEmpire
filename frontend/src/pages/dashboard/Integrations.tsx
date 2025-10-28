@@ -316,39 +316,39 @@ const Integrations: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Integrations</h1>
-        <p className="text-gray-600 mt-2">Connect NeurallEmpire with your favorite tools and services</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Integrations</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">Connect NeurallEmpire with your favorite tools and services</p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Total Integrations</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">{integrations.length}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Total Integrations</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{integrations.length}</p>
             </div>
-            <Plug className="w-8 h-8 text-indigo-600" />
+            <Plug className="w-8 h-8 icon-active" />
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Connected</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Connected</p>
               <p className="text-2xl font-bold text-green-600 mt-1">{connectedCount}</p>
             </div>
             <Check className="w-8 h-8 text-green-600" />
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Available</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Available</p>
               <p className="text-2xl font-bold text-blue-600 mt-1">{integrations.length - connectedCount}</p>
             </div>
-            <Plus className="w-8 h-8 text-blue-600" />
+            <Plus className="w-8 h-8 icon-active" />
           </div>
         </div>
       </div>
@@ -356,18 +356,18 @@ const Integrations: React.FC = () => {
       {/* Recently Used Integrations */}
       {recentlyUsed.length > 0 && (
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Recently Used</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Recently Used</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {recentlyUsed.map((integration) => (
-              <div key={integration.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <div key={integration.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">
                       {integration.icon}
                     </div>
                     <div>
-                      <h3 className="text-sm font-semibold text-gray-900">{integration.name}</h3>
-                      <p className="text-xs text-gray-500">
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{integration.name}</h3>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         Last sync: {integration.lastSync ? new Date(integration.lastSync).toLocaleString() : 'Never'}
                       </p>
                     </div>
@@ -383,7 +383,7 @@ const Integrations: React.FC = () => {
       )}
 
       {/* Search and Filter */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -392,7 +392,7 @@ const Integrations: React.FC = () => {
               placeholder="Search integrations..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
           </div>
 
@@ -404,7 +404,7 @@ const Integrations: React.FC = () => {
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                   categoryFilter === category
                     ? 'bg-indigo-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200'
                 }`}
               >
                 {category === 'all' ? 'All' : category}
@@ -417,10 +417,10 @@ const Integrations: React.FC = () => {
       {/* Popular Integrations Section */}
       {categoryFilter === 'all' && searchQuery === '' && (
         <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Popular Integrations</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Popular Integrations</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {popularIntegrations.slice(0, 6).map((integration) => (
-              <div key={integration.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+              <div key={integration.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between mb-4">
                   <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">
                     {integration.icon}
@@ -431,17 +431,17 @@ const Integrations: React.FC = () => {
                       Connected
                     </span>
                   ) : (
-                    <span className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                    <span className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200">
                       Available
                     </span>
                   )}
                 </div>
 
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{integration.name}</h3>
-                <p className="text-sm text-gray-600 mb-4">{integration.description}</p>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{integration.name}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{integration.description}</p>
 
-                <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-                  <span className="inline-flex px-2 py-1 rounded-full bg-gray-100">{integration.category}</span>
+                <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-4">
+                  <span className="inline-flex px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800">{integration.category}</span>
                   {integration.connectedAt && (
                     <span>Connected {new Date(integration.connectedAt).toLocaleDateString()}</span>
                   )}
@@ -451,7 +451,7 @@ const Integrations: React.FC = () => {
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => handleConfigureIntegration(integration)}
-                      className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center"
+                      className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center"
                     >
                       <Settings className="w-4 h-4 mr-2" />
                       Configure
@@ -466,7 +466,7 @@ const Integrations: React.FC = () => {
                 ) : (
                   <button
                     onClick={() => handleConfigureIntegration(integration)}
-                    className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                    className="w-full px-4 py-2 btn-primary rounded-lg transition-colors"
                   >
                     Connect
                   </button>
@@ -479,12 +479,12 @@ const Integrations: React.FC = () => {
 
       {/* All Integrations Grid */}
       <div className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
           {categoryFilter === 'all' ? 'All Integrations' : `${categoryFilter} Integrations`}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredIntegrations.map((integration) => (
-            <div key={integration.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div key={integration.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between mb-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">
                   {integration.icon}
@@ -495,17 +495,17 @@ const Integrations: React.FC = () => {
                     Connected
                   </span>
                 ) : (
-                  <span className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  <span className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200">
                     Available
                   </span>
                 )}
               </div>
 
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">{integration.name}</h3>
-              <p className="text-sm text-gray-600 mb-4">{integration.description}</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{integration.name}</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{integration.description}</p>
 
-              <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-                <span className="inline-flex px-2 py-1 rounded-full bg-gray-100">{integration.category}</span>
+              <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-4">
+                <span className="inline-flex px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800">{integration.category}</span>
                 {integration.connectedAt && (
                   <span>Connected {new Date(integration.connectedAt).toLocaleDateString()}</span>
                 )}
@@ -515,7 +515,7 @@ const Integrations: React.FC = () => {
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => handleConfigureIntegration(integration)}
-                    className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center"
+                    className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center"
                   >
                     <Settings className="w-4 h-4 mr-2" />
                     Configure
@@ -530,7 +530,7 @@ const Integrations: React.FC = () => {
               ) : (
                 <button
                   onClick={() => handleConfigureIntegration(integration)}
-                  className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                  className="w-full px-4 py-2 btn-primary rounded-lg transition-colors"
                 >
                   Connect
                 </button>
@@ -540,35 +540,35 @@ const Integrations: React.FC = () => {
         </div>
 
         {filteredIntegrations.length === 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
             <Plug className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">No integrations found matching your criteria</p>
+            <p className="text-gray-500 dark:text-gray-400">No integrations found matching your criteria</p>
           </div>
         )}
       </div>
 
       {/* Webhook URLs Section */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">Webhook URLs</h2>
-            <p className="text-sm text-gray-600 mt-1">Use these URLs to receive events from external services</p>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Webhook URLs</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Use these URLs to receive events from external services</p>
           </div>
-          <Webhook className="w-6 h-6 text-indigo-600" />
+          <Webhook className="w-6 h-6 icon-active" />
         </div>
 
         <div className="space-y-4">
           {webhooks.map((webhook) => (
-            <div key={webhook.id} className="border border-gray-200 rounded-lg p-4">
+            <div key={webhook.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
               <div className="flex items-start justify-between mb-2">
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900">{webhook.name}</h3>
-                  <p className="text-xs text-gray-500">Created {new Date(webhook.createdAt).toLocaleDateString()}</p>
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{webhook.name}</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Created {new Date(webhook.createdAt).toLocaleDateString()}</p>
                 </div>
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => copyToClipboard(webhook.url, webhook.id)}
-                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                     title="Copy webhook URL"
                   >
                     {copiedWebhook === webhook.id ? (
@@ -577,19 +577,19 @@ const Integrations: React.FC = () => {
                       <Copy className="w-4 h-4" />
                     )}
                   </button>
-                  <button className="text-gray-400 hover:text-gray-600 transition-colors" title="View documentation">
+                  <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" title="View documentation">
                     <ExternalLink className="w-4 h-4" />
                   </button>
                 </div>
               </div>
 
-              <code className="block w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded text-xs font-mono text-gray-900 overflow-x-auto">
+              <code className="block w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 rounded text-xs font-mono text-gray-900 dark:text-gray-100 overflow-x-auto">
                 {webhook.url}
               </code>
 
               <div className="mt-3 flex flex-wrap gap-2">
                 {webhook.events.map((event, index) => (
-                  <span key={index} className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                  <span key={index} className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200">
                     {event}
                   </span>
                 ))}
@@ -604,13 +604,13 @@ const Integrations: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900 flex items-center">
-                <Settings className="w-6 h-6 mr-2 text-indigo-600" />
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center">
+                <Settings className="w-6 h-6 mr-2 icon-active" />
                 Configure {selectedIntegration.name}
               </h2>
               <button
                 onClick={() => setIsConfigModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -632,14 +632,14 @@ const Integrations: React.FC = () => {
 
                 {selectedIntegration.apiKey && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">API Key</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">API Key</label>
                     <div className="flex items-center space-x-2">
-                      <code className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded text-sm font-mono text-gray-900">
+                      <code className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded text-sm font-mono text-gray-900 dark:text-gray-100">
                         {selectedIntegration.apiKey.substring(0, 20)}...
                       </code>
                       <button
                         onClick={() => copyToClipboard(selectedIntegration.apiKey || '', selectedIntegration.id)}
-                        className="px-3 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors"
+                        className="px-3 py-2 border border-gray-300 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:bg-gray-900 transition-colors"
                       >
                         <Copy className="w-4 h-4" />
                       </button>
@@ -649,15 +649,15 @@ const Integrations: React.FC = () => {
 
                 {selectedIntegration.lastSync && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Last Sync</label>
-                    <p className="text-sm text-gray-900">{new Date(selectedIntegration.lastSync).toLocaleString()}</p>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Last Sync</label>
+                    <p className="text-sm text-gray-900 dark:text-gray-100">{new Date(selectedIntegration.lastSync).toLocaleString()}</p>
                   </div>
                 )}
 
                 <div className="flex justify-end space-x-3 pt-4">
                   <button
                     onClick={() => setIsConfigModalOpen(false)}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 transition-colors"
                   >
                     Close
                   </button>
@@ -672,21 +672,21 @@ const Integrations: React.FC = () => {
             ) : (
               <form onSubmit={handleConnectIntegration} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">API Key / Access Token</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">API Key / Access Token</label>
                   <input
                     type="text"
                     value={apiKeyInput}
                     onChange={(e) => setApiKeyInput(e.target.value)}
                     required
                     placeholder="Enter your API key"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   />
-                  <p className="mt-2 text-xs text-gray-500">
+                  <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                     You can find your API key in your {selectedIntegration.name} account settings
                   </p>
                 </div>
 
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
                   <div className="flex items-start">
                     <AlertCircle className="w-5 h-5 text-blue-600 mr-2 flex-shrink-0 mt-0.5" />
                     <div>
@@ -702,13 +702,13 @@ const Integrations: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setIsConfigModalOpen(false)}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center"
+                    className="px-4 py-2 btn-primary rounded-lg transition-colors flex items-center"
                   >
                     <Check className="w-4 h-4 mr-2" />
                     Connect Integration

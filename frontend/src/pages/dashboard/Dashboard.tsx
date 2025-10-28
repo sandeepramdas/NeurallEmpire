@@ -31,6 +31,8 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import toast from 'react-hot-toast';
+import { StatsCard } from '@/components/ui';
+import { formatCurrency, formatTimeAgo } from '@/utils/formatters';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
@@ -65,33 +67,8 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return num.toString();
-  };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2
-    }).format(amount);
-  };
 
-  const formatTimeAgo = (timestamp: string) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return `${diffDays}d ago`;
-  };
 
   if (loading || !stats) {
     return (
@@ -143,7 +120,7 @@ const Dashboard: React.FC = () => {
                 <span className={`text-sm font-medium ${stats.growth.agentsGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {Math.abs(stats.growth.agentsGrowth).toFixed(1)}%
                 </span>
-                <span className="text-sm text-gray-500 ml-1">vs last month</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">vs last month</span>
               </div>
             </div>
             <div className="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
@@ -159,7 +136,7 @@ const Dashboard: React.FC = () => {
               <p className="text-3xl font-bold text-green-600 dark:text-green-400">
                 {stats.overview.activeAgents}
               </p>
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                 {stats.overview.totalAgents > 0
                   ? `${Math.round((stats.overview.activeAgents / stats.overview.totalAgents) * 100)}% of total`
                   : '0% of total'}
@@ -175,8 +152,8 @@ const Dashboard: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Executions Today</p>
-              <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                {formatNumber(stats.usage.agentExecutionsToday)}
+              <p className="text-3xl font-bold" style={{ color: 'var(--color-primary)' }}>
+                {stats.usage.agentExecutionsToday.toLocaleString()}
               </p>
               <div className="flex items-center mt-2">
                 {stats.growth.executionsGrowth >= 0 ? (
@@ -189,8 +166,8 @@ const Dashboard: React.FC = () => {
                 </span>
               </div>
             </div>
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <Zap className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+            <div className="p-3 rounded-lg" style={{ backgroundColor: 'color-mix(in srgb, var(--color-primary) 10%, transparent)' }}>
+              <Zap className="w-8 h-8 icon-active" />
             </div>
           </div>
         </div>
@@ -202,7 +179,7 @@ const Dashboard: React.FC = () => {
               <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
                 {formatCurrency(stats.performance.totalCostThisMonth)}
               </p>
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                 {stats.usage.agentExecutionsThisMonth} executions
               </p>
             </div>
@@ -225,8 +202,11 @@ const Dashboard: React.FC = () => {
           </p>
           <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div
-              className="bg-blue-600 h-2 rounded-full"
-              style={{ width: `${Math.min((3000 - stats.performance.avgAgentResponseTime) / 30, 100)}%` }}
+              className="h-2 rounded-full"
+              style={{
+                width: `${Math.min((3000 - stats.performance.avgAgentResponseTime) / 30, 100)}%`,
+                backgroundColor: 'var(--color-primary)'
+              }}
             ></div>
           </div>
         </div>
@@ -264,7 +244,7 @@ const Dashboard: React.FC = () => {
             <span className={`text-sm font-medium ${stats.growth.usersGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {Math.abs(stats.growth.usersGrowth).toFixed(1)}%
             </span>
-            <span className="text-sm text-gray-500 ml-1">growth</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">growth</span>
           </div>
         </div>
       </div>
@@ -291,9 +271,9 @@ const Dashboard: React.FC = () => {
               <Line
                 type="monotone"
                 dataKey="count"
-                stroke="#3b82f6"
                 strokeWidth={2}
-                dot={{ fill: '#3b82f6' }}
+                style={{ stroke: 'var(--color-primary)' }}
+                dot={{ fill: 'var(--color-primary)' }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -318,7 +298,7 @@ const Dashboard: React.FC = () => {
               />
               <Legend />
               <Bar dataKey="successRate" fill="#10b981" name="Success Rate (%)" />
-              <Bar dataKey="runs" fill="#3b82f6" name="Total Runs" />
+              <Bar dataKey="runs" style={{ fill: 'var(--color-primary)' }} name="Total Runs" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -364,24 +344,24 @@ const Dashboard: React.FC = () => {
                 className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 <div className={`p-2 rounded-full ${
-                  item.type === 'agent_created' ? 'bg-blue-100 dark:bg-blue-900/30' :
+                  item.type === 'agent_created' ? 'bg-primary-100 dark:bg-primary-900/30' :
                   item.type === 'agent_executed' ? 'bg-green-100 dark:bg-green-900/30' :
                   item.type === 'user_joined' ? 'bg-purple-100 dark:bg-purple-900/30' :
                   'bg-gray-100 dark:bg-gray-900/30'
                 }`}>
-                  {item.type === 'agent_created' && <Bot className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
+                  {item.type === 'agent_created' && <Bot className="w-4 h-4 icon-active" />}
                   {item.type === 'agent_executed' && <Zap className="w-4 h-4 text-green-600 dark:text-green-400" />}
                   {item.type === 'user_joined' && <Users className="w-4 h-4 text-purple-600 dark:text-purple-400" />}
                   {item.type === 'workflow_executed' && <Workflow className="w-4 h-4 text-orange-600 dark:text-orange-400" />}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-gray-900 dark:text-gray-100">{item.message}</p>
-                  <p className="text-xs text-gray-500 mt-1">{formatTimeAgo(item.timestamp)}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{formatTimeAgo(item.timestamp)}</p>
                 </div>
               </div>
             ))}
             {activity.length === 0 && (
-              <p className="text-center text-gray-500 py-8">No recent activity</p>
+              <p className="text-center text-gray-500 dark:text-gray-400 py-8">No recent activity</p>
             )}
           </div>
         </div>
@@ -395,7 +375,7 @@ const Dashboard: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <a
             href={`/org/${organization?.slug}/agents`}
-            className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg text-white hover:from-blue-600 hover:to-blue-700 transition-all"
+            className="flex items-center justify-between p-4 rounded-lg text-white transition-all gradient-neural hover:opacity-90"
           >
             <div>
               <p className="font-semibold">Create Agent</p>

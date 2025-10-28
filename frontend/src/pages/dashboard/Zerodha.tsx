@@ -34,7 +34,7 @@ export default function ZerodhaDashboard() {
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -46,8 +46,8 @@ export default function ZerodhaDashboard() {
     <div className="p-6">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Zerodha Trading Dashboard</h1>
-        <p className="text-gray-600 mt-2">7-Layer Professional Options Trading System</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Zerodha Trading Dashboard</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">7-Layer Professional Options Trading System</p>
       </div>
 
       {/* Key Metrics */}
@@ -86,31 +86,31 @@ export default function ZerodhaDashboard() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Symbol</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Strike</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Entry</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Current</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">P&L</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ROI</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Symbol</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Strike</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Type</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Entry</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Current</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">P&L</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">ROI</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {dashboard.openPositions.map((position) => (
                   <tr key={position.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                       {position.symbol}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {position.strike} {position.optionType}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {position.positionType}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       ₹{position.entryPrice.toFixed(2)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       ₹{position.currentPrice?.toFixed(2) || '-'}
                     </td>
                     <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
@@ -128,7 +128,7 @@ export default function ZerodhaDashboard() {
               </tbody>
             </table>
           ) : (
-            <div className="p-8 text-center text-gray-500">
+            <div className="p-8 text-center text-gray-500 dark:text-gray-400">
               No open positions
             </div>
           )}
@@ -145,14 +145,14 @@ export default function ZerodhaDashboard() {
                 <div key={signal.id} className="p-4 hover:bg-gray-50">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="text-lg font-medium text-gray-900">
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                         {signal.symbol} {signal.strike} {signal.optionType}
                       </h3>
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                         Signal: {signal.signalType} | Score: {signal.signalStrength}/100
                       </p>
                       <div className="mt-2 flex gap-4 text-sm">
-                        <span className="text-gray-600">Entry: ₹{signal.entryPrice}</span>
+                        <span className="text-gray-600 dark:text-gray-400">Entry: ₹{signal.entryPrice}</span>
                         <span className="text-green-600">Target: ₹{signal.targetPrice}</span>
                         <span className="text-red-600">SL: ₹{signal.stopLoss}</span>
                       </div>
@@ -171,7 +171,7 @@ export default function ZerodhaDashboard() {
               ))}
             </div>
           ) : (
-            <div className="p-8 text-center text-gray-500">
+            <div className="p-8 text-center text-gray-500 dark:text-gray-400">
               No pending signals
             </div>
           )}
@@ -186,28 +186,28 @@ export default function ZerodhaDashboard() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Symbol</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Entry</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Exit</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">P&L</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ROI</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Result</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Symbol</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Type</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Entry</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Exit</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">P&L</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">ROI</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Result</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {dashboard.recentTrades.map((trade) => (
                   <tr key={trade.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                       {trade.symbol}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {trade.strike} {trade.optionType}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       ₹{trade.entryPrice.toFixed(2)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       ₹{trade.exitPrice.toFixed(2)}
                     </td>
                     <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
@@ -226,7 +226,7 @@ export default function ZerodhaDashboard() {
                           ? 'bg-green-100 text-green-800'
                           : trade.tradeResult === 'LOSS'
                           ? 'bg-red-100 text-red-800'
-                          : 'bg-gray-100 text-gray-800'
+                          : 'bg-gray-100 text-gray-800 dark:text-gray-200'
                       }`}>
                         {trade.tradeResult}
                       </span>
@@ -236,7 +236,7 @@ export default function ZerodhaDashboard() {
               </tbody>
             </table>
           ) : (
-            <div className="p-8 text-center text-gray-500">
+            <div className="p-8 text-center text-gray-500 dark:text-gray-400">
               No recent trades
             </div>
           )}
@@ -249,18 +249,18 @@ export default function ZerodhaDashboard() {
 // Metric Card Component
 function MetricCard({ title, value, icon, color }: { title: string; value: any; icon: string; color: string }) {
   const colorClasses: Record<string, string> = {
-    blue: 'bg-blue-50 text-blue-600',
-    green: 'bg-green-50 text-green-600',
-    red: 'bg-red-50 text-red-600',
-    purple: 'bg-purple-50 text-purple-600',
-    indigo: 'bg-indigo-50 text-indigo-600',
+    blue: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400',
+    green: 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400',
+    red: 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400',
+    purple: 'bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400',
+    indigo: 'bg-primary-50 icon-active dark:bg-primary-900/20',
   };
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm text-gray-600 mb-1">{title}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{title}</p>
           <p className={`text-2xl font-bold ${colorClasses[color]}`}>{value}</p>
         </div>
         <div className="text-3xl">{icon}</div>

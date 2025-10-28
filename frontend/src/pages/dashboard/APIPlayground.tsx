@@ -236,7 +236,7 @@ print(response.json())`;
       case 'PATCH':
         return 'text-purple-600 bg-purple-100';
       default:
-        return 'text-gray-600 bg-gray-100';
+        return 'text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700';
     }
   };
 
@@ -250,16 +250,16 @@ print(response.json())`;
   return (
     <div className="max-w-7xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">API Playground</h1>
-        <p className="text-gray-600 mt-2">Test and explore NeurallEmpire API endpoints interactively</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">API Playground</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">Test and explore NeurallEmpire API endpoints interactively</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Panel - Request Configuration */}
         <div className="lg:col-span-2 space-y-6">
           {/* Endpoint Selector */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Endpoint</label>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Endpoint</label>
             <div className="relative">
               <select
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent appearance-none bg-white pr-10"
@@ -282,15 +282,15 @@ print(response.json())`;
                   </option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none" />
             </div>
           </div>
 
           {/* Method and Path */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex gap-4">
               <div className="w-32">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Method</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Method</label>
                 <select
                   value={method}
                   onChange={(e) => setMethod(e.target.value as any)}
@@ -306,7 +306,7 @@ print(response.json())`;
                 </select>
               </div>
               <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Path</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Path</label>
                 <input
                   type="text"
                   value={customPath}
@@ -319,8 +319,8 @@ print(response.json())`;
           </div>
 
           {/* Authentication */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
               <Key className="w-4 h-4 mr-2" />
               Authentication Token
             </label>
@@ -329,7 +329,7 @@ print(response.json())`;
                 type="text"
                 value={mockApiKey}
                 readOnly
-                className="flex-1 px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg font-mono text-sm text-gray-600"
+                className="flex-1 px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg font-mono text-sm text-gray-600 dark:text-gray-400"
               />
               <button
                 onClick={() => {
@@ -337,21 +337,21 @@ print(response.json())`;
                   setCopiedCode('token');
                   setTimeout(() => setCopiedCode(null), 2000);
                 }}
-                className="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                className="px-3 py-2 btn-primary rounded-lg transition-colors"
               >
                 {copiedCode === 'token' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               </button>
             </div>
-            <p className="text-xs text-gray-500 mt-2">This token is automatically included in all requests</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">This token is automatically included in all requests</p>
           </div>
 
           {/* Query Parameters */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-4">
-              <label className="text-sm font-medium text-gray-700">Query Parameters</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Query Parameters</label>
               <button
                 onClick={addQueryParam}
-                className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                className="text-sm text-indigo-600 hover:opacity-80 font-medium"
               >
                 + Add Parameter
               </button>
@@ -391,10 +391,10 @@ print(response.json())`;
           </div>
 
           {/* Headers */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-4">
-              <label className="text-sm font-medium text-gray-700">Request Headers</label>
-              <button onClick={addHeader} className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Request Headers</label>
+              <button onClick={addHeader} className="text-sm text-indigo-600 hover:opacity-80 font-medium">
                 + Add Header
               </button>
             </div>
@@ -431,8 +431,8 @@ print(response.json())`;
 
           {/* Request Body */}
           {['POST', 'PUT', 'PATCH'].includes(method) && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
                 <Code className="w-4 h-4 mr-2" />
                 Request Body (JSON)
               </label>
@@ -451,7 +451,7 @@ print(response.json())`;
             <button
               onClick={handleSendRequest}
               disabled={isLoading}
-              className="flex-1 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-6 py-3 btn-primary rounded-lg transition-colors flex items-center justify-center font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <>
@@ -465,7 +465,7 @@ print(response.json())`;
                 </>
               )}
             </button>
-            <button className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center font-medium">
+            <button className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center font-medium">
               <Save className="w-5 h-5 mr-2" />
               Save
             </button>
@@ -473,33 +473,33 @@ print(response.json())`;
 
           {/* Response */}
           {response && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                  <Zap className="w-5 h-5 mr-2 text-indigo-600" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
+                  <Zap className="w-5 h-5 mr-2 icon-active" />
                   Response
                 </h3>
                 <div className="flex items-center gap-4 text-sm">
                   <div className="flex items-center gap-2">
-                    <span className="text-gray-600">Status:</span>
+                    <span className="text-gray-600 dark:text-gray-400">Status:</span>
                     <span className={`font-semibold ${getStatusColor(response.status)}`}>
                       {response.status} {response.statusText}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-gray-500" />
-                    <span className="text-gray-600">{response.responseTime}ms</span>
+                    <Clock className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                    <span className="text-gray-600 dark:text-gray-400">{response.responseTime}ms</span>
                   </div>
                 </div>
               </div>
 
               {/* Response Headers */}
               <div className="mb-4">
-                <p className="text-sm font-medium text-gray-700 mb-2">Headers</p>
-                <div className="bg-gray-50 rounded-lg p-3 space-y-1">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Headers</p>
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 space-y-1">
                   {Object.entries(response.headers).map(([key, value]) => (
-                    <div key={key} className="text-xs font-mono text-gray-600">
-                      <span className="text-indigo-600">{key}:</span> {value}
+                    <div key={key} className="text-xs font-mono text-gray-600 dark:text-gray-400">
+                      <span className="icon-active">{key}:</span> {value}
                     </div>
                   ))}
                 </div>
@@ -507,7 +507,7 @@ print(response.json())`;
 
               {/* Response Body */}
               <div>
-                <p className="text-sm font-medium text-gray-700 mb-2">Body</p>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Body</p>
                 <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
                   <pre className="text-sm text-green-400 font-mono whitespace-pre-wrap">
                     {JSON.stringify(response.body, null, 2)}
@@ -536,20 +536,20 @@ print(response.json())`;
         {/* Right Panel - Code Examples & Collections */}
         <div className="lg:col-span-1 space-y-6">
           {/* Code Examples */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <FileCode className="w-5 h-5 mr-2 text-indigo-600" />
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+              <FileCode className="w-5 h-5 mr-2 icon-active" />
               Code Examples
             </h3>
 
             {/* Code Tabs */}
-            <div className="flex border-b border-gray-200 mb-4">
+            <div className="flex border-b border-gray-200 dark:border-gray-700 mb-4">
               <button
                 onClick={() => setActiveCodeTab('curl')}
                 className={`flex-1 pb-2 text-sm font-medium transition-colors ${
                   activeCodeTab === 'curl'
                     ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-gray-600 hover:text-gray-900'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                 }`}
               >
                 cURL
@@ -559,7 +559,7 @@ print(response.json())`;
                 className={`flex-1 pb-2 text-sm font-medium transition-colors ${
                   activeCodeTab === 'javascript'
                     ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-gray-600 hover:text-gray-900'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                 }`}
               >
                 JavaScript
@@ -569,7 +569,7 @@ print(response.json())`;
                 className={`flex-1 pb-2 text-sm font-medium transition-colors ${
                   activeCodeTab === 'python'
                     ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-gray-600 hover:text-gray-900'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                 }`}
               >
                 Python
@@ -603,34 +603,34 @@ print(response.json())`;
           </div>
 
           {/* Saved Collections */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <Book className="w-5 h-5 mr-2 text-indigo-600" />
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+              <Book className="w-5 h-5 mr-2 icon-active" />
               Saved Collections
             </h3>
             <div className="space-y-2">
               {savedCollections.map((collection, index) => (
                 <button
                   key={index}
-                  className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors text-left border border-gray-200"
+                  className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left border border-gray-200 dark:border-gray-700"
                 >
-                  <span className="text-sm font-medium text-gray-700">{collection}</span>
-                  <ChevronDown className="w-4 h-4 text-gray-400 transform -rotate-90" />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{collection}</span>
+                  <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500 transform -rotate-90" />
                 </button>
               ))}
-              <button className="w-full px-4 py-2 border border-dashed border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
+              <button className="w-full px-4 py-2 border border-dashed border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm font-medium">
                 + New Collection
               </button>
             </div>
           </div>
 
           {/* Quick Tips */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
             <div className="flex items-start">
-              <AlertCircle className="w-5 h-5 text-blue-600 mr-2 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2 flex-shrink-0 mt-0.5" />
               <div>
-                <h4 className="text-sm font-semibold text-blue-900 mb-2">Quick Tips</h4>
-                <ul className="space-y-1 text-xs text-blue-700">
+                <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-2">Quick Tips</h4>
+                <ul className="space-y-1 text-xs text-blue-700 dark:text-blue-300">
                   <li>• Use {'{id}'} in path for dynamic values</li>
                   <li>• All requests require authentication</li>
                   <li>• Rate limit: 1000 requests/hour</li>

@@ -22,6 +22,8 @@ import {
   Brain,
   MessageSquare,
 } from 'lucide-react';
+import { getStatusColor } from '@/utils/statusColors';
+import { formatTimeAgo } from '@/utils/formatters';
 
 // Types (extend from service)
 interface Agent extends Omit<AgentType, 'capabilities'> {
@@ -69,28 +71,12 @@ const mockRuns: AgentRun[] = [
 ];
 
 const modelColors: Record<string, string> = {
-  'gpt-4': 'bg-green-100 text-green-800',
-  'gpt-3.5-turbo': 'bg-blue-100 text-blue-800',
-  'claude-3-opus': 'bg-purple-100 text-purple-800',
-  'claude-3-sonnet': 'bg-indigo-100 text-indigo-800',
-  'gemini-pro': 'bg-orange-100 text-orange-800',
-  'gemini-ultra': 'bg-red-100 text-red-800',
-};
-
-const statusColors: Record<string, string> = {
-  active: 'bg-green-100 text-green-800',
-  ACTIVE: 'bg-green-100 text-green-800',
-  paused: 'bg-yellow-100 text-yellow-800',
-  PAUSED: 'bg-yellow-100 text-yellow-800',
-  draft: 'bg-gray-100 text-gray-800',
-  DRAFT: 'bg-gray-100 text-gray-800',
-  READY: 'bg-blue-100 text-blue-800',
-  TESTING: 'bg-purple-100 text-purple-800',
-  ERROR: 'bg-red-100 text-red-800',
-  RUNNING: 'bg-green-100 text-green-800',
-  MAINTENANCE: 'bg-orange-100 text-orange-800',
-  DEPRECATED: 'bg-gray-100 text-gray-800',
-  ARCHIVED: 'bg-gray-100 text-gray-800',
+  'gpt-4': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+  'gpt-3.5-turbo': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 dark:bg-blue-900 dark:text-blue-200',
+  'claude-3-opus': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+  'claude-3-sonnet': 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200',
+  'gemini-pro': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+  'gemini-ultra': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
 };
 
 const Agents: React.FC = () => {
@@ -186,21 +172,6 @@ const Agents: React.FC = () => {
       avgSuccessRate: avgSuccessRate.toFixed(1),
     };
   }, [agents]);
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'Never';
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString();
-  };
 
   const handleAgentClick = (agent: Agent) => {
     setSelectedAgent(agent);
@@ -369,10 +340,10 @@ const Agents: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-neutral-600 mb-1">Runs Today</p>
-              <p className="text-3xl font-bold text-blue-600">{stats.totalRunsToday}</p>
+              <p className="text-3xl font-bold icon-active">{stats.totalRunsToday}</p>
             </div>
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <Zap className="w-6 h-6 text-blue-600" />
+            <div className="p-3 rounded-lg" style={{ backgroundColor: 'color-mix(in srgb, var(--color-primary) 10%, transparent)' }}>
+              <Zap className="w-6 h-6 icon-active" />
             </div>
           </div>
         </div>
@@ -545,9 +516,7 @@ const Agents: React.FC = () => {
                 />
                 <div className="flex items-center gap-2">
                   <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      statusColors[agent.status] || 'bg-gray-100 text-gray-800'
-                    }`}
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(agent.status)}`}
                   >
                     {getStatusDisplay(agent.status)}
                   </span>
@@ -600,7 +569,7 @@ const Agents: React.FC = () => {
                 {/* Last Run */}
                 <div className="flex items-center gap-2 text-xs text-neutral-500">
                   <Clock className="w-3 h-3" />
-                  Last run: {formatDate(agent.lastRunAt)}
+                  Last run: {agent.lastRunAt ? formatTimeAgo(agent.lastRunAt) : 'Never'}
                 </div>
               </div>
 
@@ -723,9 +692,7 @@ const Agents: React.FC = () => {
                     </td>
                     <td className="px-4 py-4">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          statusColors[agent.status] || 'bg-gray-100 text-gray-800'
-                        }`}
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(agent.status)}`}
                       >
                         {getStatusDisplay(agent.status)}
                       </span>
@@ -739,7 +706,7 @@ const Agents: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-4 py-4 text-sm text-neutral-600">
-                      {formatDate(agent.lastRunAt)}
+                      {agent.lastRunAt ? formatTimeAgo(agent.lastRunAt) : 'Never'}
                     </td>
                     <td className="px-4 py-4" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-2">
@@ -1086,10 +1053,10 @@ const Agents: React.FC = () => {
                         {selectedAgent.successRate}%
                       </p>
                     </div>
-                    <div className="p-4 bg-blue-50 rounded-lg">
+                    <div className="p-4 rounded-lg" style={{ backgroundColor: 'color-mix(in srgb, var(--color-primary) 5%, transparent)' }}>
                       <p className="text-sm text-neutral-600 mb-1">Last Run</p>
-                      <p className="text-2xl font-bold text-blue-600">
-                        {formatDate(selectedAgent.lastRunAt)}
+                      <p className="text-2xl font-bold icon-active">
+                        {selectedAgent.lastRunAt ? formatTimeAgo(selectedAgent.lastRunAt) : 'Never'}
                       </p>
                     </div>
                   </div>
@@ -1111,9 +1078,7 @@ const Agents: React.FC = () => {
                       <div className="flex items-center justify-between py-2 border-b border-neutral-200">
                         <span className="text-sm text-neutral-600">Status</span>
                         <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            statusColors[selectedAgent.status]
-                          }`}
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(selectedAgent.status)}`}
                         >
                           {selectedAgent.status}
                         </span>
@@ -1177,7 +1142,7 @@ const Agents: React.FC = () => {
                             ) : run.status === 'failed' ? (
                               <AlertCircle className="w-5 h-5 text-red-600" />
                             ) : (
-                              <Activity className="w-5 h-5 text-blue-600 animate-pulse" />
+                              <Activity className="w-5 h-5 icon-active animate-pulse" />
                             )}
                             <span
                               className={`text-sm font-medium ${
@@ -1185,14 +1150,14 @@ const Agents: React.FC = () => {
                                   ? 'text-green-600'
                                   : run.status === 'failed'
                                   ? 'text-red-600'
-                                  : 'text-blue-600'
+                                  : 'icon-active'
                               }`}
                             >
                               {run.status.charAt(0).toUpperCase() + run.status.slice(1)}
                             </span>
                           </div>
                           <div className="text-xs text-neutral-500">
-                            {formatDate(run.timestamp)} • {run.duration}s
+                            {formatTimeAgo(run.timestamp)} • {run.duration}s
                           </div>
                         </div>
                         <div className="space-y-2">

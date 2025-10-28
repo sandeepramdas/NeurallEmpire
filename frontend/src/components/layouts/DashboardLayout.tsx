@@ -245,11 +245,12 @@ const DashboardLayout: React.FC = () => {
             )}
           </div>
 
-          {/* Main Navigation - with improved scroll */}
-          <nav className="flex-1 overflow-y-auto py-3 px-2" style={{
-            scrollbarWidth: 'thin',
-            scrollbarColor: '#CBD5E0 transparent'
-          }}>
+          {/* Main Navigation - with smooth scrolling */}
+          <nav className="flex-1 overflow-y-auto py-3 px-2 scroll-smooth"
+            style={{
+              maxHeight: 'calc(100vh - 180px)'
+            }}
+          >
             <div className="space-y-0.5">
               {navItems.map((item) => {
                 const Icon = item.icon;

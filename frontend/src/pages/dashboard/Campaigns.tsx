@@ -18,6 +18,8 @@ import {
   Eye,
   Zap,
 } from 'lucide-react';
+import { getStatusColor } from '@/utils/statusColors';
+import { formatDate } from '@/utils/formatters';
 
 // Types
 interface Campaign {
@@ -325,26 +327,10 @@ const mockContacts: Contact[] = [
 ];
 
 const channelColors: Record<string, string> = {
-  email: 'bg-blue-100 text-blue-800',
-  sms: 'bg-green-100 text-green-800',
-  webhook: 'bg-purple-100 text-purple-800',
-  whatsapp: 'bg-emerald-100 text-emerald-800',
-};
-
-const statusColors: Record<string, string> = {
-  draft: 'bg-gray-100 text-gray-800',
-  scheduled: 'bg-blue-100 text-blue-800',
-  running: 'bg-green-100 text-green-800',
-  completed: 'bg-purple-100 text-purple-800',
-  paused: 'bg-yellow-100 text-yellow-800',
-};
-
-const contactStatusColors: Record<string, string> = {
-  pending: 'bg-gray-100 text-gray-800',
-  sent: 'bg-blue-100 text-blue-800',
-  delivered: 'bg-green-100 text-green-800',
-  failed: 'bg-red-100 text-red-800',
-  responded: 'bg-purple-100 text-purple-800',
+  email: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+  sms: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+  webhook: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+  whatsapp: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200',
 };
 
 const Campaigns: React.FC = () => {
@@ -468,12 +454,12 @@ const Campaigns: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-neutral-600 mb-1">Sent Today</p>
-              <p className="text-3xl font-bold text-blue-600">
+              <p className="text-3xl font-bold icon-active">
                 {stats.messagesSentToday.toLocaleString()}
               </p>
             </div>
             <div className="p-3 bg-blue-100 rounded-lg">
-              <Send className="w-6 h-6 text-blue-600" />
+              <Send className="w-6 h-6 icon-active" />
             </div>
           </div>
         </div>
@@ -591,9 +577,7 @@ const Campaigns: React.FC = () => {
               {/* Status and Channel Badges */}
               <div className="flex items-center gap-2 mb-4">
                 <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    statusColors[campaign.status]
-                  }`}
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(campaign.status)}`}
                 >
                   {campaign.status}
                 </span>
@@ -650,7 +634,7 @@ const Campaigns: React.FC = () => {
                 </div>
                 <div className="text-center">
                   <p className="text-xs text-neutral-500">Rate</p>
-                  <p className="text-sm font-semibold text-blue-600">
+                  <p className="text-sm font-semibold icon-active">
                     {campaign.stats.sent > 0
                       ? ((campaign.stats.responded / campaign.stats.sent) * 100).toFixed(1)
                       : 0}
@@ -957,9 +941,9 @@ const Campaigns: React.FC = () => {
                         {selectedCampaign.stats.total.toLocaleString()}
                       </p>
                     </div>
-                    <div className="p-4 bg-blue-50 rounded-lg">
+                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                       <p className="text-sm text-neutral-600 mb-1">Sent</p>
-                      <p className="text-2xl font-bold text-blue-600">
+                      <p className="text-2xl font-bold icon-active">
                         {selectedCampaign.stats.sent.toLocaleString()}
                       </p>
                     </div>
@@ -984,9 +968,7 @@ const Campaigns: React.FC = () => {
                       <div className="flex items-center justify-between py-2 border-b border-neutral-200">
                         <span className="text-sm text-neutral-600">Status</span>
                         <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            statusColors[selectedCampaign.status]
-                          }`}
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(selectedCampaign.status)}`}
                         >
                           {selectedCampaign.status}
                         </span>
@@ -1069,9 +1051,7 @@ const Campaigns: React.FC = () => {
                             </td>
                             <td className="px-4 py-3">
                               <span
-                                className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                  contactStatusColors[contact.status]
-                                }`}
+                                className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(contact.status)}`}
                               >
                                 {contact.status}
                               </span>

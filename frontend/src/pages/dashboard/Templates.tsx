@@ -438,46 +438,46 @@ const Templates: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Templates</h1>
-        <p className="text-gray-600 mt-2">Browse and use pre-built templates to accelerate your workflow</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100">Templates</h1>
+        <p className="text-gray-600 dark:text-gray-400 dark:text-gray-400 mt-2">Browse and use pre-built templates to accelerate your workflow</p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Total Templates</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">{templates.length}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">Total Templates</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{templates.length}</p>
             </div>
-            <FileText className="w-8 h-8 text-indigo-600" />
+            <FileText className="w-8 h-8 icon-active" />
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Official</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">Official</p>
               <p className="text-2xl font-bold text-blue-600 mt-1">{templates.filter((t) => t.type === 'official').length}</p>
             </div>
-            <Crown className="w-8 h-8 text-blue-600" />
+            <Crown className="w-8 h-8 icon-active" />
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Community</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">Community</p>
               <p className="text-2xl font-bold text-green-600 mt-1">{templates.filter((t) => t.type === 'community').length}</p>
             </div>
             <Users className="w-8 h-8 text-green-600" />
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Total Uses</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">Total Uses</p>
               <p className="text-2xl font-bold text-purple-600 mt-1">
                 {templates.reduce((sum, t) => sum + t.uses, 0).toLocaleString()}
               </p>
@@ -488,15 +488,15 @@ const Templates: React.FC = () => {
       </div>
 
       {/* Category Tabs */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div className="border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+        <div className="border-b border-gray-200 dark:border-gray-700">
           <nav className="flex -mb-px">
             <button
               onClick={() => setActiveCategory('Agent Templates')}
               className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
                 activeCategory === 'Agent Templates'
                   ? 'border-indigo-600 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
               }`}
             >
               <Bot className="w-4 h-4 inline mr-2" />
@@ -507,7 +507,7 @@ const Templates: React.FC = () => {
               className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
                 activeCategory === 'Campaign Templates'
                   ? 'border-indigo-600 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
               }`}
             >
               <Target className="w-4 h-4 inline mr-2" />
@@ -518,7 +518,7 @@ const Templates: React.FC = () => {
               className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
                 activeCategory === 'Workflow Templates'
                   ? 'border-indigo-600 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
               }`}
             >
               <Workflow className="w-4 h-4 inline mr-2" />
@@ -529,7 +529,7 @@ const Templates: React.FC = () => {
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col md:flex-row md:items-center gap-4">
             <div className="flex-1 relative">
@@ -539,7 +539,7 @@ const Templates: React.FC = () => {
                 placeholder="Search templates..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
 
@@ -547,7 +547,7 @@ const Templates: React.FC = () => {
               <select
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value as 'all' | 'official' | 'community')}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               >
                 <option value="all">All Types</option>
                 <option value="official">Official</option>
@@ -557,14 +557,14 @@ const Templates: React.FC = () => {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as 'popular' | 'recent' | 'trending')}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               >
                 <option value="popular">Most Popular</option>
                 <option value="recent">Most Recent</option>
                 <option value="trending">Trending</option>
               </select>
 
-              <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center whitespace-nowrap">
+              <button className="px-4 py-2 btn-primary rounded-lg transition-colors flex items-center whitespace-nowrap">
                 <Plus className="w-4 h-4 mr-2" />
                 Create from Scratch
               </button>
@@ -580,7 +580,7 @@ const Templates: React.FC = () => {
                 className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                   selectedTags.includes(tag)
                     ? 'bg-indigo-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200'
                 }`}
               >
                 {tag}
@@ -593,7 +593,7 @@ const Templates: React.FC = () => {
       {/* Popular Templates Section */}
       {searchQuery === '' && selectedTags.length === 0 && popularTemplates.length > 0 && (
         <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
             <Star className="w-5 h-5 text-yellow-500 mr-2" />
             Popular {activeCategory}
           </h2>
@@ -601,7 +601,7 @@ const Templates: React.FC = () => {
             {popularTemplates.map((template) => (
               <div
                 key={template.id}
-                className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg border-2 border-indigo-200 p-6 hover:shadow-md transition-shadow"
+                className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg border-2 border-primary-200 dark:border-primary-700 p-6 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">
@@ -609,12 +609,12 @@ const Templates: React.FC = () => {
                   </div>
                   <div className="flex items-center space-x-2">
                     <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                    <span className="text-sm font-medium text-gray-900">{template.rating}</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100 dark:text-gray-100">{template.rating}</span>
                   </div>
                 </div>
 
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{template.name}</h3>
-                <p className="text-sm text-gray-600 mb-4">{template.description}</p>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{template.name}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400 mb-4">{template.description}</p>
 
                 <div className="flex flex-wrap gap-2 mb-4">
                   {template.tags.slice(0, 3).map((tag, index) => (
@@ -624,11 +624,11 @@ const Templates: React.FC = () => {
                   ))}
                 </div>
 
-                <div className="flex items-center justify-between text-xs text-gray-600 mb-4">
+                <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 dark:text-gray-400 mb-4">
                   <span className="flex items-center">
                     {template.type === 'official' ? (
                       <>
-                        <Crown className="w-3 h-3 mr-1 text-blue-600" />
+                        <Crown className="w-3 h-3 mr-1 icon-active" />
                         Official
                       </>
                     ) : (
@@ -644,14 +644,14 @@ const Templates: React.FC = () => {
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => handleUseTemplate(template)}
-                    className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center"
+                    className="flex-1 px-4 py-2 btn-primary rounded-lg transition-colors flex items-center justify-center"
                   >
                     <Play className="w-4 h-4 mr-2" />
                     Use Template
                   </button>
                   <button
                     onClick={() => handlePreviewTemplate(template)}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-white transition-colors"
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-white transition-colors"
                   >
                     <Eye className="w-4 h-4" />
                   </button>
@@ -665,13 +665,13 @@ const Templates: React.FC = () => {
       {/* Trending Templates Section */}
       {searchQuery === '' && selectedTags.length === 0 && trendingTemplates.length > 0 && (
         <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
             <TrendingUp className="w-5 h-5 text-green-500 mr-2" />
             Trending {activeCategory}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {trendingTemplates.map((template) => (
-              <div key={template.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+              <div key={template.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between mb-4">
                   <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">
                     {template.icon}
@@ -684,22 +684,22 @@ const Templates: React.FC = () => {
                   </div>
                 </div>
 
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{template.name}</h3>
-                <p className="text-sm text-gray-600 mb-4">{template.description}</p>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{template.name}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400 mb-4">{template.description}</p>
 
                 <div className="flex flex-wrap gap-2 mb-4">
                   {template.tags.slice(0, 3).map((tag, index) => (
-                    <span key={index} className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                    <span key={index} className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:text-gray-300 dark:text-gray-300">
                       {tag}
                     </span>
                   ))}
                 </div>
 
-                <div className="flex items-center justify-between text-xs text-gray-600 mb-4">
+                <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 dark:text-gray-400 mb-4">
                   <span className="flex items-center">
                     {template.type === 'official' ? (
                       <>
-                        <Crown className="w-3 h-3 mr-1 text-blue-600" />
+                        <Crown className="w-3 h-3 mr-1 icon-active" />
                         Official
                       </>
                     ) : (
@@ -715,14 +715,14 @@ const Templates: React.FC = () => {
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => handleUseTemplate(template)}
-                    className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center"
+                    className="flex-1 px-4 py-2 btn-primary rounded-lg transition-colors flex items-center justify-center"
                   >
                     <Play className="w-4 h-4 mr-2" />
                     Use Template
                   </button>
                   <button
                     onClick={() => handlePreviewTemplate(template)}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 transition-colors"
                   >
                     <Eye className="w-4 h-4" />
                   </button>
@@ -735,12 +735,12 @@ const Templates: React.FC = () => {
 
       {/* All Templates Grid */}
       <div className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
           All {activeCategory} {filteredTemplates.length > 0 && `(${filteredTemplates.length})`}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTemplates.map((template) => (
-            <div key={template.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div key={template.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between mb-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">
                   {template.icon}
@@ -752,26 +752,26 @@ const Templates: React.FC = () => {
                     </span>
                   )}
                   <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                  <span className="text-sm font-medium text-gray-900">{template.rating}</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100 dark:text-gray-100">{template.rating}</span>
                 </div>
               </div>
 
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">{template.name}</h3>
-              <p className="text-sm text-gray-600 mb-4">{template.description}</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{template.name}</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400 mb-4">{template.description}</p>
 
               <div className="flex flex-wrap gap-2 mb-4">
                 {template.tags.slice(0, 3).map((tag, index) => (
-                  <span key={index} className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                  <span key={index} className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:text-gray-300 dark:text-gray-300">
                     {tag}
                   </span>
                 ))}
               </div>
 
-              <div className="flex items-center justify-between text-xs text-gray-600 mb-4">
+              <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 dark:text-gray-400 mb-4">
                 <span className="flex items-center">
                   {template.type === 'official' ? (
                     <>
-                      <Crown className="w-3 h-3 mr-1 text-blue-600" />
+                      <Crown className="w-3 h-3 mr-1 icon-active" />
                       Official
                     </>
                   ) : (
@@ -787,14 +787,14 @@ const Templates: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => handleUseTemplate(template)}
-                  className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center"
+                  className="flex-1 px-4 py-2 btn-primary rounded-lg transition-colors flex items-center justify-center"
                 >
                   <Play className="w-4 h-4 mr-2" />
                   Use Template
                 </button>
                 <button
                   onClick={() => handlePreviewTemplate(template)}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 transition-colors"
                 >
                   <Eye className="w-4 h-4" />
                 </button>
@@ -804,16 +804,16 @@ const Templates: React.FC = () => {
         </div>
 
         {filteredTemplates.length === 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
             <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500 mb-4">No templates found matching your criteria</p>
+            <p className="text-gray-500 dark:text-gray-400 mb-4">No templates found matching your criteria</p>
             <button
               onClick={() => {
                 setSearchQuery('');
                 setSelectedTags([]);
                 setTypeFilter('all');
               }}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              className="px-4 py-2 btn-primary rounded-lg transition-colors"
             >
               Clear Filters
             </button>
@@ -831,12 +831,12 @@ const Templates: React.FC = () => {
                   {selectedTemplate.icon}
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-1">{selectedTemplate.name}</h2>
-                  <div className="flex items-center space-x-3 text-sm text-gray-600">
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">{selectedTemplate.name}</h2>
+                  <div className="flex items-center space-x-3 text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">
                     <span className="flex items-center">
                       {selectedTemplate.type === 'official' ? (
                         <>
-                          <Crown className="w-4 h-4 mr-1 text-blue-600" />
+                          <Crown className="w-4 h-4 mr-1 icon-active" />
                           {selectedTemplate.author}
                         </>
                       ) : (
@@ -858,39 +858,39 @@ const Templates: React.FC = () => {
               </div>
               <button
                 onClick={() => setIsPreviewModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 dark:text-gray-400 transition-colors"
               >
                 <X className="w-6 h-6" />
               </button>
             </div>
 
             <div className="mb-6">
-              <h3 className="text-sm font-semibold text-gray-900 mb-2">Description</h3>
-              <p className="text-gray-700">{selectedTemplate.description}</p>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Description</h3>
+              <p className="text-gray-700 dark:text-gray-300 dark:text-gray-300">{selectedTemplate.description}</p>
             </div>
 
             {selectedTemplate.preview && (
               <div className="mb-6">
-                <h3 className="text-sm font-semibold text-gray-900 mb-2">What's Included</h3>
-                <p className="text-gray-700">{selectedTemplate.preview}</p>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">What's Included</h3>
+                <p className="text-gray-700 dark:text-gray-300 dark:text-gray-300">{selectedTemplate.preview}</p>
               </div>
             )}
 
             <div className="mb-6">
-              <h3 className="text-sm font-semibold text-gray-900 mb-2">Tags</h3>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Tags</h3>
               <div className="flex flex-wrap gap-2">
                 {selectedTemplate.tags.map((tag, index) => (
-                  <span key={index} className="inline-flex px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+                  <span key={index} className="inline-flex px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200">
                     {tag}
                   </span>
                 ))}
               </div>
             </div>
 
-            <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
+            <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
               <button
                 onClick={() => setIsPreviewModalOpen(false)}
-                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="px-6 py-2 border border-gray-300 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 transition-colors"
               >
                 Close
               </button>
@@ -899,7 +899,7 @@ const Templates: React.FC = () => {
                   handleUseTemplate(selectedTemplate);
                   setIsPreviewModalOpen(false);
                 }}
-                className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center"
+                className="px-6 py-2 btn-primary rounded-lg transition-colors flex items-center"
               >
                 <Play className="w-4 h-4 mr-2" />
                 Use This Template

@@ -17,6 +17,8 @@ import {
   Clock,
   Filter
 } from 'lucide-react';
+import { getPriorityColor } from '@/utils/priorityColors';
+import { formatTimeAgo } from '@/utils/formatters';
 
 type MessageTab = 'inbox' | 'sent' | 'archived';
 type MessagePriority = 'normal' | 'high' | 'urgent';
@@ -293,31 +295,7 @@ const Messages: React.FC = () => {
     setComposeMessage('');
   };
 
-  const getPriorityColor = (priority: MessagePriority) => {
-    switch (priority) {
-      case 'urgent':
-        return 'text-red-600 bg-red-100';
-      case 'high':
-        return 'text-orange-600 bg-orange-100';
-      default:
-        return 'text-gray-600 bg-gray-100';
-    }
-  };
 
-  const getTimeAgo = (timestamp: string) => {
-    const now = new Date();
-    const date = new Date(timestamp);
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString();
-  };
 
   // Team members for message recipient selector
   const teamMembers = [
@@ -331,36 +309,36 @@ const Messages: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Messages</h1>
-        <p className="text-gray-600 mt-2">Team inbox and messaging center</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100">Messages</h1>
+        <p className="text-gray-600 dark:text-gray-400 dark:text-gray-400 mt-2">Team inbox and messaging center</p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Total Messages</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">{messages.length}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">Total Messages</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{messages.length}</p>
             </div>
-            <Mail className="w-8 h-8 text-indigo-600" />
+            <Mail className="w-8 h-8 icon-active" />
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Unread</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">Unread</p>
               <p className="text-2xl font-bold text-blue-600 mt-1">{unreadCount}</p>
             </div>
-            <Inbox className="w-8 h-8 text-blue-600" />
+            <Inbox className="w-8 h-8 icon-active" />
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Flagged</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">Flagged</p>
               <p className="text-2xl font-bold text-yellow-600 mt-1">
                 {messages.filter(m => m.isFlagged).length}
               </p>
@@ -369,10 +347,10 @@ const Messages: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Sent Today</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">Sent Today</p>
               <p className="text-2xl font-bold text-green-600 mt-1">0</p>
             </div>
             <Send className="w-8 h-8 text-green-600" />
@@ -381,18 +359,18 @@ const Messages: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="flex h-[calc(100vh-400px)] min-h-[600px]">
           {/* Message List */}
-          <div className={`${selectedMessage ? 'hidden md:block' : 'block'} w-full md:w-96 border-r border-gray-200 flex flex-col`}>
+          <div className={`${selectedMessage ? 'hidden md:block' : 'block'} w-full md:w-96 border-r border-gray-200 dark:border-gray-700 flex flex-col`}>
             {/* Tabs */}
-            <div className="flex border-b border-gray-200">
+            <div className="flex border-b border-gray-200 dark:border-gray-700">
               <button
                 onClick={() => setActiveTab('inbox')}
                 className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
                   activeTab === 'inbox'
                     ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-gray-600 hover:text-gray-900'
+                    : 'text-gray-600 hover:text-gray-900 dark:hover:text-gray-100'
                 }`}
               >
                 <Inbox className="w-4 h-4 inline mr-2" />
@@ -408,7 +386,7 @@ const Messages: React.FC = () => {
                 className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
                   activeTab === 'sent'
                     ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-gray-600 hover:text-gray-900'
+                    : 'text-gray-600 hover:text-gray-900 dark:hover:text-gray-100'
                 }`}
               >
                 <Send className="w-4 h-4 inline mr-2" />
@@ -419,7 +397,7 @@ const Messages: React.FC = () => {
                 className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
                   activeTab === 'archived'
                     ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-gray-600 hover:text-gray-900'
+                    : 'text-gray-600 hover:text-gray-900 dark:hover:text-gray-100'
                 }`}
               >
                 <Archive className="w-4 h-4 inline mr-2" />
@@ -428,7 +406,7 @@ const Messages: React.FC = () => {
             </div>
 
             {/* Search and Filter */}
-            <div className="p-3 border-b border-gray-200 space-y-3">
+            <div className="p-3 border-b border-gray-200 dark:border-gray-700 space-y-3">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
@@ -436,7 +414,7 @@ const Messages: React.FC = () => {
                   placeholder="Search messages..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                  className="w-full pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                 />
               </div>
               <div className="flex items-center space-x-2">
@@ -444,7 +422,7 @@ const Messages: React.FC = () => {
                 <select
                   value={filterPriority}
                   onChange={(e) => setFilterPriority(e.target.value)}
-                  className="flex-1 px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                  className="flex-1 px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                 >
                   <option value="all">All Priority</option>
                   <option value="urgent">Urgent</option>
@@ -453,7 +431,7 @@ const Messages: React.FC = () => {
                 </select>
                 <button
                   onClick={() => setIsComposeOpen(true)}
-                  className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm flex items-center"
+                  className="px-3 py-1.5 btn-primary rounded-lg transition-colors text-sm flex items-center"
                 >
                   <Plus className="w-4 h-4 mr-1" />
                   New
@@ -466,7 +444,7 @@ const Messages: React.FC = () => {
               {filteredMessages.length === 0 ? (
                 <div className="text-center py-12">
                   <Mail className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">No messages found</p>
+                  <p className="text-gray-500 dark:text-gray-400 dark:text-gray-400">No messages found</p>
                 </div>
               ) : (
                 filteredMessages.map((message) => (
@@ -478,13 +456,13 @@ const Messages: React.FC = () => {
                         handleMarkAsRead(message.id);
                       }
                     }}
-                    className={`p-4 border-b border-gray-200 cursor-pointer transition-colors ${
-                      selectedMessage?.id === message.id ? 'bg-indigo-50' : 'hover:bg-gray-50'
-                    } ${!message.isRead ? 'bg-blue-50' : ''}`}
+                    className={`p-4 border-b border-gray-200 dark:border-gray-700 cursor-pointer transition-colors ${
+                      selectedMessage?.id === message.id ? 'bg-primary-50 dark:bg-primary-900/20' : 'hover:bg-gray-50'
+                    } ${!message.isRead ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
                   >
                     <div className="flex items-start justify-between mb-1">
                       <div className="flex items-center space-x-2">
-                        <h3 className={`text-sm ${!message.isRead ? 'font-bold' : 'font-medium'} text-gray-900`}>
+                        <h3 className={`text-sm ${!message.isRead ? 'font-bold' : 'font-medium'} text-gray-900 dark:text-gray-100`}>
                           {message.sender}
                         </h3>
                         {message.isFlagged && <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />}
@@ -494,14 +472,14 @@ const Messages: React.FC = () => {
                           </span>
                         )}
                       </div>
-                      <span className="text-xs text-gray-500">{getTimeAgo(message.timestamp)}</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">{formatTimeAgo(message.timestamp)}</span>
                     </div>
-                    <p className={`text-sm ${!message.isRead ? 'font-semibold' : 'font-medium'} text-gray-900 mb-1`}>
+                    <p className={`text-sm ${!message.isRead ? 'font-semibold' : 'font-medium'} text-gray-900 dark:text-gray-100 mb-1`}>
                       {message.subject}
                     </p>
-                    <p className="text-sm text-gray-500 line-clamp-2">{message.preview}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{message.preview}</p>
                     {message.attachments && message.attachments.length > 0 && (
-                      <div className="mt-2 flex items-center text-xs text-gray-500">
+                      <div className="mt-2 flex items-center text-xs text-gray-500 dark:text-gray-400">
                         <Paperclip className="w-3 h-3 mr-1" />
                         {message.attachments.length} attachment{message.attachments.length > 1 ? 's' : ''}
                       </div>
@@ -517,24 +495,24 @@ const Messages: React.FC = () => {
             {selectedMessage ? (
               <>
                 {/* Message Header */}
-                <div className="p-6 border-b border-gray-200">
+                <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                   <div className="flex items-start justify-between mb-4">
                     <button
                       onClick={() => setSelectedMessage(null)}
-                      className="md:hidden text-gray-600 hover:text-gray-900 mr-4"
+                      className="md:hidden text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 dark:text-gray-100 dark:hover:text-gray-100 mr-4"
                     >
                       <ChevronLeft className="w-5 h-5" />
                     </button>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
-                        <h2 className="text-xl font-bold text-gray-900">{selectedMessage.subject}</h2>
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100">{selectedMessage.subject}</h2>
                         {selectedMessage.priority !== 'normal' && (
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(selectedMessage.priority)}`}>
                             {selectedMessage.priority.toUpperCase()}
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center text-sm text-gray-600 space-x-4">
+                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 space-x-4">
                         <span className="font-medium">{selectedMessage.sender}</span>
                         <span>{selectedMessage.senderEmail}</span>
                         <span className="flex items-center">
@@ -546,7 +524,7 @@ const Messages: React.FC = () => {
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => handleToggleFlag(selectedMessage.id)}
-                        className="p-2 text-gray-600 hover:text-yellow-600 transition-colors"
+                        className="p-2 text-gray-600 dark:text-gray-400 hover:text-yellow-600 transition-colors"
                         title={selectedMessage.isFlagged ? 'Unflag' : 'Flag'}
                       >
                         {selectedMessage.isFlagged ? (
@@ -557,7 +535,7 @@ const Messages: React.FC = () => {
                       </button>
                       <button
                         onClick={() => handleDeleteMessage(selectedMessage.id)}
-                        className="p-2 text-gray-600 hover:text-red-600 transition-colors"
+                        className="p-2 text-gray-600 dark:text-gray-400 hover:text-red-600 transition-colors"
                         title="Delete"
                       >
                         <Trash2 className="w-5 h-5" />
@@ -571,11 +549,11 @@ const Messages: React.FC = () => {
                       {selectedMessage.attachments.map((attachment) => (
                         <div
                           key={attachment.id}
-                          className="flex items-center space-x-2 px-3 py-2 bg-gray-100 rounded-lg text-sm"
+                          className="flex items-center space-x-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm"
                         >
-                          <Paperclip className="w-4 h-4 text-gray-600" />
-                          <span className="text-gray-900 font-medium">{attachment.name}</span>
-                          <span className="text-gray-500">({attachment.size})</span>
+                          <Paperclip className="w-4 h-4 text-gray-600 dark:text-gray-400 dark:text-gray-400" />
+                          <span className="text-gray-900 dark:text-gray-100 font-medium">{attachment.name}</span>
+                          <span className="text-gray-500 dark:text-gray-400 dark:text-gray-400">({attachment.size})</span>
                         </div>
                       ))}
                     </div>
@@ -585,25 +563,25 @@ const Messages: React.FC = () => {
                 {/* Message Content */}
                 <div className="flex-1 overflow-y-auto p-6">
                   <div className="prose max-w-none">
-                    <p className="text-gray-700 whitespace-pre-wrap">{selectedMessage.content}</p>
+                    <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{selectedMessage.content}</p>
                   </div>
 
                   {/* Replies */}
                   {selectedMessage.replies && selectedMessage.replies.length > 0 && (
                     <div className="mt-8 space-y-4">
-                      <h3 className="text-sm font-semibold text-gray-900 flex items-center">
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 dark:text-gray-100 flex items-center">
                         <ChevronRight className="w-4 h-4 mr-1" />
                         Replies ({selectedMessage.replies.length})
                       </h3>
                       {selectedMessage.replies.map((reply) => (
-                        <div key={reply.id} className="ml-8 p-4 bg-gray-50 rounded-lg">
+                        <div key={reply.id} className="ml-8 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-gray-900">{reply.sender}</span>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-sm font-medium text-gray-900 dark:text-gray-100 dark:text-gray-100">{reply.sender}</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">
                               {new Date(reply.timestamp).toLocaleString()}
                             </span>
                           </div>
-                          <p className="text-sm text-gray-700">{reply.content}</p>
+                          <p className="text-sm text-gray-700 dark:text-gray-300 dark:text-gray-300">{reply.content}</p>
                         </div>
                       ))}
                     </div>
@@ -611,15 +589,15 @@ const Messages: React.FC = () => {
                 </div>
 
                 {/* Reply Section */}
-                <div className="p-6 border-t border-gray-200">
-                  <button className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center">
+                <div className="p-6 border-t border-gray-200 dark:border-gray-700">
+                  <button className="w-full px-4 py-2 btn-primary rounded-lg transition-colors flex items-center justify-center">
                     <Send className="w-4 h-4 mr-2" />
                     Reply
                   </button>
                 </div>
               </>
             ) : (
-              <div className="flex-1 flex items-center justify-center text-gray-500">
+              <div className="flex-1 flex items-center justify-center text-gray-500 dark:text-gray-400 dark:text-gray-400">
                 <div className="text-center">
                   <Mail className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                   <p className="text-lg font-medium">Select a message to read</p>
@@ -636,13 +614,13 @@ const Messages: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900 flex items-center">
-                <Mail className="w-6 h-6 mr-2 text-indigo-600" />
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100 flex items-center">
+                <Mail className="w-6 h-6 mr-2 icon-active" />
                 New Message
               </h2>
               <button
                 onClick={() => setIsComposeOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 dark:text-gray-400 transition-colors"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -650,12 +628,12 @@ const Messages: React.FC = () => {
 
             <form onSubmit={handleSendMessage} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">To</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">To</label>
                 <select
                   value={composeRecipient}
                   onChange={(e) => setComposeRecipient(e.target.value)}
                   required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 >
                   <option value="">Select recipient...</option>
                   {teamMembers.map((member) => (
@@ -667,33 +645,33 @@ const Messages: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subject</label>
                 <input
                   type="text"
                   value={composeSubject}
                   onChange={(e) => setComposeSubject(e.target.value)}
                   required
                   placeholder="Enter subject"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Message</label>
                 <textarea
                   value={composeMessage}
                   onChange={(e) => setComposeMessage(e.target.value)}
                   required
                   rows={8}
                   placeholder="Type your message here..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
                 />
               </div>
 
               <div className="flex items-center justify-between pt-4">
                 <button
                   type="button"
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center"
+                  className="px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 transition-colors flex items-center"
                 >
                   <Paperclip className="w-4 h-4 mr-2" />
                   Attach File
@@ -702,13 +680,13 @@ const Messages: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setIsComposeOpen(false)}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center"
+                    className="px-4 py-2 btn-primary rounded-lg transition-colors flex items-center"
                   >
                     <Send className="w-4 h-4 mr-2" />
                     Send Message

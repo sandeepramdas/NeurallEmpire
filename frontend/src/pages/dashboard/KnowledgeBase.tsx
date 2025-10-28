@@ -334,24 +334,24 @@ const KnowledgeBase: React.FC = () => {
     return (
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumbs */}
-        <div className="mb-6 flex items-center text-sm text-gray-600">
+        <div className="mb-6 flex items-center text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">
           <button onClick={() => setSelectedArticle(null)} className="hover:text-indigo-600 transition-colors">
             Knowledge Base
           </button>
           <ChevronRight className="w-4 h-4 mx-2" />
-          <span className="text-gray-900">{selectedArticle.title}</span>
+          <span className="text-gray-900 dark:text-gray-100 dark:text-gray-100">{selectedArticle.title}</span>
         </div>
 
         {/* Article Header */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 mb-6">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center">
               <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mr-4">
-                <CategoryIcon className="w-6 h-6 text-indigo-600" />
+                <CategoryIcon className="w-6 h-6 icon-active" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">{selectedArticle.title}</h1>
-                <div className="flex items-center mt-2 text-sm text-gray-600">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100">{selectedArticle.title}</h1>
+                <div className="flex items-center mt-2 text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">
                   <Clock className="w-4 h-4 mr-1" />
                   Updated {new Date(selectedArticle.lastUpdated).toLocaleDateString()}
                   <span className="mx-2">•</span>
@@ -361,7 +361,7 @@ const KnowledgeBase: React.FC = () => {
             </div>
             <button
               onClick={() => setSelectedArticle(null)}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 dark:text-gray-400 transition-colors"
             >
               <X className="w-6 h-6" />
             </button>
@@ -370,7 +370,7 @@ const KnowledgeBase: React.FC = () => {
           {/* Tags */}
           <div className="flex flex-wrap gap-2 mb-6">
             {selectedArticle.tags.map((tag) => (
-              <span key={tag} className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium">
+              <span key={tag} className="px-3 py-1 bg-primary-50 dark:bg-primary-900/20 text-indigo-700 rounded-full text-xs font-medium">
                 {tag}
               </span>
             ))}
@@ -378,19 +378,19 @@ const KnowledgeBase: React.FC = () => {
 
           {/* Article Content */}
           <div className="prose max-w-none">
-            <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">{selectedArticle.content}</div>
+            <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed">{selectedArticle.content}</div>
           </div>
 
           {/* Feedback Section */}
-          <div className="mt-8 pt-8 border-t border-gray-200">
-            <p className="text-sm font-medium text-gray-900 mb-3">Was this article helpful?</p>
+          <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">Was this article helpful?</p>
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => handleFeedback(selectedArticle.id, 'helpful')}
                 className={`px-4 py-2 rounded-lg border transition-colors flex items-center ${
                   currentFeedback === 'helpful'
                     ? 'bg-green-50 border-green-300 text-green-700'
-                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                    : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50'
                 }`}
               >
                 <ThumbsUp className="w-4 h-4 mr-2" />
@@ -402,7 +402,7 @@ const KnowledgeBase: React.FC = () => {
                 className={`px-4 py-2 rounded-lg border transition-colors flex items-center ${
                   currentFeedback === 'not-helpful'
                     ? 'bg-red-50 border-red-300 text-red-700'
-                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                    : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50'
                 }`}
               >
                 <ThumbsDown className="w-4 h-4 mr-2" />
@@ -411,14 +411,14 @@ const KnowledgeBase: React.FC = () => {
               </button>
             </div>
             {currentFeedback && (
-              <p className="mt-3 text-sm text-gray-600">Thank you for your feedback!</p>
+              <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">Thank you for your feedback!</p>
             )}
           </div>
         </div>
 
         {/* Related Articles */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Related Articles</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Related Articles</h3>
           <div className="space-y-3">
             {articles
               .filter(
@@ -433,12 +433,12 @@ const KnowledgeBase: React.FC = () => {
                   <button
                     key={article.id}
                     onClick={() => setSelectedArticle(article)}
-                    className="w-full flex items-start p-3 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                    className="w-full flex items-start p-3 rounded-lg hover:bg-gray-50 dark:bg-gray-900 transition-colors text-left"
                   >
                     <Icon className="w-5 h-5 text-indigo-600 mr-3 mt-0.5 flex-shrink-0" />
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900 hover:text-indigo-600">{article.title}</p>
-                      <p className="text-xs text-gray-500 mt-1">{article.excerpt}</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 hover:icon-active">{article.title}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{article.excerpt}</p>
                     </div>
                     <ChevronRight className="w-5 h-5 text-gray-400 ml-2 flex-shrink-0" />
                   </button>
@@ -453,12 +453,12 @@ const KnowledgeBase: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Knowledge Base</h1>
-        <p className="text-gray-600 mt-2">Find answers, guides, and documentation</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100">Knowledge Base</h1>
+        <p className="text-gray-600 dark:text-gray-400 dark:text-gray-400 mt-2">Find answers, guides, and documentation</p>
       </div>
 
       {/* Search Bar */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
         <div className="relative">
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <input
@@ -466,7 +466,7 @@ const KnowledgeBase: React.FC = () => {
             placeholder="Search articles, guides, and documentation..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-lg"
+            className="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-lg"
           />
         </div>
       </div>
@@ -474,15 +474,15 @@ const KnowledgeBase: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Categories Sidebar */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sticky top-4">
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">Categories</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sticky top-4">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Categories</h3>
             <div className="space-y-1">
               <button
                 onClick={() => setSelectedCategory('all')}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
                   selectedCategory === 'all'
-                    ? 'bg-indigo-50 text-indigo-700'
-                    : 'text-gray-700 hover:bg-gray-50'
+                    ? 'bg-primary-50 dark:bg-primary-900/20 text-indigo-700'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50'
                 }`}
               >
                 <span className="text-sm font-medium">All Articles</span>
@@ -496,8 +496,8 @@ const KnowledgeBase: React.FC = () => {
                     onClick={() => setSelectedCategory(category.id)}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
                       selectedCategory === category.id
-                        ? 'bg-indigo-50 text-indigo-700'
-                        : 'text-gray-700 hover:bg-gray-50'
+                        ? 'bg-primary-50 dark:bg-primary-900/20 text-indigo-700'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50'
                     }`}
                   >
                     <div className="flex items-center">
@@ -517,7 +517,7 @@ const KnowledgeBase: React.FC = () => {
           {/* Featured Articles */}
           {selectedCategory === 'all' && searchQuery === '' && (
             <div className="mb-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
                 <Star className="w-5 h-5 mr-2 text-yellow-500" />
                 Featured Articles
               </h2>
@@ -531,12 +531,12 @@ const KnowledgeBase: React.FC = () => {
                       className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg p-6 text-left hover:shadow-md transition-all border border-indigo-100"
                     >
                       <div className="flex items-start justify-between mb-3">
-                        <Icon className="w-6 h-6 text-indigo-600" />
+                        <Icon className="w-6 h-6 icon-active" />
                         <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{article.title}</h3>
-                      <p className="text-sm text-gray-600 mb-3">{article.excerpt}</p>
-                      <div className="flex items-center text-xs text-gray-500">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{article.title}</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400 mb-3">{article.excerpt}</p>
+                      <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">
                         <Clock className="w-3 h-3 mr-1" />
                         {new Date(article.lastUpdated).toLocaleDateString()}
                       </div>
@@ -552,11 +552,11 @@ const KnowledgeBase: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
               {/* Popular Articles */}
               <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
                   <TrendingUp className="w-5 h-5 mr-2 text-green-600" />
                   Popular Articles
                 </h2>
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
                   <div className="space-y-3">
                     {popularArticles.map((article, index) => {
                       const Icon = getCategoryIcon(article.category);
@@ -564,15 +564,15 @@ const KnowledgeBase: React.FC = () => {
                         <button
                           key={article.id}
                           onClick={() => setSelectedArticle(article)}
-                          className="w-full flex items-start p-2 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                          className="w-full flex items-start p-2 rounded-lg hover:bg-gray-50 dark:bg-gray-900 transition-colors text-left"
                         >
                           <div className="flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-600 font-bold text-xs mr-3 flex-shrink-0 mt-0.5">
                             {index + 1}
                           </div>
                           <Icon className="w-4 h-4 text-indigo-600 mr-2 mt-0.5 flex-shrink-0" />
                           <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-900">{article.title}</p>
-                            <p className="text-xs text-gray-500 mt-1">{article.views.toLocaleString()} views</p>
+                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100 dark:text-gray-100">{article.title}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{article.views.toLocaleString()} views</p>
                           </div>
                           <ChevronRight className="w-4 h-4 text-gray-400 ml-2 flex-shrink-0" />
                         </button>
@@ -584,11 +584,11 @@ const KnowledgeBase: React.FC = () => {
 
               {/* Recent Articles */}
               <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                  <Clock className="w-5 h-5 mr-2 text-blue-600" />
+                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+                  <Clock className="w-5 h-5 mr-2 icon-active" />
                   Recent Articles
                 </h2>
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
                   <div className="space-y-3">
                     {recentArticles.map((article) => {
                       const Icon = getCategoryIcon(article.category);
@@ -596,12 +596,12 @@ const KnowledgeBase: React.FC = () => {
                         <button
                           key={article.id}
                           onClick={() => setSelectedArticle(article)}
-                          className="w-full flex items-start p-2 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                          className="w-full flex items-start p-2 rounded-lg hover:bg-gray-50 dark:bg-gray-900 transition-colors text-left"
                         >
                           <Icon className="w-4 h-4 text-indigo-600 mr-2 mt-0.5 flex-shrink-0" />
                           <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-900">{article.title}</p>
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100 dark:text-gray-100">{article.title}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                               Updated {new Date(article.lastUpdated).toLocaleDateString()}
                             </p>
                           </div>
@@ -617,15 +617,15 @@ const KnowledgeBase: React.FC = () => {
 
           {/* All Articles List */}
           <div>
-            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-              <BookOpen className="w-5 h-5 mr-2 text-indigo-600" />
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+              <BookOpen className="w-5 h-5 mr-2 icon-active" />
               {selectedCategory === 'all' ? 'All Articles' : categories.find((c) => c.id === selectedCategory)?.name}
             </h2>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
               {filteredArticles.length === 0 ? (
                 <div className="text-center py-12">
                   <Search className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">No articles found</p>
+                  <p className="text-gray-500 dark:text-gray-400 dark:text-gray-400">No articles found</p>
                   <p className="text-sm text-gray-400 mt-1">Try adjusting your search or filters</p>
                 </div>
               ) : (
@@ -636,17 +636,17 @@ const KnowledgeBase: React.FC = () => {
                       <button
                         key={article.id}
                         onClick={() => setSelectedArticle(article)}
-                        className="w-full flex items-start p-6 hover:bg-gray-50 transition-colors text-left"
+                        className="w-full flex items-start p-6 hover:bg-gray-50 dark:bg-gray-900 transition-colors text-left"
                       >
                         <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
-                          <Icon className="w-5 h-5 text-indigo-600" />
+                          <Icon className="w-5 h-5 icon-active" />
                         </div>
                         <div className="flex-1">
                           <div className="flex items-start justify-between">
                             <div>
-                              <h3 className="text-lg font-semibold text-gray-900 mb-1">{article.title}</h3>
-                              <p className="text-sm text-gray-600 mb-2">{article.excerpt}</p>
-                              <div className="flex items-center text-xs text-gray-500">
+                              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">{article.title}</h3>
+                              <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400 mb-2">{article.excerpt}</p>
+                              <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">
                                 <Clock className="w-3 h-3 mr-1" />
                                 {new Date(article.lastUpdated).toLocaleDateString()}
                                 <span className="mx-2">•</span>

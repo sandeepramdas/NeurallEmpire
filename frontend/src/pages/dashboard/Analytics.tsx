@@ -226,7 +226,7 @@ const Analytics: React.FC = () => {
         <div className="card">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-blue-600" />
+              <BarChart3 className="w-5 h-5 icon-active" />
               <h2 className="text-lg font-semibold text-neural-900">
                 User Growth
               </h2>
@@ -235,7 +235,7 @@ const Analytics: React.FC = () => {
               View Details
             </button>
           </div>
-          <div className="h-64 flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border-2 border-dashed border-blue-200">
+          <div className="h-64 flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border-2 border-dashed border-blue-200 dark:border-blue-700">
             <div className="text-center">
               <BarChart3 className="w-12 h-12 text-blue-400 mx-auto mb-2" />
               <p className="text-neutral-600 text-sm">Area Chart Placeholder</p>
@@ -374,7 +374,7 @@ const Analytics: React.FC = () => {
                       {campaign.sent.toLocaleString()}
                     </td>
                     <td className="py-3 text-right">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                         {campaign.responseRate}%
                       </span>
                     </td>

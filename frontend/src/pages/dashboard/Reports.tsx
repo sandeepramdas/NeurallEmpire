@@ -185,7 +185,7 @@ const Reports: React.FC = () => {
       case 'revenue':
         return 'bg-pink-100 text-pink-700';
       default:
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-gray-100 text-gray-700 dark:text-gray-300';
     }
   };
 
@@ -211,7 +211,7 @@ const Reports: React.FC = () => {
       <div className="h-64 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg flex items-center justify-center border border-indigo-100">
         <div className="text-center">
           <ChartIcon className="w-16 h-16 text-indigo-300 mx-auto mb-2" />
-          <p className="text-gray-500 text-sm">
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
             {chartType.charAt(0).toUpperCase() + chartType.slice(1)} Chart Visualization
           </p>
           <p className="text-gray-400 text-xs mt-1">Sample data would render here</p>
@@ -232,25 +232,25 @@ const Reports: React.FC = () => {
               onClick={() => setSelectedReport(null)}
               className="mr-4 p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <X className="w-5 h-5 text-gray-600" />
+              <X className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             </button>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">{selectedReport.name}</h1>
-              <p className="text-gray-600 mt-1">{selectedReport.description}</p>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{selectedReport.name}</h1>
+              <p className="text-gray-600 dark:text-gray-400 mt-1">{selectedReport.description}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center">
+            <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center">
               <Share2 className="w-4 h-4 mr-2" />
               Share
             </button>
-            <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center">
+            <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center">
               <Edit className="w-4 h-4 mr-2" />
               Edit
             </button>
             <button
               onClick={() => handleExport('pdf')}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center"
+              className="px-4 py-2 btn-primary rounded-lg transition-colors flex items-center"
             >
               <Download className="w-4 h-4 mr-2" />
               Export
@@ -259,31 +259,31 @@ const Reports: React.FC = () => {
         </div>
 
         {/* Report Metadata */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6 text-sm">
               <div className="flex items-center">
-                <ChartIcon className="w-4 h-4 text-gray-500 mr-2" />
-                <span className="text-gray-600">Chart Type:</span>
-                <span className="ml-2 font-medium text-gray-900 capitalize">{selectedReport.chartType}</span>
+                <ChartIcon className="w-4 h-4 text-gray-500 dark:text-gray-400 mr-2" />
+                <span className="text-gray-600 dark:text-gray-400">Chart Type:</span>
+                <span className="ml-2 font-medium text-gray-900 dark:text-gray-100 capitalize">{selectedReport.chartType}</span>
               </div>
               <div className="flex items-center">
-                <Calendar className="w-4 h-4 text-gray-500 mr-2" />
-                <span className="text-gray-600">Date Range:</span>
-                <span className="ml-2 font-medium text-gray-900">{selectedReport.dateRange}</span>
+                <Calendar className="w-4 h-4 text-gray-500 dark:text-gray-400 mr-2" />
+                <span className="text-gray-600 dark:text-gray-400">Date Range:</span>
+                <span className="ml-2 font-medium text-gray-900 dark:text-gray-100">{selectedReport.dateRange}</span>
               </div>
               <div className="flex items-center">
-                <Clock className="w-4 h-4 text-gray-500 mr-2" />
-                <span className="text-gray-600">Last Run:</span>
-                <span className="ml-2 font-medium text-gray-900">
+                <Clock className="w-4 h-4 text-gray-500 dark:text-gray-400 mr-2" />
+                <span className="text-gray-600 dark:text-gray-400">Last Run:</span>
+                <span className="ml-2 font-medium text-gray-900 dark:text-gray-100">
                   {new Date(selectedReport.lastRun).toLocaleDateString()}
                 </span>
               </div>
               {selectedReport.schedule && (
                 <div className="flex items-center">
-                  <Calendar className="w-4 h-4 text-gray-500 mr-2" />
-                  <span className="text-gray-600">Schedule:</span>
-                  <span className="ml-2 font-medium text-gray-900">{selectedReport.schedule}</span>
+                  <Calendar className="w-4 h-4 text-gray-500 dark:text-gray-400 mr-2" />
+                  <span className="text-gray-600 dark:text-gray-400">Schedule:</span>
+                  <span className="ml-2 font-medium text-gray-900 dark:text-gray-100">{selectedReport.schedule}</span>
                 </div>
               )}
             </div>
@@ -291,53 +291,53 @@ const Reports: React.FC = () => {
         </div>
 
         {/* Report Content */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Report Data</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Report Data</h2>
           {renderMockChart(selectedReport.chartType)}
         </div>
 
         {/* Report Table */}
         {selectedReport.chartType !== 'table' && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Detailed Data</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Detailed Data</h2>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
+                <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Metric
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Value
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Change
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Trend
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  <tr className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Total Agents</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">1,234</td>
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">Total Agents</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">1,234</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">+12.5%</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <TrendingUp className="w-4 h-4 text-green-600" />
                     </td>
                   </tr>
-                  <tr className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Active Campaigns</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">567</td>
+                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">Active Campaigns</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">567</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">+8.3%</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <TrendingUp className="w-4 h-4 text-green-600" />
                     </td>
                   </tr>
-                  <tr className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">API Calls</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">98,765</td>
+                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">API Calls</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">98,765</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">+15.7%</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <TrendingUp className="w-4 h-4 text-green-600" />
@@ -357,12 +357,12 @@ const Reports: React.FC = () => {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Reports</h1>
-            <p className="text-gray-600 mt-2">Create custom reports and analyze your data</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Reports</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">Create custom reports and analyze your data</p>
           </div>
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center"
+            className="px-4 py-2 btn-primary rounded-lg transition-colors flex items-center"
           >
             <Plus className="w-4 h-4 mr-2" />
             Create Report
@@ -372,7 +372,7 @@ const Reports: React.FC = () => {
 
       {/* Pre-built Templates */}
       <div className="mb-8">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Pre-built Templates</h2>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Pre-built Templates</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {templates.map((template) => {
             const ChartIcon = getChartIcon(template.chartType);
@@ -380,19 +380,19 @@ const Reports: React.FC = () => {
               <button
                 key={template.id}
                 onClick={() => setSelectedReport(template)}
-                className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg p-6 text-left hover:shadow-md transition-all border border-indigo-100"
+                className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950 dark:to-purple-950 rounded-lg p-6 text-left hover:shadow-md transition-all border border-indigo-100 dark:border-indigo-800"
               >
                 <div className="flex items-start justify-between mb-3">
-                  <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
-                    <ChartIcon className="w-6 h-6 text-indigo-600" />
+                  <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900 rounded-lg flex items-center justify-center">
+                    <ChartIcon className="w-6 h-6 icon-active" />
                   </div>
                   <span className={`px-3 py-1 rounded-full text-xs font-medium ${getTypeColor(template.type)}`}>
                     {template.type}
                   </span>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{template.name}</h3>
-                <p className="text-sm text-gray-600 mb-3">{template.description}</p>
-                <div className="flex items-center text-xs text-gray-500">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{template.name}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{template.description}</p>
+                <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
                   <Calendar className="w-3 h-3 mr-1" />
                   {template.dateRange}
                 </div>
@@ -403,15 +403,15 @@ const Reports: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-gray-500" />
+              <Filter className="w-4 h-4 text-gray-500 dark:text-gray-400" />
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               >
                 <option value="all">All Types</option>
                 <option value="agents">Agents</option>
@@ -422,11 +422,11 @@ const Reports: React.FC = () => {
               </select>
             </div>
             <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-gray-500" />
+              <Calendar className="w-4 h-4 text-gray-500 dark:text-gray-400" />
               <select
                 value={dateRange}
                 onChange={(e) => setDateRange(e.target.value)}
-                className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               >
                 <option value="7">Last 7 Days</option>
                 <option value="30">Last 30 Days</option>
@@ -438,21 +438,21 @@ const Reports: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => handleExport('csv')}
-              className="px-3 py-1.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm flex items-center"
+              className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm flex items-center"
             >
               <Download className="w-4 h-4 mr-1" />
               CSV
             </button>
             <button
               onClick={() => handleExport('excel')}
-              className="px-3 py-1.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm flex items-center"
+              className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm flex items-center"
             >
               <Download className="w-4 h-4 mr-1" />
               Excel
             </button>
             <button
               onClick={() => handleExport('pdf')}
-              className="px-3 py-1.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm flex items-center"
+              className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm flex items-center"
             >
               <Download className="w-4 h-4 mr-1" />
               PDF
@@ -462,47 +462,47 @@ const Reports: React.FC = () => {
       </div>
 
       {/* Reports List */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Report Name
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Type
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Chart
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Date Range
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Schedule
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Last Run
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {filteredReports.map((report) => {
                 const ChartIcon = getChartIcon(report.chartType);
                 return (
-                  <tr key={report.id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={report.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center">
-                        <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
-                          <FileText className="w-5 h-5 text-indigo-600" />
+                        <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900 rounded-lg flex items-center justify-center mr-3">
+                          <FileText className="w-5 h-5 icon-active" />
                         </div>
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{report.name}</div>
-                          <div className="text-sm text-gray-500">{report.description}</div>
+                          <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{report.name}</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">{report.description}</div>
                         </div>
                       </div>
                     </td>
@@ -512,40 +512,40 @@ const Reports: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center text-sm text-gray-900">
-                        <ChartIcon className="w-4 h-4 mr-2 text-gray-500" />
+                      <div className="flex items-center text-sm text-gray-900 dark:text-gray-100">
+                        <ChartIcon className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
                         <span className="capitalize">{report.chartType}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{report.dateRange}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{report.dateRange}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {report.schedule || 'On-demand'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {new Date(report.lastRun).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => setSelectedReport(report)}
-                          className="text-indigo-600 hover:text-indigo-900 transition-colors"
+                          className="icon-active hover:opacity-70 transition-opacity transition-colors"
                           title="View report"
                         >
                           <Eye className="w-5 h-5" />
                         </button>
                         <button
                           onClick={() => handleExport('pdf')}
-                          className="text-blue-600 hover:text-blue-900 transition-colors"
+                          className="icon-active hover:opacity-70 transition-opacity transition-colors"
                           title="Download report"
                         >
                           <Download className="w-5 h-5" />
                         </button>
                         {!report.isTemplate && (
                           <>
-                            <button className="text-gray-600 hover:text-gray-900 transition-colors" title="Edit">
+                            <button className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors" title="Edit">
                               <Edit className="w-5 h-5" />
                             </button>
-                            <button className="text-red-600 hover:text-red-900 transition-colors" title="Delete">
+                            <button className="text-red-600 hover:text-red-900 dark:hover:text-red-400 transition-colors" title="Delete">
                               <Trash2 className="w-5 h-5" />
                             </button>
                           </>
@@ -561,9 +561,9 @@ const Reports: React.FC = () => {
       </div>
 
       {/* Scheduled Reports Section */}
-      <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-          <Clock className="w-5 h-5 mr-2 text-indigo-600" />
+      <div className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+          <Clock className="w-5 h-5 mr-2 icon-active" />
           Scheduled Reports
         </h2>
         <div className="space-y-3">
@@ -572,26 +572,26 @@ const Reports: React.FC = () => {
             .map((report) => (
               <div
                 key={report.id}
-                className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 <div className="flex items-center">
-                  <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
-                    <Calendar className="w-5 h-5 text-indigo-600" />
+                  <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900 rounded-lg flex items-center justify-center mr-3">
+                    <Calendar className="w-5 h-5 icon-active" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{report.name}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{report.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       Runs {report.schedule?.toLowerCase()} • Next run:{' '}
                       {new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button className="px-3 py-1.5 text-sm text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors flex items-center">
+                  <button className="px-3 py-1.5 text-sm text-indigo-600 hover:bg-primary-50 dark:bg-primary-900/20 rounded-lg transition-colors flex items-center">
                     <Play className="w-4 h-4 mr-1" />
                     Run Now
                   </button>
-                  <button className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                  <button className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
                     <Edit className="w-4 h-4" />
                   </button>
                 </div>
@@ -603,16 +603,16 @@ const Reports: React.FC = () => {
       {/* Create Report Modal */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-6 py-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-900 flex items-center">
-                  <FileText className="w-6 h-6 mr-2 text-indigo-600" />
+                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center">
+                  <FileText className="w-6 h-6 mr-2 icon-active" />
                   Create Custom Report
                 </h2>
                 <button
                   onClick={() => setIsCreateModalOpen(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 >
                   <X className="w-6 h-6" />
                 </button>
@@ -622,32 +622,32 @@ const Reports: React.FC = () => {
             <div className="p-6 space-y-6">
               {/* Report Details */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">Report Details</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Report Details</h3>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Report Name</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Report Name</label>
                   <input
                     type="text"
                     value={reportName}
                     onChange={(e) => setReportName(e.target.value)}
                     placeholder="e.g., Monthly Performance Summary"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
                   <textarea
                     value={reportDescription}
                     onChange={(e) => setReportDescription(e.target.value)}
                     rows={3}
                     placeholder="Brief description of what this report covers..."
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   />
                 </div>
               </div>
 
               {/* Chart Type */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Chart Type</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">Chart Type</h3>
                 <div className="grid grid-cols-4 gap-3">
                   {[
                     { type: 'bar', icon: BarChart3, label: 'Bar Chart' },
@@ -660,12 +660,12 @@ const Reports: React.FC = () => {
                       onClick={() => setSelectedChartType(type as any)}
                       className={`p-4 border-2 rounded-lg transition-all ${
                         selectedChartType === type
-                          ? 'border-indigo-600 bg-indigo-50'
-                          : 'border-gray-200 hover:border-gray-300'
+                          ? 'border-indigo-600 bg-primary-50 dark:bg-primary-900/20'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                       }`}
                     >
-                      <Icon className={`w-8 h-8 mx-auto mb-2 ${selectedChartType === type ? 'text-indigo-600' : 'text-gray-400'}`} />
-                      <p className={`text-sm font-medium ${selectedChartType === type ? 'text-indigo-600' : 'text-gray-700'}`}>
+                      <Icon className={`w-8 h-8 mx-auto mb-2 ${selectedChartType === type ? 'text-indigo-600' : 'text-gray-400 dark:text-gray-500'}`} />
+                      <p className={`text-sm font-medium ${selectedChartType === type ? 'text-indigo-600' : 'text-gray-700 dark:text-gray-300'}`}>
                         {label}
                       </p>
                     </button>
@@ -675,7 +675,7 @@ const Reports: React.FC = () => {
 
               {/* Metrics Selection */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Select Metrics</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">Select Metrics</h3>
                 <div className="grid grid-cols-2 gap-2">
                   {metrics.map((metric) => {
                     const Icon = metric.icon;
@@ -686,24 +686,24 @@ const Reports: React.FC = () => {
                         onClick={() => toggleMetric(metric.id)}
                         className={`flex items-center p-3 border rounded-lg transition-all ${
                           isSelected
-                            ? 'border-indigo-600 bg-indigo-50'
-                            : 'border-gray-200 hover:border-gray-300'
+                            ? 'border-indigo-600 bg-primary-50 dark:bg-primary-900/20'
+                            : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                         }`}
                       >
                         <div
                           className={`w-8 h-8 rounded-lg flex items-center justify-center mr-3 ${
-                            isSelected ? 'bg-indigo-100' : 'bg-gray-100'
+                            isSelected ? 'bg-indigo-100 dark:bg-indigo-900' : 'bg-gray-100 dark:bg-gray-800'
                           }`}
                         >
-                          <Icon className={`w-4 h-4 ${isSelected ? 'text-indigo-600' : 'text-gray-500'}`} />
+                          <Icon className={`w-4 h-4 ${isSelected ? 'text-indigo-600' : 'text-gray-500 dark:text-gray-400'}`} />
                         </div>
                         <div className="flex-1 text-left">
-                          <p className={`text-sm font-medium ${isSelected ? 'text-indigo-900' : 'text-gray-900'}`}>
+                          <p className={`text-sm font-medium ${isSelected ? 'text-indigo-900 dark:text-indigo-400' : 'text-gray-900 dark:text-gray-100'}`}>
                             {metric.name}
                           </p>
-                          <p className="text-xs text-gray-500">{metric.category}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{metric.category}</p>
                         </div>
-                        {isSelected && <Check className="w-5 h-5 text-indigo-600" />}
+                        {isSelected && <Check className="w-5 h-5 icon-active" />}
                       </button>
                     );
                   })}
@@ -712,7 +712,7 @@ const Reports: React.FC = () => {
 
               {/* Dimension Selector */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Group By</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">Group By</h3>
                 <div className="grid grid-cols-4 gap-3">
                   {[
                     { value: 'time', label: 'Time' },
@@ -725,8 +725,8 @@ const Reports: React.FC = () => {
                       onClick={() => setSelectedDimension(dimension.value)}
                       className={`px-4 py-2 border rounded-lg transition-all ${
                         selectedDimension === dimension.value
-                          ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
-                          : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                          ? 'border-indigo-600 bg-primary-50 dark:bg-primary-900/20 text-indigo-700 dark:text-indigo-400'
+                          : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
                       }`}
                     >
                       {dimension.label}
@@ -736,18 +736,18 @@ const Reports: React.FC = () => {
               </div>
             </div>
 
-            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4">
+            <div className="sticky bottom-0 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 px-6 py-4">
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => setIsCreateModalOpen(false)}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleCreateReport}
                   disabled={!reportName || selectedMetrics.length === 0}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 btn-primary rounded-lg transition-colors flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Create Report
