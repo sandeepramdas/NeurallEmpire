@@ -35,9 +35,8 @@ jobs:
 
       - name: Build React app
         run: |
-          cd frontend
-          npm run build
-          cp dist/index.html dist/404.html
+          npm run build --workspace=frontend
+          cp frontend/dist/index.html frontend/dist/404.html
         env:
           VITE_API_URL: https://neurallempire-backend.railway.app/api
 
