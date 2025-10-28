@@ -362,7 +362,7 @@ const Agents: React.FC = () => {
       </div>
 
       {/* Toolbar */}
-      <div className="card mb-6">
+      <div className="bg-white border border-neutral-200 rounded-lg p-6 shadow-sm mb-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex-1 flex items-center gap-4">
             {/* Search */}
@@ -478,13 +478,13 @@ const Agents: React.FC = () => {
 
       {/* Agent List/Grid */}
       {loading ? (
-        <div className="card text-center py-12">
+        <div className="bg-white border border-neutral-200 rounded-lg p-12 shadow-sm text-center">
           <Activity className="w-16 h-16 text-primary-600 mx-auto mb-4 animate-spin" />
           <h3 className="text-lg font-semibold text-neutral-900 mb-2">Loading agents...</h3>
           <p className="text-neutral-600">Please wait while we fetch your agents</p>
         </div>
       ) : filteredAgents.length === 0 ? (
-        <div className="card text-center py-12">
+        <div className="bg-white border border-neutral-200 rounded-lg p-12 shadow-sm text-center">
           <Brain className="w-16 h-16 text-neutral-400 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-neutral-900 mb-2">No agents found</h3>
           <p className="text-neutral-600 mb-4">
@@ -610,7 +610,7 @@ const Agents: React.FC = () => {
           ))}
         </div>
       ) : (
-        <div className="card overflow-hidden">
+        <div className="bg-white border border-neutral-200 rounded-lg shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-neutral-50 border-b border-neutral-200">
