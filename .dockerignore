@@ -1,0 +1,41 @@
+# Frontend
+frontend/
+
+# Documentation
+*.md
+docs/
+
+# Git
+.git/
+.github/
+
+# IDE
+.vscode/
+.idea/
+
+# System files
+.DS_Store
+*.log
+
+# Assets
+assets/
+
+# Scripts
+scripts/
+
+# Test files
+*.test.ts
+*.test.js
+**/__tests__/
+
+# Cloudflare
+cloudflare-worker/
+
+# Configs
+vercel.json
+deployment.config.yaml
+nixpacks.toml
+
+# Other
+migrations/
+node_modules/

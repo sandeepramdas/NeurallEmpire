@@ -10,8 +10,8 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copy entire backend directory
-COPY backend/ ./
+# Copy entire backend directory (Railway expects this path)
+COPY ./backend/ ./
 
 # Install dependencies
 RUN npm install --production=false
