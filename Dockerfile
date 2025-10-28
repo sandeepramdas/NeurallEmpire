@@ -1,10 +1,13 @@
 FROM node:20-slim
 
-# Install OpenSSL for Prisma
+# Install OpenSSL, Python, and build tools for native modules
 RUN apt-get update && apt-get install -y \
     openssl \
     libssl3 \
     ca-certificates \
+    python3 \
+    make \
+    g++ \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
