@@ -19,7 +19,6 @@ import {
   Zap,
 } from 'lucide-react';
 import { getStatusColor } from '@/utils/statusColors';
-import { formatDate } from '@/utils/formatters';
 
 // Types
 interface Campaign {

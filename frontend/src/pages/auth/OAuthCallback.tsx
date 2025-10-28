@@ -45,7 +45,6 @@ const OAuthCallback: React.FC = () => {
 
         // Get stored pre-auth URL or default redirect
         const preAuthUrl = sessionStorage.getItem('preAuthUrl');
-        const orgSlug = new URL(window.location.href).hostname.split('.')[0];
 
         // Clean up session storage
         sessionStorage.removeItem('preAuthUrl');

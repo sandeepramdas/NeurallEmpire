@@ -44,7 +44,6 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
   const { user, organization, logout } = useAuthStore();
   const { mode, toggleMode } = useTheme();
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showQuickActions, setShowQuickActions] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showOrgSwitcher, setShowOrgSwitcher] = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
@@ -61,13 +60,6 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ onThemeChange }
     { id: 1, type: 'info', message: 'New user joined your organization', time: '5 min ago' },
     { id: 2, type: 'success', message: 'Monthly report is ready', time: '1 hour ago' },
     { id: 3, type: 'warning', message: 'Subscription renewal in 7 days', time: '2 hours ago' },
-  ];
-
-  const quickActions = [
-    { icon: Users, label: 'Invite Users', action: () => console.log('Invite users') },
-    { icon: CreditCard, label: 'Billing', action: () => console.log('Billing') },
-    { icon: FileText, label: 'Reports', action: () => console.log('Reports') },
-    { icon: Settings, label: 'Settings', action: () => console.log('Settings') },
   ];
 
   // Additional mock data

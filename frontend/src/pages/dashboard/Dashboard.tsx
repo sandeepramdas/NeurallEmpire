@@ -31,7 +31,6 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import toast from 'react-hot-toast';
-import { StatsCard } from '@/components/ui';
 import { formatCurrency, formatTimeAgo } from '@/utils/formatters';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
@@ -320,7 +319,7 @@ const Dashboard: React.FC = () => {
                 fill="#8884d8"
                 dataKey="count"
               >
-                {chartData?.modelUsage.map((entry, index) => (
+                {chartData?.modelUsage.map((_entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>

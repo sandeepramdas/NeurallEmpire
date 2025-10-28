@@ -154,7 +154,7 @@ export class ModelTesterService {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error?.message || 'API request failed');
+        throw new Error((data as any).error?.message || 'API request failed');
       }
 
       return {
@@ -163,7 +163,7 @@ export class ModelTesterService {
         latency,
         details: {
           model,
-          response: data.candidates?.[0]?.content?.parts?.[0]?.text,
+          response: (data as any).candidates?.[0]?.content?.parts?.[0]?.text,
         },
       };
     } catch (error: any) {

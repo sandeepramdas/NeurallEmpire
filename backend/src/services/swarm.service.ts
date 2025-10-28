@@ -36,7 +36,7 @@ class SwarmService extends EventEmitter {
           name: config.name,
           description: config.description,
           type: config.coordinatorType,
-          configuration: config.configuration as Record<string, unknown>,
+          configuration: config.configuration as any,
         },
       });
 
@@ -471,7 +471,7 @@ class SwarmService extends EventEmitter {
 
     // Check if previous agents succeeded
     if (conditions.requirePreviousSuccess) {
-      const hasFailures = previousResults.some(r => r.error || (r.result && !r.result.success));
+      const hasFailures = previousResults.some(r => r.error || (r.result && !(r.result as any).success));
       if (hasFailures) return false;
     }
 

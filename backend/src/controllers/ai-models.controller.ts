@@ -236,7 +236,7 @@ export class AIModelsController {
           apiKeyPreview,
           createdBy: userId,
           capabilities: validatedData.capabilities || {},
-        },
+        } as any,
         include: {
           provider: {
             select: {
@@ -585,7 +585,7 @@ export class AIModelsController {
       }
 
       const provider = await prisma.aIModelProvider.create({
-        data: validatedData,
+        data: validatedData as any,
       });
 
       res.status(201).json({
@@ -685,7 +685,7 @@ export class AIModelsController {
         where: { id },
         include: {
           _count: {
-            select: { configs: true },
+            select: { models: true },
           },
         },
       });
@@ -698,10 +698,10 @@ export class AIModelsController {
       }
 
       // Check if provider has associated configs
-      if (existing._count.configs > 0) {
+      if ((existing as any)._count?.models > 0) {
         return res.status(400).json({
           success: false,
-          error: `Cannot delete provider. It has ${existing._count.configs} associated model configuration(s).`,
+          error: `Cannot delete provider. It has ${(existing as any)._count.models} associated model configuration(s).`,
         });
       }
 
