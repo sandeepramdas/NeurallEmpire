@@ -27,18 +27,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: |
-          npm ci
-          cd frontend && npm install --force
+          cd frontend
+          npm install
 
       - name: Build React app
         run: |
-          npm run build --workspace=frontend
-          cp frontend/dist/index.html frontend/dist/404.html
+          cd frontend
+          npm run build
+          cp dist/index.html dist/404.html
         env:
           VITE_API_URL: https://neurallempire-backend.railway.app/api
 
