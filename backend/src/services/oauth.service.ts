@@ -135,10 +135,23 @@ export class OAuthService {
     code: string,
     state: string,
     redirectUri: string
-  ): Promise<{ user: any; token: string; isNewUser: boolean }> {
+  ): Promise<{ user: any; token: string; isNewUser: boolean; organization?: any }> {
     // Validate state and extract organization
     const { orgSlug } = this.validateState(state);
-    const organization = await this.getOrganizationBySlug(orgSlug);
+
+    // Get or create organization
+    let organization;
+    if (orgSlug === 'new' || !orgSlug) {
+      // Will create org later based on user info
+      organization = null;
+    } else {
+      try {
+        organization = await this.getOrganizationBySlug(orgSlug);
+      } catch (error) {
+        // Organization doesn't exist - will create one
+        organization = null;
+      }
+    }
 
     // Exchange code for access token
     const tokens = await this.exchangeCodeForTokens(provider, code, redirectUri, orgSlug);
@@ -149,7 +162,7 @@ export class OAuthService {
     // Create or link user account
     const result = await this.createOrLinkUser(oauthUser, organization, tokens);
 
-    return result;
+    return { ...result, organization: result.user.organization };
   }
 
   /**
@@ -273,11 +286,12 @@ export class OAuthService {
    */
   private async createOrLinkUser(
     oauthUser: OAuthUser,
-    organization: any,
+    organization: any | null,
     tokens: any
   ): Promise<{ user: any; token: string; isNewUser: boolean }> {
     let user;
     let isNewUser = false;
+    let userOrg = organization;
 
     // Try to find existing user by email
     user = await prisma.user.findUnique({
@@ -286,10 +300,8 @@ export class OAuthService {
     });
 
     if (user) {
-      // Existing user - verify organization access
-      if (user.organizationId !== organization.id) {
-        throw new Error('User belongs to different organization');
-      }
+      // Existing user - use their organization
+      userOrg = user.organization;
 
       // Link social account if not already linked
       const existingAccount = user.socialAccounts.find(
@@ -297,14 +309,31 @@ export class OAuthService {
       );
 
       if (!existingAccount) {
-        await this.createSocialAccount(user.id, organization.id, oauthUser, tokens);
+        await this.createSocialAccount(user.id, userOrg.id, oauthUser, tokens);
       } else {
         // Update existing account with new tokens
         await this.updateSocialAccount(existingAccount.id, tokens);
       }
     } else {
-      // New user - create account
+      // New user - create account and organization if needed
       isNewUser = true;
+
+      if (!userOrg) {
+        // Auto-create personal organization for new user
+        const orgName = `${oauthUser.firstName}'s Organization` || `${oauthUser.email}'s Organization`;
+        const orgSlug = await this.generateUniqueOrgSlug(oauthUser.email);
+
+        userOrg = await prisma.organization.create({
+          data: {
+            name: orgName,
+            slug: orgSlug,
+            status: 'ACTIVE',
+            planType: 'FREE',
+            maxUsers: 5,
+            currentUsers: 0
+          }
+        });
+      }
 
       user = await prisma.user.create({
         data: {
@@ -312,8 +341,8 @@ export class OAuthService {
           firstName: oauthUser.firstName,
           lastName: oauthUser.lastName,
           avatar: oauthUser.avatar,
-          organizationId: organization.id,
-          role: 'MEMBER',
+          organizationId: userOrg.id,
+          role: isNewUser ? 'OWNER' : 'MEMBER', // First user is owner
           status: 'ACTIVE',
           emailVerified: true, // OAuth emails are pre-verified
           lastLoginMethod: oauthUser.provider as any,
@@ -323,11 +352,11 @@ export class OAuthService {
       });
 
       // Create social account
-      await this.createSocialAccount(user.id, organization.id, oauthUser, tokens);
+      await this.createSocialAccount(user.id, userOrg.id, oauthUser, tokens);
 
       // Update organization user count
       await prisma.organization.update({
-        where: { id: organization.id },
+        where: { id: userOrg.id },
         data: { currentUsers: { increment: 1 } }
       });
     }
@@ -442,6 +471,25 @@ export class OAuthService {
     }
 
     return org.id;
+  }
+
+  /**
+   * Generate unique organization slug from email
+   */
+  private async generateUniqueOrgSlug(email: string): Promise<string> {
+    // Extract username from email (before @)
+    const baseSlug = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-');
+
+    let slug = baseSlug;
+    let counter = 1;
+
+    // Check if slug exists and increment until unique
+    while (await prisma.organization.findUnique({ where: { slug } })) {
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
+    return slug;
   }
 
   /**

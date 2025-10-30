@@ -124,15 +124,7 @@ router.get('/linked-accounts', authenticate, requireTenant, async (req, res) => 
 router.get('/:provider', optionalAuth, async (req, res) => {
   try {
     const { provider } = req.params;
-    const orgSlug = req.query.org as string || req.tenant;
-
-    if (!orgSlug) {
-      return res.status(400).json({
-        success: false,
-        error: 'Organization context required',
-        code: 'ORG_REQUIRED'
-      });
-    }
+    const orgSlug = req.query.org as string || req.tenant || 'new'; // Allow 'new' for org creation
 
     // Validate provider
     const validProviders = ['google', 'github', 'linkedin', 'microsoft'];
@@ -147,7 +139,7 @@ router.get('/:provider', optionalAuth, async (req, res) => {
 
     // Build redirect URI based on environment
     const baseUrl = process.env.NODE_ENV === 'production'
-      ? `https://${orgSlug}.neurallempire.com`
+      ? 'https://www.neurallempire.com'
       : `http://localhost:3000`;
 
     const redirectUri = `${baseUrl}/auth/${provider}/callback`;
@@ -164,7 +156,7 @@ router.get('/:provider', optionalAuth, async (req, res) => {
       success: true,
       authUrl,
       provider,
-      organization: orgSlug
+      organization: orgSlug !== 'new' ? orgSlug : null
     });
 
   } catch (error: any) {
@@ -206,18 +198,10 @@ router.get('/:provider/callback', async (req, res) => {
       });
     }
 
-    // Build redirect URI
-    let baseUrl;
-    try {
-      const stateData = JSON.parse(Buffer.from(state as string, 'base64url').toString());
-      baseUrl = process.env.NODE_ENV === 'production'
-        ? `https://${stateData.orgSlug}.neurallempire.com`
-        : `http://localhost:3000`;
-    } catch {
-      baseUrl = process.env.NODE_ENV === 'production'
-        ? 'https://www.neurallempire.com'
-        : 'http://localhost:3000';
-    }
+    // Build redirect URI (always use main domain for callbacks)
+    const baseUrl = process.env.NODE_ENV === 'production'
+      ? 'https://www.neurallempire.com'
+      : `http://localhost:3000`;
 
     const redirectUri = `${baseUrl}/auth/${provider}/callback`;
 
@@ -242,9 +226,17 @@ router.get('/:provider/callback', async (req, res) => {
 
     res.cookie('authToken', result.token, cookieOptions);
 
-    // Redirect to dashboard with success indicator
-    const dashboardUrl = `${baseUrl}/dashboard?auth=success&new=${result.isNewUser}`;
-    res.redirect(dashboardUrl);
+    // Determine redirect destination
+    let redirectUrl;
+    if (result.isNewUser || !result.organization) {
+      // New user or no org context - redirect to org selection/creation
+      redirectUrl = `${baseUrl}/select-organization?auth=success&new=true`;
+    } else {
+      // Existing user with org - redirect to dashboard
+      redirectUrl = `${baseUrl}/dashboard?auth=success`;
+    }
+
+    res.redirect(redirectUrl);
 
   } catch (error: any) {
     logger.error(`OAuth callback error for ${req.params.provider}:`, error);
