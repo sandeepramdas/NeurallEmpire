@@ -138,9 +138,9 @@ router.get('/:provider', optionalAuth, async (req, res) => {
     }
 
     // Build redirect URI based on environment
-    // Use main domain - Cloudflare/Railway routing handles /api correctly
+    // MUST use Railway URL directly - www.neurallempire.com proxy doesn't work for OAuth callbacks
     const baseUrl = process.env.NODE_ENV === 'production'
-      ? 'https://www.neurallempire.com/api'
+      ? 'https://neurallempire-production.up.railway.app/api'
       : `http://localhost:3001/api`;
 
     const redirectUri = `${baseUrl}/oauth/${provider}/callback`;
@@ -199,9 +199,9 @@ router.get('/:provider/callback', async (req, res) => {
       });
     }
 
-    // Build redirect URI (use main domain - routing is set up correctly)
+    // Build redirect URI (MUST use Railway URL - www.neurallempire.com proxy doesn't work)
     const baseUrl = process.env.NODE_ENV === 'production'
-      ? 'https://www.neurallempire.com/api'
+      ? 'https://neurallempire-production.up.railway.app/api'
       : `http://localhost:3001/api`;
 
     const redirectUri = `${baseUrl}/oauth/${provider}/callback`;
