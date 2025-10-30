@@ -34,10 +34,16 @@
   }
 
   body {
-    @apply bg-background antialiased;
-    color: var(--color-text);
+    @apply antialiased;
+    background-color: #f9fafb;
+    color: #111827;
     transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
                 color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark body {
+    background-color: #0f172a;
+    color: #f1f5f9;
   }
 
   /* Smooth transitions for theme changes */
@@ -191,8 +197,13 @@
 
   .card {
     @apply rounded-lg shadow-sm border p-6 transition-all duration-200;
-    background-color: var(--color-surface);
-    border-color: var(--color-border);
+    background-color: #ffffff;
+    border-color: #e5e7eb;
+  }
+
+  .dark .card {
+    background-color: #1e293b;
+    border-color: #334155;
   }
 
   .card:hover {

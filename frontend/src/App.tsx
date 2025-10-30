@@ -275,6 +275,7 @@ const App: React.FC = () => {
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="agents" element={<Agents />} />
+          <Route path="agent-api-keys" element={<APIKeys />} />
           <Route path="campaigns" element={<Campaigns />} />
           <Route path="workflows" element={<Workflows />} />
           <Route path="analytics" element={<Analytics />} />

@@ -122,8 +122,8 @@ const Dashboard: React.FC = () => {
                 <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">vs last month</span>
               </div>
             </div>
-            <div className="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
-              <Bot className="w-8 h-8 text-primary-600 dark:text-primary-400" />
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <Bot className="w-8 h-8 text-blue-600 dark:text-blue-400" />
             </div>
           </div>
         </div>
@@ -141,8 +141,8 @@ const Dashboard: React.FC = () => {
                   : '0% of total'}
               </p>
             </div>
-            <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-              <Activity className="w-8 h-8 text-green-600 dark:text-green-400" />
+            <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+              <Activity className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
             </div>
           </div>
         </div>
@@ -151,7 +151,7 @@ const Dashboard: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Executions Today</p>
-              <p className="text-3xl font-bold" style={{ color: 'var(--color-primary)' }}>
+              <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
                 {stats.usage.agentExecutionsToday.toLocaleString()}
               </p>
               <div className="flex items-center mt-2">
@@ -165,8 +165,8 @@ const Dashboard: React.FC = () => {
                 </span>
               </div>
             </div>
-            <div className="p-3 rounded-lg" style={{ backgroundColor: 'color-mix(in srgb, var(--color-primary) 10%, transparent)' }}>
-              <Zap className="w-8 h-8 icon-active" />
+            <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+              <Zap className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
             </div>
           </div>
         </div>
@@ -182,8 +182,8 @@ const Dashboard: React.FC = () => {
                 {stats.usage.agentExecutionsThisMonth} executions
               </p>
             </div>
-            <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-              <DollarSign className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+            <div className="p-3 bg-violet-50 dark:bg-violet-900/20 rounded-lg">
+              <DollarSign className="w-8 h-8 text-violet-600 dark:text-violet-400" />
             </div>
           </div>
         </div>
@@ -201,10 +201,9 @@ const Dashboard: React.FC = () => {
           </p>
           <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div
-              className="h-2 rounded-full"
+              className="h-2 rounded-full bg-blue-600 dark:bg-blue-400"
               style={{
-                width: `${Math.min((3000 - stats.performance.avgAgentResponseTime) / 30, 100)}%`,
-                backgroundColor: 'var(--color-primary)'
+                width: `${Math.min((3000 - stats.performance.avgAgentResponseTime) / 30, 100)}%`
               }}
             ></div>
           </div>
@@ -271,8 +270,8 @@ const Dashboard: React.FC = () => {
                 type="monotone"
                 dataKey="count"
                 strokeWidth={2}
-                style={{ stroke: 'var(--color-primary)' }}
-                dot={{ fill: 'var(--color-primary)' }}
+                stroke="#3b82f6"
+                dot={{ fill: '#3b82f6' }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -297,7 +296,7 @@ const Dashboard: React.FC = () => {
               />
               <Legend />
               <Bar dataKey="successRate" fill="#10b981" name="Success Rate (%)" />
-              <Bar dataKey="runs" style={{ fill: 'var(--color-primary)' }} name="Total Runs" />
+              <Bar dataKey="runs" fill="#3b82f6" name="Total Runs" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -343,14 +342,14 @@ const Dashboard: React.FC = () => {
                 className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 <div className={`p-2 rounded-full ${
-                  item.type === 'agent_created' ? 'bg-primary-100 dark:bg-primary-900/30' :
-                  item.type === 'agent_executed' ? 'bg-green-100 dark:bg-green-900/30' :
-                  item.type === 'user_joined' ? 'bg-purple-100 dark:bg-purple-900/30' :
+                  item.type === 'agent_created' ? 'bg-blue-50 dark:bg-blue-900/20' :
+                  item.type === 'agent_executed' ? 'bg-emerald-50 dark:bg-emerald-900/20' :
+                  item.type === 'user_joined' ? 'bg-violet-50 dark:bg-violet-900/20' :
                   'bg-gray-100 dark:bg-gray-900/30'
                 }`}>
-                  {item.type === 'agent_created' && <Bot className="w-4 h-4 icon-active" />}
-                  {item.type === 'agent_executed' && <Zap className="w-4 h-4 text-green-600 dark:text-green-400" />}
-                  {item.type === 'user_joined' && <Users className="w-4 h-4 text-purple-600 dark:text-purple-400" />}
+                  {item.type === 'agent_created' && <Bot className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
+                  {item.type === 'agent_executed' && <Zap className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
+                  {item.type === 'user_joined' && <Users className="w-4 h-4 text-violet-600 dark:text-violet-400" />}
                   {item.type === 'workflow_executed' && <Workflow className="w-4 h-4 text-orange-600 dark:text-orange-400" />}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -374,7 +373,7 @@ const Dashboard: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <a
             href={`/org/${organization?.slug}/agents`}
-            className="flex items-center justify-between p-4 rounded-lg text-white transition-all gradient-neural hover:opacity-90"
+            className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg text-white hover:from-blue-600 hover:to-blue-700 transition-all"
           >
             <div>
               <p className="font-semibold">Create Agent</p>

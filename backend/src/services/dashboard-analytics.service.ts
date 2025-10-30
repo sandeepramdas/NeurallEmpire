@@ -127,16 +127,8 @@ export class DashboardAnalyticsService {
 
       const totalCost = interactions.reduce((sum, i) => sum + (i.cost || 0), 0);
 
-      // Calculate token usage
-      const tokenData = await prisma.agentInteraction.aggregate({
-        where: {
-          organizationId,
-          startedAt: { gte: startOfMonth }
-        },
-        _sum: {
-          // tokens is a JSON field, we'll need to handle this differently
-        }
-      });
+      // TODO: Calculate token usage from JSON field if needed
+      // tokens is stored as JSON field, needs manual aggregation
 
       // Growth calculations
       const agentsLastMonth = await prisma.agent.count({

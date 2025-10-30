@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+import { api } from './api';
 
 export interface DashboardStats {
   overview: {
@@ -47,10 +45,7 @@ class DashboardService {
    * Get dashboard statistics
    */
   async getDashboardStats(): Promise<DashboardStats> {
-    const token = localStorage.getItem('token');
-    const response = await axios.get(`${API_URL}/dashboard/stats`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const response = await api.get('/dashboard/stats');
     return response.data.data;
   }
 
@@ -58,10 +53,7 @@ class DashboardService {
    * Get chart data
    */
   async getChartData(days: number = 7): Promise<ChartData> {
-    const token = localStorage.getItem('token');
-    const response = await axios.get(`${API_URL}/dashboard/charts?days=${days}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const response = await api.get(`/dashboard/charts?days=${days}`);
     return response.data.data;
   }
 
@@ -69,10 +61,7 @@ class DashboardService {
    * Get recent activity
    */
   async getRecentActivity(limit: number = 10): Promise<RecentActivity[]> {
-    const token = localStorage.getItem('token');
-    const response = await axios.get(`${API_URL}/dashboard/activity?limit=${limit}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const response = await api.get(`/dashboard/activity?limit=${limit}`);
     return response.data.data;
   }
 }
