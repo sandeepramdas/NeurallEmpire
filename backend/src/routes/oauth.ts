@@ -138,8 +138,9 @@ router.get('/:provider', optionalAuth, async (req, res) => {
     }
 
     // Build redirect URI based on environment
+    // Use Railway backend URL for OAuth callbacks to avoid frontend routing issues
     const baseUrl = process.env.NODE_ENV === 'production'
-      ? 'https://www.neurallempire.com/api'
+      ? 'https://neurallempire-production.up.railway.app/api'
       : `http://localhost:3001/api`;
 
     const redirectUri = `${baseUrl}/oauth/${provider}/callback`;
