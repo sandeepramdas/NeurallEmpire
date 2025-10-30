@@ -199,12 +199,12 @@ router.get('/:provider/callback', async (req, res) => {
       });
     }
 
-    // Build redirect URI (always use main domain for callbacks)
+    // Build redirect URI (use Railway backend URL for OAuth callbacks)
     const baseUrl = process.env.NODE_ENV === 'production'
-      ? 'https://www.neurallempire.com'
-      : `http://localhost:3000`;
+      ? 'https://neurallempire-production.up.railway.app/api'
+      : `http://localhost:3001/api`;
 
-    const redirectUri = `${baseUrl}/auth/${provider}/callback`;
+    const redirectUri = `${baseUrl}/oauth/${provider}/callback`;
 
     // Handle OAuth callback
     const result = await oauthService.handleCallback(
