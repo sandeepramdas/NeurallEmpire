@@ -93,17 +93,31 @@ export class OAuthService {
       throw new Error(`Unsupported OAuth provider: ${provider}`);
     }
 
-    // Get organization-specific OAuth config if exists
-    const orgOAuthConfig = await prisma.oAuthConfig.findUnique({
-      where: {
-        organizationId_provider: {
-          organizationId: await this.getOrgIdBySlug(orgSlug),
-          provider: provider
-        }
-      }
-    });
+    // Get client ID - use global credentials to avoid DB dependency
+    // Only lookup org-specific config if we have a real org (not 'new')
+    let clientId = process.env[`${provider}_CLIENT_ID`];
 
-    const clientId = orgOAuthConfig?.clientId || process.env[`${provider}_CLIENT_ID`];
+    if (orgSlug && orgSlug !== 'new') {
+      try {
+        const orgOAuthConfig = await prisma.oAuthConfig.findUnique({
+          where: {
+            organizationId_provider: {
+              organizationId: await this.getOrgIdBySlug(orgSlug),
+              provider: provider
+            }
+          }
+        });
+
+        // Use org-specific credentials if available
+        if (orgOAuthConfig?.clientId) {
+          clientId = orgOAuthConfig.clientId;
+        }
+      } catch (error) {
+        // Org not found or DB error - use global credentials
+        logger.warn(`Failed to fetch org-specific OAuth config for ${orgSlug}, using global credentials`);
+      }
+    }
+
     if (!clientId) {
       throw new Error(`OAuth not configured for ${provider}`);
     }
@@ -177,13 +191,27 @@ export class OAuthService {
     const config = OAUTH_CONFIGS[provider];
 
     // Get client credentials (org-specific or global)
-    const orgId = await this.getOrgIdBySlug(orgSlug);
-    const orgOAuthConfig = await prisma.oAuthConfig.findUnique({
-      where: { organizationId_provider: { organizationId: orgId, provider } }
-    });
+    // Skip org lookup if orgSlug is 'new' or empty
+    let clientId = process.env[`${provider}_CLIENT_ID`];
+    let clientSecret = process.env[`${provider}_CLIENT_SECRET`];
 
-    const clientId = orgOAuthConfig?.clientId || process.env[`${provider}_CLIENT_ID`];
-    const clientSecret = orgOAuthConfig?.clientSecret || process.env[`${provider}_CLIENT_SECRET`];
+    if (orgSlug && orgSlug !== 'new') {
+      try {
+        const orgId = await this.getOrgIdBySlug(orgSlug);
+        const orgOAuthConfig = await prisma.oAuthConfig.findUnique({
+          where: { organizationId_provider: { organizationId: orgId, provider } }
+        });
+
+        // Use org-specific credentials if available
+        if (orgOAuthConfig) {
+          clientId = orgOAuthConfig.clientId;
+          clientSecret = orgOAuthConfig.clientSecret;
+        }
+      } catch (error) {
+        // Org not found or DB error - use global credentials
+        logger.warn(`Failed to fetch org-specific OAuth config for ${orgSlug}, using global credentials`);
+      }
+    }
 
     const tokenData = {
       client_id: clientId,
