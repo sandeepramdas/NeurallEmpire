@@ -3,6 +3,7 @@ import { authenticate } from '../middleware/auth';
 
 // Import all route modules
 import authRoutes from './auth';
+import oauthRoutes from './oauth';
 import agentsRoutes from './agents';
 import workflowsRoutes from './workflows';
 import adminRoutes from './admin';
@@ -67,6 +68,7 @@ router.get('/test-sentry', (req, res) => {
 
 // Public routes
 router.use('/auth', authRoutes);
+router.use('/oauth', oauthRoutes);
 router.use('/marketplace/public', marketplaceRoutes);
 
 // Public Agent API (requires API key authentication)
