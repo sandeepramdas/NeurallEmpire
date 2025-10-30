@@ -44,10 +44,10 @@ const OAuthButtons: React.FC<OAuthButtonsProps> = ({
     try {
       setLoading(true);
 
-      const baseUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001';
+      const baseUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001/api';
       const url = orgSlug
-        ? `${baseUrl}/api/oauth/providers?org=${orgSlug}`
-        : `${baseUrl}/api/oauth/providers`;
+        ? `${baseUrl}/oauth/providers?org=${orgSlug}`
+        : `${baseUrl}/oauth/providers`;
 
       const response = await fetch(url);
       const data = await response.json();
@@ -68,10 +68,10 @@ const OAuthButtons: React.FC<OAuthButtonsProps> = ({
 
   const handleOAuthAuth = async (provider: string) => {
     try {
-      const baseUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001';
+      const baseUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001/api';
 
       // Build the OAuth initiation URL
-      let oauthUrl = `${baseUrl}/api/oauth/${provider}`;
+      let oauthUrl = `${baseUrl}/oauth/${provider}`;
 
       // Add organization context
       if (orgSlug) {
