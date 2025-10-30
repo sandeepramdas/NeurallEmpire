@@ -139,10 +139,10 @@ router.get('/:provider', optionalAuth, async (req, res) => {
 
     // Build redirect URI based on environment
     const baseUrl = process.env.NODE_ENV === 'production'
-      ? 'https://www.neurallempire.com'
-      : `http://localhost:3000`;
+      ? 'https://www.neurallempire.com/api'
+      : `http://localhost:3001/api`;
 
-    const redirectUri = `${baseUrl}/auth/${provider}/callback`;
+    const redirectUri = `${baseUrl}/oauth/${provider}/callback`;
 
     // Initiate OAuth flow
     const authUrl = await oauthService.initiateOAuth(
