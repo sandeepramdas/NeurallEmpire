@@ -6,6 +6,7 @@ import { z } from 'zod';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/authStore';
 import { RegisterForm } from '@/types';
+import OAuthButtons from '@/components/auth/OAuthButtons';
 
 const registerSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -82,6 +83,23 @@ const RegisterPage: React.FC = () => {
         </div>
 
         <div className="card bg-white/10 backdrop-blur-sm border-white/20">
+          {/* OAuth Buttons */}
+          <OAuthButtons
+            showDivider={false}
+            title="Sign up with"
+            onError={(error) => toast.error(error)}
+          />
+
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-white/20" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-transparent text-white">Or sign up with email</span>
+            </div>
+          </div>
+
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             {/* Name Fields */}
             <div className="grid grid-cols-2 gap-4">
