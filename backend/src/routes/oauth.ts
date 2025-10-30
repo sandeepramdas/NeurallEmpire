@@ -11,6 +11,111 @@ const router = Router();
 router.use(tenantResolver);
 
 /**
+ * @route   GET /api/oauth/providers
+ * @desc    Get available OAuth providers for organization
+ * @access  Public
+ */
+router.get('/providers', async (req, res) => {
+  try {
+    let providers = [];
+
+    if (req.organization) {
+      // Get organization-specific OAuth configurations
+      const oauthConfigs = await prisma.oAuthConfig.findMany({
+        where: {
+          organizationId: req.organization.id,
+          enabled: true
+        },
+        select: {
+          provider: true,
+          buttonText: true,
+          buttonColor: true,
+          logoUrl: true
+        }
+      });
+
+      providers = oauthConfigs.map(config => ({
+        provider: config.provider.toLowerCase(),
+        customization: {
+          buttonText: config.buttonText,
+          buttonColor: config.buttonColor,
+          logoUrl: config.logoUrl
+        }
+      }));
+    }
+
+    // If no org-specific configs, return default providers
+    if (providers.length === 0) {
+      providers = [
+        { provider: 'google', enabled: !!process.env.GOOGLE_CLIENT_ID },
+        { provider: 'github', enabled: !!process.env.GITHUB_CLIENT_ID },
+        { provider: 'linkedin', enabled: !!process.env.LINKEDIN_CLIENT_ID }
+      ].filter(p => p.enabled);
+    }
+
+    res.json({
+      success: true,
+      providers,
+      organization: req.organization?.slug || null
+    });
+
+  } catch (error: any) {
+    logger.error('Error fetching OAuth providers:', error);
+
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch OAuth providers',
+      code: 'PROVIDERS_FETCH_FAILED'
+    });
+  }
+});
+
+/**
+ * @route   GET /api/oauth/linked-accounts
+ * @desc    Get user's linked OAuth accounts
+ * @access  Private
+ */
+router.get('/linked-accounts', authenticate, requireTenant, async (req, res) => {
+  try {
+    const userId = req.user!.id;
+
+    const socialAccounts = await prisma.socialAccount.findMany({
+      where: {
+        userId,
+        isActive: true
+      },
+      select: {
+        id: true,
+        provider: true,
+        providerEmail: true,
+        displayName: true,
+        avatarUrl: true,
+        isPrimary: true,
+        lastUsedAt: true,
+        createdAt: true,
+        scope: true
+      },
+      orderBy: { createdAt: 'asc' }
+    });
+
+    res.json({
+      success: true,
+      linkedAccounts: socialAccounts,
+      totalCount: socialAccounts.length
+    });
+
+  } catch (error: any) {
+    logger.error('Error fetching linked accounts:', error);
+
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch linked accounts',
+      code: 'FETCH_FAILED'
+    });
+  }
+});
+
+/**
  * @route   GET /api/oauth/:provider
  * @desc    Initiate OAuth flow for specific provider
  * @access  Public
@@ -265,111 +370,6 @@ router.delete('/unlink/:provider', authenticate, requireTenant, async (req, res)
       success: false,
       error: 'Failed to unlink account',
       code: 'UNLINK_FAILED'
-    });
-  }
-});
-
-/**
- * @route   GET /api/oauth/linked-accounts
- * @desc    Get user's linked OAuth accounts
- * @access  Private
- */
-router.get('/linked-accounts', authenticate, requireTenant, async (req, res) => {
-  try {
-    const userId = req.user!.id;
-
-    const socialAccounts = await prisma.socialAccount.findMany({
-      where: {
-        userId,
-        isActive: true
-      },
-      select: {
-        id: true,
-        provider: true,
-        providerEmail: true,
-        displayName: true,
-        avatarUrl: true,
-        isPrimary: true,
-        lastUsedAt: true,
-        createdAt: true,
-        scope: true
-      },
-      orderBy: { createdAt: 'asc' }
-    });
-
-    res.json({
-      success: true,
-      linkedAccounts: socialAccounts,
-      totalCount: socialAccounts.length
-    });
-
-  } catch (error: any) {
-    logger.error('Error fetching linked accounts:', error);
-
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch linked accounts',
-      code: 'FETCH_FAILED'
-    });
-  }
-});
-
-/**
- * @route   GET /api/oauth/providers
- * @desc    Get available OAuth providers for organization
- * @access  Public
- */
-router.get('/providers', tenantResolver, async (req, res) => {
-  try {
-    let providers = [];
-
-    if (req.organization) {
-      // Get organization-specific OAuth configurations
-      const oauthConfigs = await prisma.oAuthConfig.findMany({
-        where: {
-          organizationId: req.organization.id,
-          enabled: true
-        },
-        select: {
-          provider: true,
-          buttonText: true,
-          buttonColor: true,
-          logoUrl: true
-        }
-      });
-
-      providers = oauthConfigs.map(config => ({
-        provider: config.provider.toLowerCase(),
-        customization: {
-          buttonText: config.buttonText,
-          buttonColor: config.buttonColor,
-          logoUrl: config.logoUrl
-        }
-      }));
-    }
-
-    // If no org-specific configs, return default providers
-    if (providers.length === 0) {
-      providers = [
-        { provider: 'google', enabled: !!process.env.GOOGLE_CLIENT_ID },
-        { provider: 'github', enabled: !!process.env.GITHUB_CLIENT_ID },
-        { provider: 'linkedin', enabled: !!process.env.LINKEDIN_CLIENT_ID }
-      ].filter(p => p.enabled);
-    }
-
-    res.json({
-      success: true,
-      providers,
-      organization: req.organization?.slug || null
-    });
-
-  } catch (error: any) {
-    logger.error('Error fetching OAuth providers:', error);
-
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch OAuth providers',
-      code: 'PROVIDERS_FETCH_FAILED'
     });
   }
 });
