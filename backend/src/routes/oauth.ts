@@ -214,31 +214,19 @@ router.get('/:provider/callback', async (req, res) => {
       redirectUri
     );
 
-    // Set secure HTTP-only cookie with JWT token
-    const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax' as const,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      domain: process.env.NODE_ENV === 'production'
-        ? '.neurallempire.com' // Allow cross-subdomain
-        : undefined
-    };
-
-    res.cookie('authToken', result.token, cookieOptions);
-
     // Determine redirect destination - use FRONTEND URL
     const frontendUrl = process.env.NODE_ENV === 'production'
       ? 'https://www.neurallempire.com'
       : 'http://localhost:3000';
 
+    // Pass token in URL for frontend to store (cross-domain cookie issue)
     let redirectUrl;
     if (result.isNewUser || !result.organization) {
       // New user or no org context - redirect to org selection/creation
-      redirectUrl = `${frontendUrl}/select-organization?auth=success&new=true`;
+      redirectUrl = `${frontendUrl}/auth/callback?token=${result.token}&new=true`;
     } else {
       // Existing user with org - redirect to dashboard
-      redirectUrl = `${frontendUrl}/dashboard?auth=success`;
+      redirectUrl = `${frontendUrl}/auth/callback?token=${result.token}`;
     }
 
     res.redirect(redirectUrl);

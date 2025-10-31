@@ -18,13 +18,16 @@ const OAuthCallback: React.FC = () => {
 
   const handleCallback = async () => {
     try {
-      // Check for success parameters from backend redirect
-      const authSuccess = searchParams.get('auth');
+      // Extract token from URL (new OAuth flow)
+      const token = searchParams.get('token');
       const isNewUser = searchParams.get('new') === 'true';
       const provider = sessionStorage.getItem('authProvider');
 
-      if (authSuccess === 'success') {
+      if (token) {
         setMessage('Authentication successful! Setting up your account...');
+
+        // Store the token in localStorage
+        localStorage.setItem('authToken', token);
 
         // Refresh user profile to get updated info
         await refreshProfile();
@@ -39,8 +42,8 @@ const OAuthCallback: React.FC = () => {
         // Show success toast
         toast.success(
           isNewUser
-            ? `Account created with ${provider}!`
-            : `Signed in with ${provider}!`
+            ? `Account created${provider ? ` with ${provider}` : ''}!`
+            : `Signed in${provider ? ` with ${provider}` : ''}!`
         );
 
         // Get stored pre-auth URL or default redirect
@@ -52,7 +55,10 @@ const OAuthCallback: React.FC = () => {
 
         // Redirect after brief delay
         setTimeout(() => {
-          if (preAuthUrl && preAuthUrl.includes('/dashboard')) {
+          if (isNewUser) {
+            // New users go to org selection
+            navigate('/select-organization');
+          } else if (preAuthUrl && preAuthUrl.includes('/dashboard')) {
             window.location.href = preAuthUrl;
           } else {
             // Redirect to dashboard with organization context

@@ -250,6 +250,7 @@ const App: React.FC = () => {
         />
 
         {/* OAuth Callback Routes */}
+        <Route path="/auth/callback" element={<OAuthCallback />} />
         <Route path="/auth/:provider/callback" element={<OAuthCallback />} />
 
         {/* Protected Dashboard Routes - redirect to path-based org routing */}
