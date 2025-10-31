@@ -236,6 +236,9 @@ class ActivityLogger {
   }
 
   private sendToBackend(log: ActivityLog) {
+    // Add to pending logs queue
+    this.pendingLogs.push(log);
+
     // Send logs to backend in batches (debounced)
     // This prevents too many requests
     if (!this.batchTimeout) {
