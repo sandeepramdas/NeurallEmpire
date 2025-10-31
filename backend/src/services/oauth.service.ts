@@ -401,7 +401,7 @@ export class OAuthService {
     );
 
     // Log successful OAuth login
-    await this.logOAuthEvent('LOGIN_SUCCESS', user.id, organization.id, oauthUser.provider);
+    await this.logOAuthEvent('LOGIN_SUCCESS', user.id, userOrg.id, oauthUser.provider);
 
     return { user, token: jwtToken, isNewUser };
   }
