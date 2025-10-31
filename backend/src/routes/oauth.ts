@@ -227,14 +227,18 @@ router.get('/:provider/callback', async (req, res) => {
 
     res.cookie('authToken', result.token, cookieOptions);
 
-    // Determine redirect destination
+    // Determine redirect destination - use FRONTEND URL
+    const frontendUrl = process.env.NODE_ENV === 'production'
+      ? 'https://www.neurallempire.com'
+      : 'http://localhost:3000';
+
     let redirectUrl;
     if (result.isNewUser || !result.organization) {
       // New user or no org context - redirect to org selection/creation
-      redirectUrl = `${baseUrl}/select-organization?auth=success&new=true`;
+      redirectUrl = `${frontendUrl}/select-organization?auth=success&new=true`;
     } else {
       // Existing user with org - redirect to dashboard
-      redirectUrl = `${baseUrl}/dashboard?auth=success`;
+      redirectUrl = `${frontendUrl}/dashboard?auth=success`;
     }
 
     res.redirect(redirectUrl);
