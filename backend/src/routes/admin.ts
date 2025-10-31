@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { adminController, requireSuperAdmin } from '../controllers/admin.controller';
+import activityLogsRoutes from './admin/activity-logs';
 
 const router = Router();
 
@@ -23,5 +24,8 @@ router.get('/audit', adminController.getAuditLogs);
 
 // Admin management (super admin only)
 router.post('/admins', requireSuperAdmin, adminController.createAdmin);
+
+// Activity logs (frontend tracking)
+router.use('/activity-logs', activityLogsRoutes);
 
 export default router;

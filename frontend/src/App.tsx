@@ -59,6 +59,9 @@ import PatientDietPlan from '@/pages/dashboard/PatientDietPlan';
 import AIModelsSettings from '@/pages/settings/AIModelsSettings';
 import ProvidersSettings from '@/pages/settings/ProvidersSettings';
 
+// Import Admin pages
+import ActivityLogs from '@/pages/admin/ActivityLogs';
+
 // OAuth buttons component available for login page
 
 // Subdomain-aware components
@@ -252,6 +255,9 @@ const App: React.FC = () => {
         {/* OAuth Callback Routes */}
         <Route path="/auth/callback" element={<OAuthCallback />} />
         <Route path="/auth/:provider/callback" element={<OAuthCallback />} />
+
+        {/* Admin Routes - for debugging and monitoring */}
+        <Route path="/admin/logs" element={<ActivityLogs />} />
 
         {/* Protected Dashboard Routes - redirect to path-based org routing */}
         <Route

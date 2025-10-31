@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { useAuthStore } from '@/store/authStore';
+import { activityLogger } from '@/utils/activityLogger';
 
 const OAuthCallback: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -17,17 +18,34 @@ const OAuthCallback: React.FC = () => {
   }, []);
 
   const handleCallback = async () => {
+    // Log OAuth callback entry
+    activityLogger.trackOAuthCallback(
+      searchParams.get('token') || undefined,
+      searchParams.get('error') || undefined
+    );
+
     try {
       // Extract token from URL (new OAuth flow)
       const token = searchParams.get('token');
       const isNewUser = searchParams.get('new') === 'true';
       const provider = sessionStorage.getItem('authProvider');
 
+      activityLogger.log('OAUTH_CALLBACK', 'Processing OAuth callback', {
+        hasToken: !!token,
+        isNewUser,
+        provider,
+        url: window.location.href,
+      });
+
       if (token) {
         setMessage('Authentication successful! Setting up your account...');
 
         // Store the token in localStorage
         localStorage.setItem('authToken', token);
+
+        activityLogger.log('AUTH_STATE_CHANGE', 'Token stored in localStorage', {
+          tokenLength: token.length,
+        });
 
         // Refresh user profile to get updated info
         await refreshProfile();
@@ -90,6 +108,12 @@ const OAuthCallback: React.FC = () => {
 
     } catch (error: any) {
       console.error('OAuth callback error:', error);
+
+      activityLogger.log('ERROR', 'OAuth callback failed', {
+        error: error.message,
+        stack: error.stack,
+        searchParams: Object.fromEntries(searchParams.entries()),
+      });
 
       setStatus('error');
       setMessage(error.message || 'Authentication failed');
