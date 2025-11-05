@@ -164,6 +164,9 @@ export class APIConnector extends BaseConnector {
           this.client!.get(resource, { params: queryParams })
         );
 
+        // Record successful request for rate limiting
+        await this.recordRequest();
+
         // Parse response
         const data = Array.isArray(response.data)
           ? response.data
@@ -245,6 +248,9 @@ export class APIConnector extends BaseConnector {
           default:
             throw new Error(`Unsupported operation: ${operation}`);
         }
+
+        // Record successful request for rate limiting
+        await this.recordRequest();
 
         this.logOperation('execute', {
           operation,
