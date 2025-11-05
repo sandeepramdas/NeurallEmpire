@@ -254,23 +254,33 @@ class ActivityLogger {
   private async flushLogs() {
     if (this.pendingLogs.length === 0) return;
 
+    // Don't send logs if user is not authenticated
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      // Clear pending logs for unauthenticated users
+      this.pendingLogs = [];
+      this.batchTimeout = null;
+      return;
+    }
+
     const logsToSend = [...this.pendingLogs];
     this.pendingLogs = [];
     this.batchTimeout = null;
 
     try {
-      const token = localStorage.getItem('authToken');
       await fetch(this.apiEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` }),
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ logs: logsToSend }),
       });
     } catch (e) {
       // Silently fail - don't want logging to break the app
-      console.warn('Failed to send activity logs:', e);
+      if (import.meta.env.DEV) {
+        console.warn('Failed to send activity logs:', e);
+      }
     }
   }
 }
