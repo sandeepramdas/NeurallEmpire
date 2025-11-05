@@ -33,6 +33,7 @@ import aiModelsRoutes from './ai-models.routes';
 import usageAnalyticsRoutes from './usage-analytics.routes';
 import modelTemplatesRoutes from './model-templates.routes';
 import costTrackingRoutes from './cost-tracking.routes';
+import videoAgentsRoutes from './video-agents.routes';
 
 // Import infrastructure routes
 import settingsRoutes from '../modules/system-settings/routes/settings.routes';
@@ -107,6 +108,9 @@ router.use('/usage-analytics', usageAnalyticsRoutes);
 
 // Cost tracking routes (require authentication)
 router.use('/cost-tracking', costTrackingRoutes);
+
+// Video Agents routes (require authentication)
+router.use('/video-agents', videoAgentsRoutes);
 
 // Admin routes (require admin authentication)
 router.use('/admin', authenticate, adminRoutes);
