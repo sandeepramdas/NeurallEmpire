@@ -21,7 +21,7 @@ interface AIModelConfig {
 
 interface ModelSelectorProps {
   value?: string; // Selected model config ID
-  onChange: (modelConfigId: string, modelConfig: AIModelConfig) => void;
+  onChange: (modelConfigId: string, modelConfig?: AIModelConfig) => void;
   label?: string;
   placeholder?: string;
   required?: boolean;
@@ -59,17 +59,20 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
     try {
       setLoading(true);
 
-      const response = await fetch('/api/ai-models/configs', {
+      const API_URL = import.meta.env.VITE_API_URL || 'https://www.neurallempire.com/api';
+      const response = await fetch(`${API_URL}/ai-models/configs`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
 
       if (!response.ok) {
+        console.error('Failed to fetch AI models:', response.status, response.statusText);
         throw new Error('Failed to fetch AI models');
       }
 
       const data = await response.json();
+      console.log('Fetched AI models:', data);
       setModels(data.configs || []);
 
       // Auto-select default model if no value is set
