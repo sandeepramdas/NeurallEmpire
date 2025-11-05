@@ -181,10 +181,17 @@ export class AIModelsController {
       const userId = (req as any).user.id;
       const organizationId = (req as any).user.organizationId;
 
-      // Verify provider exists
-      const provider = await prisma.aIModelProvider.findUnique({
-        where: { id: validatedData.providerId },
+      // Verify provider exists (check by code OR by id)
+      let provider = await prisma.aIModelProvider.findUnique({
+        where: { code: validatedData.providerId },
       });
+
+      // If not found by code, try by ID
+      if (!provider) {
+        provider = await prisma.aIModelProvider.findUnique({
+          where: { id: validatedData.providerId },
+        });
+      }
 
       if (!provider) {
         return res.status(404).json({
@@ -227,10 +234,11 @@ export class AIModelsController {
       }
 
       // Create model config
-      const { apiKey, ...configData } = validatedData;
+      const { apiKey, providerId, ...configData } = validatedData;
       const modelConfig = await prisma.aIModelConfig.create({
         data: {
           ...configData,
+          providerId: provider.id, // Use the actual database ID
           organizationId,
           apiKeyEncrypted,
           apiKeyPreview,
@@ -319,6 +327,24 @@ export class AIModelsController {
       // Prepare update data
       const updateData: any = { ...validatedData };
       delete updateData.apiKey; // Don't include API key in spread
+      delete updateData.providerId; // Don't update providerId directly
+
+      // If providerId is being changed, lookup the provider and use its database ID
+      if (validatedData.providerId) {
+        let provider = await prisma.aIModelProvider.findUnique({
+          where: { code: validatedData.providerId },
+        });
+
+        if (!provider) {
+          provider = await prisma.aIModelProvider.findUnique({
+            where: { id: validatedData.providerId },
+          });
+        }
+
+        if (provider) {
+          updateData.providerId = provider.id;
+        }
+      }
 
       // If API key is being updated, encrypt it
       if (validatedData.apiKey) {
