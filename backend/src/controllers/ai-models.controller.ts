@@ -218,7 +218,17 @@ export class AIModelsController {
       }
 
       // Encrypt API key
-      const apiKeyEncrypted = encrypt(validatedData.apiKey);
+      let apiKeyEncrypted: string;
+      try {
+        apiKeyEncrypted = encrypt(validatedData.apiKey);
+      } catch (encryptError) {
+        logger.error('API key encryption failed:', encryptError);
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to encrypt API key. Please contact support.',
+          details: process.env.NODE_ENV === 'development' ? (encryptError as Error).message : undefined,
+        });
+      }
       const apiKeyPreview = generateApiKeyPreview(validatedData.apiKey);
 
       // If this is set as default, unset other defaults
