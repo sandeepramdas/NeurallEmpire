@@ -321,41 +321,54 @@ export const login = async (
     // Generate JWT token
     const token = generateToken(user.id, user.organizationId, user.role);
 
-    // Update last login and create session
-    await prisma.$transaction(async (tx) => {
-      await tx.user.update({
-        where: { id: user.id },
-        data: {
-          lastLoginAt: new Date(),
-          lastLoginIp: req.ip || null,
-          loginCount: { increment: 1 }
-        },
-      });
+    // Update last login and create session (with error handling)
+    try {
+      await prisma.$transaction(async (tx) => {
+        await tx.user.update({
+          where: { id: user.id },
+          data: {
+            lastLoginAt: new Date(),
+            lastLoginIp: req.ip || null,
+            loginCount: { increment: 1 }
+          },
+        });
 
-      // Create session record
-      await tx.session.create({
-        data: {
-          userId: user.id,
-          token,
-          userAgent: req.headers['user-agent'] || null,
-          ipAddress: req.ip || null,
-          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        // Create session record
+        try {
+          await tx.session.create({
+            data: {
+              userId: user.id,
+              token,
+              userAgent: req.headers['user-agent'] || null,
+              ipAddress: req.ip || null,
+              expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            }
+          });
+        } catch (sessionError) {
+          logger.warn('Failed to create session record:', sessionError);
+        }
+
+        // Log audit event
+        try {
+          await tx.auditLog.create({
+            data: {
+              action: 'LOGIN',
+              resourceType: 'USER',
+              resourceId: user.id,
+              userId: user.id,
+              organizationId: user.organizationId,
+              ipAddress: req.ip || null,
+              userAgent: req.headers['user-agent'] || null,
+            }
+          });
+        } catch (auditError) {
+          logger.warn('Failed to create audit log:', auditError);
         }
       });
-
-      // Log audit event
-      await tx.auditLog.create({
-        data: {
-          action: 'LOGIN',
-          resourceType: 'USER',
-          resourceId: user.id,
-          userId: user.id,
-          organizationId: user.organizationId,
-          ipAddress: req.ip || null,
-          userAgent: req.headers['user-agent'] || null,
-        }
-      });
-    });
+    } catch (txError) {
+      logger.warn('Failed to update login metadata:', txError);
+      // Continue with login even if metadata update fails
+    }
 
     const response: ApiResponse<{
       user: AuthUser;
