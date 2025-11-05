@@ -3,13 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import {
-  VideoIcon,
+  VideoCameraIcon,
   MicrophoneIcon,
   UserIcon,
   SparklesIcon,
   PlayIcon,
   CheckIcon,
-  XMarkIcon,
 } from '@heroicons/react/24/outline';
 
 interface Agent {
@@ -33,13 +32,17 @@ const CreateVideoAgent: React.FC = () => {
   const [formData, setFormData] = useState({
     agentId: '',
 
-    // Avatar
+    // Configuration IDs (when using existing configs)
+    ttsConfigId: '',
+    avatarConfigId: '',
+
+    // Avatar (for inline creation)
     avatarType: 'REALISTIC_3D',
     avatarGender: 'neutral',
     avatarStyle: 'professional',
     avatarImageUrl: '',
 
-    // Voice
+    // Voice (for inline creation)
     voiceProvider: 'OPENAI_TTS',
     voiceId: '',
     voiceName: 'Alloy',
@@ -100,7 +103,7 @@ const CreateVideoAgent: React.FC = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post(
+      await axios.post(
         `${API_URL}/api/video-agents`,
         formData,
         {
@@ -160,7 +163,7 @@ const CreateVideoAgent: React.FC = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <VideoIcon className="h-8 w-8 text-indigo-600" />
+            <VideoCameraIcon className="h-8 w-8 text-indigo-600" />
             Create AI Video Agent
           </h1>
           <p className="mt-2 text-gray-600 dark:text-gray-400">
@@ -173,7 +176,7 @@ const CreateVideoAgent: React.FC = () => {
           <div className="flex items-center justify-between">
             {[
               { num: 1, label: 'Select Agent', icon: UserIcon },
-              { num: 2, label: 'Configure Avatar', icon: VideoIcon },
+              { num: 2, label: 'Configure Avatar', icon: VideoCameraIcon },
               { num: 3, label: 'Setup Voice', icon: MicrophoneIcon },
               { num: 4, label: 'Review & Create', icon: SparklesIcon },
             ].map((s, idx) => (

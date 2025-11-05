@@ -103,7 +103,7 @@ const VideoAgentChat: React.FC = () => {
     }
   };
 
-  const generateMockResponse = (message: string): string => {
+  const generateMockResponse = (_message: string): string => {
     const responses = [
       "That's a great question! Let me help you with that.",
       "I understand what you're asking. Here's what I think...",
@@ -125,7 +125,7 @@ const VideoAgentChat: React.FC = () => {
       // Auto-stop after 5 seconds (demo)
       setTimeout(() => {
         setIsRecording(false);
-        toast.info('Processing speech...');
+        toast('Processing speech...');
       }, 5000);
     }
   };

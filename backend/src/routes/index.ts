@@ -50,6 +50,10 @@ import publicAgentAPIRoutes from './public-agent-api.routes';
 // Import dashboard routes
 import dashboardRoutes from './dashboard.routes';
 
+// Import TTS & Avatar configuration routes
+import ttsConfigRoutes from './tts-config.routes';
+import avatarConfigRoutes from './avatar-config.routes';
+
 const router = Router();
 
 // Health check
@@ -129,6 +133,10 @@ router.use('/orchestrator', authenticate, orchestratorRoutes);
 
 // Dashboard routes (require authentication)
 router.use('/dashboard', dashboardRoutes);
+
+// TTS & Avatar configuration routes (require authentication)
+router.use('/tts-configs', ttsConfigRoutes);
+router.use('/avatar-configs', avatarConfigRoutes);
 
 // API documentation
 router.get('/', (req, res) => {

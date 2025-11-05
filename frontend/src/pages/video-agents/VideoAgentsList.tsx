@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import {
-  VideoIcon,
+  VideoCameraIcon,
   PlusIcon,
   PlayIcon,
   TrashIcon,
@@ -112,7 +112,7 @@ const VideoAgentsList: React.FC = () => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-              <VideoIcon className="h-8 w-8 text-indigo-600" />
+              <VideoCameraIcon className="h-8 w-8 text-indigo-600" />
               AI Video Agents
             </h1>
             <p className="mt-2 text-gray-600 dark:text-gray-400">
@@ -133,7 +133,7 @@ const VideoAgentsList: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
             <div className="flex items-center">
               <div className="flex-shrink-0 bg-indigo-100 dark:bg-indigo-900 rounded-md p-3">
-                <VideoIcon className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                <VideoCameraIcon className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
@@ -204,7 +204,7 @@ const VideoAgentsList: React.FC = () => {
         {/* Video Agents List */}
         {videoAgents.length === 0 ? (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-12 text-center">
-            <VideoIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <VideoCameraIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               No video agents yet
             </h3>

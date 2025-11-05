@@ -54,6 +54,12 @@ router.put('/:id', (req, res) => controller.updateVideoAgent(req, res));
  */
 router.delete('/:id', (req, res) => controller.deleteVideoAgent(req, res));
 
+/**
+ * PUT /api/video-agents/:id/switch-config
+ * Switch TTS or Avatar configuration at runtime
+ */
+router.put('/:id/switch-config', (req, res) => controller.switchConfig(req, res));
+
 // ==================== ANALYTICS ====================
 
 /**

@@ -305,6 +305,106 @@ export class VideoAgentsController {
   }
 
   /**
+   * Switch TTS or Avatar configuration at runtime
+   */
+  async switchConfig(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { ttsConfigId, avatarConfigId } = req.body;
+      const organizationId = (req as any).user.organizationId;
+
+      // Verify video agent exists and belongs to organization
+      const existingAgent = await prisma.videoAgent.findFirst({
+        where: { id, organizationId },
+      });
+
+      if (!existingAgent) {
+        return res.status(404).json({
+          success: false,
+          error: 'Video agent not found',
+        });
+      }
+
+      // Update config IDs
+      const updateData: any = {};
+      if (ttsConfigId) {
+        // Verify TTS config exists and belongs to organization
+        const ttsConfig = await prisma.tTSConfig.findFirst({
+          where: { id: ttsConfigId, organizationId },
+        });
+
+        if (!ttsConfig) {
+          return res.status(404).json({
+            success: false,
+            error: 'TTS configuration not found',
+          });
+        }
+
+        updateData.ttsConfigId = ttsConfigId;
+
+        // Update usage tracking
+        await prisma.tTSConfig.update({
+          where: { id: ttsConfigId },
+          data: {
+            usageCount: { increment: 1 },
+            lastUsedAt: new Date(),
+          },
+        });
+      }
+
+      if (avatarConfigId) {
+        // Verify avatar config exists and belongs to organization
+        const avatarConfig = await prisma.avatarConfig.findFirst({
+          where: { id: avatarConfigId, organizationId },
+        });
+
+        if (!avatarConfig) {
+          return res.status(404).json({
+            success: false,
+            error: 'Avatar configuration not found',
+          });
+        }
+
+        updateData.avatarConfigId = avatarConfigId;
+
+        // Update usage tracking
+        await prisma.avatarConfig.update({
+          where: { id: avatarConfigId },
+          data: {
+            usageCount: { increment: 1 },
+            lastUsedAt: new Date(),
+          },
+        });
+      }
+
+      // Update video agent
+      const videoAgent = await prisma.videoAgent.update({
+        where: { id },
+        data: updateData,
+        include: {
+          agent: true,
+          ttsConfig: true,
+          avatarConfig: true,
+        },
+      });
+
+      logger.info(`Video agent config switched: ${videoAgent.id}`);
+
+      res.json({
+        success: true,
+        videoAgent,
+        message: 'Configuration switched successfully',
+      });
+    } catch (error: any) {
+      logger.error('Error switching config:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to switch configuration',
+      });
+    }
+  }
+
+  /**
    * Get video agent analytics
    */
   async getVideoAgentAnalytics(req: Request, res: Response) {
