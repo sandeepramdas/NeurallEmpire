@@ -94,6 +94,9 @@ export class APIConnector extends BaseConnector {
           }
         );
 
+        // Setup OAuth token refresh interceptor
+        this.setupOAuthInterceptor();
+
         this._initialized = true;
         this.logOperation('initialize', { success: true });
       } catch (error) {
@@ -434,7 +437,164 @@ export class APIConnector extends BaseConnector {
       throw new Error('No refresh token available');
     }
 
-    // TODO: Implement OAuth token refresh
-    // This is provider-specific
+    const oauth = this.credentials.oauth;
+
+    try {
+      logger.info('Refreshing OAuth token', {
+        connectorId: this.id,
+        hasRefreshToken: !!oauth.refreshToken,
+      });
+
+      // Determine token endpoint based on baseUrl or use standard OAuth endpoint
+      const tokenEndpoint = this.getOAuthTokenEndpoint();
+
+      // Make token refresh request
+      const response = await axios.post(
+        tokenEndpoint,
+        {
+          grant_type: 'refresh_token',
+          refresh_token: oauth.refreshToken,
+          client_id: oauth.clientId,
+          client_secret: oauth.clientSecret,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        }
+      );
+
+      // Update tokens
+      const newAccessToken = response.data.access_token;
+      const newRefreshToken = response.data.refresh_token || oauth.refreshToken;
+
+      oauth.accessToken = newAccessToken;
+      oauth.refreshToken = newRefreshToken;
+
+      // Update axios client with new token
+      if (this.client) {
+        this.client.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
+      }
+
+      logger.info('OAuth token refreshed successfully', {
+        connectorId: this.id,
+        expiresIn: response.data.expires_in,
+      });
+
+      // TODO: Persist updated tokens to database
+      // This requires updating the Connector model in the database
+
+    } catch (error: any) {
+      logger.error('OAuth token refresh failed', {
+        connectorId: this.id,
+        error: error.message,
+        status: error.response?.status,
+      });
+
+      throw new Error(`Failed to refresh OAuth token: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get OAuth token endpoint based on connector configuration
+   */
+  private getOAuthTokenEndpoint(): string {
+    // Check if baseUrl has a known OAuth provider
+    const baseUrl = this.credentials?.baseUrl || '';
+
+    // Common OAuth token endpoints
+    const endpoints: Record<string, string> = {
+      'salesforce.com': 'https://login.salesforce.com/services/oauth2/token',
+      'googleapis.com': 'https://oauth2.googleapis.com/token',
+      'graph.microsoft.com': 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
+      'slack.com': 'https://slack.com/api/oauth.v2.access',
+      'github.com': 'https://github.com/login/oauth/access_token',
+    };
+
+    // Find matching endpoint
+    for (const [domain, endpoint] of Object.entries(endpoints)) {
+      if (baseUrl.includes(domain)) {
+        return endpoint;
+      }
+    }
+
+    // Default: assume OAuth token endpoint is at /oauth/token
+    return `${baseUrl}/oauth/token`;
+  }
+
+  /**
+   * Setup axios interceptor to handle 401 errors and refresh tokens
+   */
+  private setupOAuthInterceptor(): void {
+    if (!this.client || !this.credentials?.oauth) {
+      return;
+    }
+
+    let isRefreshing = false;
+    let failedQueue: Array<{
+      resolve: (value?: any) => void;
+      reject: (reason?: any) => void;
+    }> = [];
+
+    const processQueue = (error: any = null) => {
+      failedQueue.forEach((promise) => {
+        if (error) {
+          promise.reject(error);
+        } else {
+          promise.resolve();
+        }
+      });
+
+      failedQueue = [];
+    };
+
+    this.client.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const originalRequest = error.config;
+
+        // Check if error is 401 and we have OAuth credentials
+        if (
+          error.response?.status === 401 &&
+          this.credentials?.oauth?.refreshToken &&
+          !originalRequest._retry
+        ) {
+          if (isRefreshing) {
+            // Queue this request to retry after token refresh
+            return new Promise((resolve, reject) => {
+              failedQueue.push({ resolve, reject });
+            })
+              .then(() => {
+                return this.client!.request(originalRequest);
+              })
+              .catch((err) => {
+                return Promise.reject(err);
+              });
+          }
+
+          originalRequest._retry = true;
+          isRefreshing = true;
+
+          try {
+            await this.refreshOAuthToken();
+            processQueue();
+            isRefreshing = false;
+
+            // Retry original request with new token
+            return this.client!.request(originalRequest);
+          } catch (refreshError) {
+            processQueue(refreshError);
+            isRefreshing = false;
+            return Promise.reject(refreshError);
+          }
+        }
+
+        return Promise.reject(error);
+      }
+    );
+
+    logger.info('OAuth interceptor configured', {
+      connectorId: this.id,
+    });
   }
 }
