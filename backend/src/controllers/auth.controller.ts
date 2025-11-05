@@ -248,20 +248,29 @@ export const login = async (
     const { email, password } = validationResult.data;
 
     // Find user with organization data
-    const user = await prisma.user.findUnique({
-      where: { email },
-      include: {
-        organization: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            status: true,
-            trialEndsAt: true,
+    let user;
+    try {
+      user = await prisma.user.findUnique({
+        where: { email },
+        include: {
+          organization: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              status: true,
+              trialEndsAt: true,
+            },
           },
         },
-      },
-    });
+      });
+    } catch (dbError) {
+      logger.error('Database error during user lookup:', dbError);
+      return res.status(500).json({
+        success: false,
+        error: 'Database connection error. Please try again.',
+      });
+    }
 
     if (!user) {
       return res.status(401).json({
