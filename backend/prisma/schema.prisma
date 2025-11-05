@@ -189,6 +189,8 @@ model Organization {
   videoAgents      VideoAgent[] // NEW: AI Video Agents
   ttsConfigs       TTSConfig[] @relation("OrgTTSConfigs") // NEW: TTS Configurations
   avatarConfigs    AvatarConfig[] @relation("OrgAvatarConfigs") // NEW: Avatar Configurations
+  promptTemplates  PromptTemplate[] // NEW: AI Prompt Templates
+  promptExecutions PromptExecution[] // NEW: Prompt Execution History
 
   @@index([status])
   @@index([planType])
@@ -519,6 +521,8 @@ model User {
   videoAgents    VideoAgent[]      // NEW: Created video agents
   ttsConfigs     TTSConfig[] @relation("UserTTSConfigs") // NEW: TTS Configurations
   avatarConfigs  AvatarConfig[] @relation("UserAvatarConfigs") // NEW: Avatar Configurations
+  createdPromptTemplates PromptTemplate[] // NEW: Created prompt templates
+  promptExecutions PromptExecution[] // NEW: Executed prompts
 
   @@index([organizationId, status])
   @@index([email])
@@ -3017,6 +3021,8 @@ model AIModelConfig {
   organization    Organization     @relation("OrgAIModels", fields: [organizationId], references: [id], onDelete: Cascade)
   provider        AIModelProvider  @relation(fields: [providerId], references: [id], onDelete: Restrict)
   dietPlans       PatientDietPlan[]
+  promptTemplates PromptTemplate[]
+  promptExecutions PromptExecution[]
 
   @@unique([organizationId, modelId])
   @@index([organizationId, isActive])
@@ -3834,4 +3840,93 @@ enum STTProvider {
   AWS_TRANSCRIBE    // Amazon Transcribe
   ASSEMBLY_AI       // AssemblyAI
   DEEPGRAM          // Deepgram
+}
+
+// ==================== AI PROMPT TEMPLATES ====================
+
+model PromptTemplate {
+  id              String   @id @default(cuid())
+  organizationId  String
+  aiModelConfigId String?  // Optional: bind to specific AI model
+
+  // Template Identity
+  name            String
+  description     String?
+  category        String   // e.g., "diet-plan", "customer-support", "email-generation"
+  icon            String?  // Icon for UI
+
+  // Prompt Configuration
+  systemPrompt    String   @db.Text
+  userPromptTemplate String @db.Text  // Template with variables like {{patientName}}
+
+  // Model Parameters (Override AI model defaults)
+  temperature     Float?   @default(0.7)
+  maxTokens       Int?     @default(4000)
+  topP            Float?
+  frequencyPenalty Float?
+  presencePenalty  Float?
+  responseFormat  String?  @default("text") // "text", "json_object"
+
+  // Variables Configuration
+  variables       Json?    // Array of {name, type, required, default, description}
+
+  // Output Configuration
+  outputSchema    Json?    // Expected output structure for validation
+
+  // Metadata
+  isActive        Boolean  @default(true)
+  isPublic        Boolean  @default(false) // Share across organization
+  version         String   @default("1.0.0")
+
+  // Usage Tracking
+  usageCount      Int      @default(0)
+  lastUsedAt      DateTime?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  aiModelConfig   AIModelConfig? @relation(fields: [aiModelConfigId], references: [id], onDelete: SetNull)
+  creator         User @relation(fields: [createdBy], references: [id])
+  executions      PromptExecution[]
+
+  @@index([organizationId, category])
+  @@index([aiModelConfigId])
+  @@map("prompt_templates")
+}
+
+model PromptExecution {
+  id              String   @id @default(cuid())
+  organizationId  String
+  templateId      String
+  aiModelConfigId String
+
+  // Execution Details
+  inputVariables  Json     // Variables used in this execution
+  renderedPrompt  String   @db.Text // Final prompt after variable substitution
+  response        String   @db.Text // AI response
+
+  // Metadata
+  tokensUsed      Int?
+  cost            Decimal? @db.Decimal(10, 6)
+  duration        Int?     // milliseconds
+  status          String   @default("success") // success, error
+  errorMessage    String?  @db.Text
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  executedBy      String
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  template        PromptTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  aiModelConfig   AIModelConfig @relation(fields: [aiModelConfigId], references: [id])
+  executor        User @relation(fields: [executedBy], references: [id])
+
+  @@index([organizationId, templateId])
+  @@index([createdAt])
+  @@map("prompt_executions")
 }
