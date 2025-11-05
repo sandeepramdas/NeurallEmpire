@@ -59,12 +59,29 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
     try {
       setLoading(true);
 
+      const token = localStorage.getItem('token');
+
+      // If no token, user needs to log in
+      if (!token) {
+        console.warn('No authentication token found. Please log in.');
+        setModels([]);
+        return;
+      }
+
       const API_URL = import.meta.env.VITE_API_URL || 'https://www.neurallempire.com/api';
       const response = await fetch(`${API_URL}/ai-models/configs`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${token}`,
         },
       });
+
+      // Handle 401 Unauthorized (expired token)
+      if (response.status === 401) {
+        console.error('Authentication token expired. Please log in again.');
+        localStorage.removeItem('token'); // Clear invalid token
+        setModels([]);
+        return;
+      }
 
       if (!response.ok) {
         console.error('Failed to fetch AI models:', response.status, response.statusText);
@@ -124,6 +141,9 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
 
   // Show configuration link if no models exist
   if (models.length === 0) {
+    const token = localStorage.getItem('token');
+    const isTokenExpired = !token;
+
     return (
       <div className={className}>
         {label && (
@@ -136,18 +156,22 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
             <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="text-sm text-yellow-800 font-medium">
-                No AI models configured
+                {isTokenExpired ? 'Session expired' : 'No AI models configured'}
               </p>
               <p className="text-xs text-yellow-700 mt-1">
-                Configure AI models to use this feature.
+                {isTokenExpired
+                  ? 'Please log out and log back in to refresh your session.'
+                  : 'Configure AI models to use this feature.'}
               </p>
-              <Link
-                to={`/org/${organization?.slug}/settings/ai-models`}
-                className="inline-flex items-center space-x-1 text-xs text-yellow-800 hover:text-yellow-900 font-medium mt-2"
-              >
-                <Settings className="w-3 h-3" />
-                <span>Configure AI Models</span>
-              </Link>
+              {!isTokenExpired && (
+                <Link
+                  to={`/org/${organization?.slug}/settings/ai-models`}
+                  className="inline-flex items-center space-x-1 text-xs text-yellow-800 hover:text-yellow-900 font-medium mt-2"
+                >
+                  <Settings className="w-3 h-3" />
+                  <span>Configure AI Models</span>
+                </Link>
+              )}
             </div>
           </div>
         </div>
