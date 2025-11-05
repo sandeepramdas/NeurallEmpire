@@ -127,8 +127,33 @@ export class DashboardAnalyticsService {
 
       const totalCost = interactions.reduce((sum, i) => sum + (i.cost || 0), 0);
 
-      // TODO: Calculate token usage from JSON field if needed
-      // tokens is stored as JSON field, needs manual aggregation
+      // Calculate token usage from JSON field
+      const interactionsWithTokens = await prisma.agentInteraction.findMany({
+        where: {
+          organizationId,
+          startedAt: { gte: startOfMonth },
+          tokens: { not: null }
+        },
+        select: { tokens: true }
+      });
+
+      let totalTokens = 0;
+      let promptTokens = 0;
+      let completionTokens = 0;
+
+      interactionsWithTokens.forEach((interaction) => {
+        const tokens = interaction.tokens as any;
+        if (tokens) {
+          // Support different token field structures
+          const prompt = tokens.prompt || tokens.promptTokens || tokens.input || 0;
+          const completion = tokens.completion || tokens.completionTokens || tokens.output || 0;
+          const total = tokens.total || tokens.totalTokens || (prompt + completion);
+
+          promptTokens += prompt;
+          completionTokens += completion;
+          totalTokens += total;
+        }
+      });
 
       // Growth calculations
       const agentsLastMonth = await prisma.agent.count({
@@ -183,7 +208,9 @@ export class DashboardAnalyticsService {
           agentExecutionsToday: executionsToday,
           agentExecutionsThisMonth: executionsThisMonth,
           apiCallsToday: executionsToday, // Simplified
-          totalTokensUsed: 0 // Would need to parse JSON tokens field
+          totalTokensUsed: totalTokens,
+          promptTokens,
+          completionTokens
         },
         performance: {
           avgAgentResponseTime: Math.round(avgResponseTime),
