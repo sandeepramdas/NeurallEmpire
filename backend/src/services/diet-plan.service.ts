@@ -1,5 +1,7 @@
 import OpenAI from 'openai';
 import { logger } from '@/infrastructure/logger';
+import { prisma } from '@/server';
+import { decrypt } from '@/utils/encryption';
 
 /**
  * Diet Plan Generator Service
@@ -9,18 +11,44 @@ export class DietPlanService {
   private openai: OpenAI | null = null;
 
   constructor() {
-    const apiKey = process.env.OPENAI_API_KEY;
+    // OpenAI client will be initialized per-request with the configured AI model
+    logger.info('✅ DietPlanService initialized');
+  }
 
-    // Check if API key exists and is not a placeholder
-    if (apiKey && apiKey !== 'your_openai_api_key_here' && !apiKey.includes('placeholder')) {
-      this.openai = new OpenAI({
-        apiKey: apiKey
-      });
-      logger.info('✅ DietPlanService: OpenAI API key configured successfully');
-    } else {
-      logger.warn('⚠️  DietPlanService: OPENAI_API_KEY is not configured or is a placeholder. Diet plan generation will not work.');
-      logger.warn('⚠️  Current API key value:', apiKey ? `${apiKey.substring(0, 10)}...` : 'undefined');
+  /**
+   * Get OpenAI client with API key from AI model config or environment
+   */
+  private async getOpenAIClient(aiModelConfigId?: string): Promise<OpenAI> {
+    let apiKey: string | undefined;
+
+    // Try to get API key from AI model config first
+    if (aiModelConfigId) {
+      try {
+        const modelConfig = await prisma.aIModelConfig.findUnique({
+          where: { id: aiModelConfigId },
+          include: { provider: true }
+        });
+
+        if (modelConfig && modelConfig.apiKeyEncrypted) {
+          apiKey = decrypt(modelConfig.apiKeyEncrypted);
+          logger.info('✅ Using API key from AI model config:', modelConfig.displayName);
+        }
+      } catch (error) {
+        logger.error('Error fetching AI model config:', error);
+      }
     }
+
+    // Fallback to environment variable
+    if (!apiKey) {
+      apiKey = process.env.OPENAI_API_KEY;
+      if (apiKey && apiKey !== 'your_openai_api_key_here' && !apiKey.includes('placeholder')) {
+        logger.info('✅ Using API key from environment variable');
+      } else {
+        throw new Error('OpenAI API key not configured. Please configure an AI model or set OPENAI_API_KEY environment variable.');
+      }
+    }
+
+    return new OpenAI({ apiKey });
   }
 
   /**
@@ -45,13 +73,6 @@ export class DietPlanService {
     metrics?: any;
     error?: string
   }> {
-    if (!this.openai) {
-      return {
-        success: false,
-        error: 'OpenAI API key not configured. Please add a valid OPENAI_API_KEY to your environment variables. Get your API key from https://platform.openai.com/api-keys'
-      };
-    }
-
     try {
       const {
         patientName,
@@ -67,6 +88,25 @@ export class DietPlanService {
         model = 'gpt-4',
         aiModelConfigId
       } = params;
+
+      // Get OpenAI client with configured API key
+      const openai = await this.getOpenAIClient(aiModelConfigId);
+
+      // Get model ID from config if provided
+      let modelToUse = model;
+      if (aiModelConfigId) {
+        try {
+          const modelConfig = await prisma.aIModelConfig.findUnique({
+            where: { id: aiModelConfigId }
+          });
+          if (modelConfig) {
+            modelToUse = modelConfig.modelId;
+            logger.info('✅ Using model from config:', modelToUse);
+          }
+        } catch (error) {
+          logger.warn('Could not fetch model ID from config, using default');
+        }
+      }
 
       // Build the system prompt
       const systemPrompt = `You are an expert nutritionist and dietitian specializing in medical nutrition therapy.
@@ -149,10 +189,12 @@ Provide ONLY the JSON response, no additional text.`;
 
       const startTime = Date.now();
 
-      // Use gpt-4-turbo-preview if user selected gpt-4 (it supports JSON mode)
-      const modelToUse = model === 'gpt-4' ? 'gpt-4-turbo-preview' : model;
+      // Use gpt-4o-mini as default if gpt-4 is selected (better and cheaper)
+      if (modelToUse === 'gpt-4') {
+        modelToUse = 'gpt-4o-mini';
+      }
 
-      const response = await this.openai.chat.completions.create({
+      const response = await openai.chat.completions.create({
         model: modelToUse,
         messages: [
           {
