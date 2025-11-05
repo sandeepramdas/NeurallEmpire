@@ -224,6 +224,33 @@ const MODEL_TEMPLATES: ModelTemplate[] = [
     tags: ['education', 'tutoring', 'learning', 'teaching'],
     examplePrompt: 'Explain quantum mechanics concepts to a high school student with practical examples',
   },
+  {
+    id: 'gpt-5-nano',
+    name: 'GPT-5 Nano',
+    category: 'AI Models',
+    description: 'Ultra-efficient nano-sized GPT-5 model optimized for low-latency, high-speed inference with minimal resource usage',
+    icon: '⚡',
+    color: '#10b981',
+    useCase: 'Fast response generation, edge computing, real-time chat, quick analysis, and resource-constrained environments',
+    recommendedProviders: ['openai'],
+    defaultConfig: {
+      maxTokens: 2000,
+      temperature: 0.7,
+      topP: 0.95,
+      frequencyPenalty: 0.0,
+      presencePenalty: 0.0,
+    },
+    capabilities: {
+      ultraFast: true,
+      lowLatency: true,
+      edgeOptimized: true,
+      resourceEfficient: true,
+      streaming: true,
+    },
+    supportedTasks: ['quick-responses', 'real-time-chat', 'edge-inference', 'fast-analysis', 'lightweight-tasks'],
+    tags: ['gpt-5', 'nano', 'fast', 'efficient', 'edge', 'lightweight', 'real-time'],
+    examplePrompt: 'Provide a quick summary of the latest AI trends in 2025',
+  },
 ];
 
 export class ModelTemplatesController {
