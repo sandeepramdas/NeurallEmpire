@@ -185,6 +185,7 @@ model Organization {
   agentAPIKeys     AgentAPIKey[] // NEW: Agent API keys for integrations
   agentWebhooks    AgentWebhook[] // NEW: Agent webhooks
   agentIntegrations AgentIntegrationConfig[] // NEW: Agent third-party integrations
+  budgetAlerts     BudgetAlert[] @relation("OrgBudgetAlerts") // NEW: Cost tracking budget alerts
 
   @@index([status])
   @@index([planType])
@@ -511,6 +512,7 @@ model User {
   entityVersions EntityVersionHistory[] @relation("EntityVersionCreator") // V2: Entity versions
   uploadedFiles  File[]            @relation("UploadedFiles") // NEW: Uploaded files
   analyticsEvents AnalyticsEvent[]  @relation("UserEvents") // NEW: Analytics events
+  budgetAlertsCreated BudgetAlert[] @relation("BudgetAlertCreator") // NEW: Created budget alerts
 
   @@index([organizationId, status])
   @@index([email])
@@ -1913,6 +1915,39 @@ model UsageMetric {
   @@map("usage_metrics")
 }
 
+model BudgetAlert {
+  id             String    @id @default(cuid())
+  organizationId String
+  createdBy      String
+
+  // Alert Configuration
+  alertType      AlertType
+  threshold      Decimal   @db.Decimal(10, 4)
+  notifyEmails   Json      @default("[]") // Array of email addresses
+  enabled        Boolean   @default(true)
+
+  // Current State (cached for performance)
+  currentSpend   Decimal   @default(0) @db.Decimal(10, 4)
+  percentageUsed Float     @default(0)
+  isTriggered    Boolean   @default(false)
+  triggeredAt    DateTime?
+  lastCheckedAt  DateTime  @default(now())
+
+  // Metadata
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  // Relations
+  organization   Organization @relation("OrgBudgetAlerts", fields: [organizationId], references: [id], onDelete: Cascade)
+  creator        User @relation("BudgetAlertCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, enabled])
+  @@index([alertType])
+  @@index([isTriggered])
+  @@index([lastCheckedAt])
+  @@map("budget_alerts")
+}
+
 model Notification {
   id             String   @id @default(cuid())
   organizationId String
@@ -2478,6 +2513,12 @@ enum NotificationType {
   SUCCESS
   BILLING
   SYSTEM
+}
+
+enum AlertType {
+  DAILY
+  WEEKLY
+  MONTHLY
 }
 
 enum AgentType {

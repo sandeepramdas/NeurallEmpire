@@ -204,8 +204,48 @@ async function handlePaymentCaptured(payment: any) {
 async function handlePaymentFailed(payment: any) {
   try {
     logger.info('Payment failed:', payment.id);
-    // TODO: Update invoice status when schema is updated
-    // You can add additional logic here like sending failure notifications
+
+    const paymentId = payment.id;
+    const orderId = payment.order_id;
+    const notes = payment.notes || {};
+
+    // Find the payment record
+    const paymentRecord = await prisma.payment.findUnique({
+      where: { gatewayPaymentId: paymentId },
+      include: { invoice: true },
+    });
+
+    if (paymentRecord) {
+      // Update payment status
+      await prisma.payment.update({
+        where: { id: paymentRecord.id },
+        data: {
+          status: 'FAILED',
+          failedAt: new Date(),
+          failureReason: payment.error_description || 'Payment failed',
+          failureCode: payment.error_code,
+        },
+      });
+
+      // Update associated invoice if exists
+      if (paymentRecord.invoiceId) {
+        await prisma.invoice.update({
+          where: { id: paymentRecord.invoiceId },
+          data: {
+            status: 'FAILED',
+            attemptCount: { increment: 1 },
+            lastAttemptAt: new Date(),
+            failureReason: payment.error_description || 'Payment failed',
+          },
+        });
+      }
+
+      logger.info('✅ Payment and invoice marked as failed');
+    }
+
+    // Send failure notification (optional)
+    // TODO: Send email notification to organization about failed payment
+
   } catch (error) {
     logger.error('Handle payment failed error:', error);
   }
@@ -230,7 +270,38 @@ async function handleOrderPaid(order: any) {
 async function handleSubscriptionActivated(subscription: any) {
   try {
     logger.info('Subscription activated:', subscription.id);
-    // TODO: Update subscription status when schema is updated
+
+    const subscriptionId = subscription.id;
+
+    // Find subscription by Razorpay subscription ID
+    const subscriptionRecord = await prisma.subscription.findUnique({
+      where: { paymentGatewaySubscriptionId: subscriptionId },
+    });
+
+    if (subscriptionRecord) {
+      // Update subscription status to active
+      await prisma.subscription.update({
+        where: { id: subscriptionRecord.id },
+        data: {
+          status: 'ACTIVE',
+          currentPeriodStart: new Date(subscription.current_start * 1000),
+          currentPeriodEnd: new Date(subscription.current_end * 1000),
+          nextBillingDate: new Date(subscription.current_end * 1000),
+        },
+      });
+
+      // Update organization plan
+      await prisma.organization.update({
+        where: { id: subscriptionRecord.organizationId },
+        data: {
+          planType: subscriptionRecord.planType,
+          status: 'ACTIVE',
+        },
+      });
+
+      logger.info('✅ Subscription and organization updated to ACTIVE');
+    }
+
   } catch (error) {
     logger.error('Handle subscription activated error:', error);
   }
@@ -242,7 +313,40 @@ async function handleSubscriptionActivated(subscription: any) {
 async function handleSubscriptionCancelled(subscription: any) {
   try {
     logger.info('Subscription cancelled:', subscription.id);
-    // TODO: Update subscription status when schema is updated
+
+    const subscriptionId = subscription.id;
+
+    // Find subscription by Razorpay subscription ID
+    const subscriptionRecord = await prisma.subscription.findUnique({
+      where: { paymentGatewaySubscriptionId: subscriptionId },
+    });
+
+    if (subscriptionRecord) {
+      // Update subscription status to cancelled
+      await prisma.subscription.update({
+        where: { id: subscriptionRecord.id },
+        data: {
+          status: 'CANCELLED',
+          canceledAt: new Date(),
+          cancelAtPeriodEnd: false, // Already cancelled
+        },
+      });
+
+      // Optionally downgrade organization to free plan
+      // Or keep current plan until period ends
+      await prisma.organization.update({
+        where: { id: subscriptionRecord.organizationId },
+        data: {
+          status: 'CANCELLED',
+          // planType: 'FREE', // Uncomment to immediately downgrade
+        },
+      });
+
+      logger.info('✅ Subscription marked as cancelled');
+
+      // TODO: Send email notification about cancellation
+    }
+
   } catch (error) {
     logger.error('Handle subscription cancelled error:', error);
   }

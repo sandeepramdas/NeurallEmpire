@@ -256,6 +256,9 @@ export const processSubscriptionPayment = async (
       periodEnd.setFullYear(periodEnd.getFullYear() + 1);
     }
 
+    // Calculate amount
+    const amount = billingCycle === 'YEARLY' ? plan.price * 12 * 0.8 : plan.price;
+
     // Update organization plan
     const organization = await prisma.organization.update({
       where: { id: organizationId },
@@ -265,19 +268,73 @@ export const processSubscriptionPayment = async (
         subscriptionId: paymentId,
         maxAgents: plan.maxAgents,
         storageLimit: plan.storageLimit,
+        status: 'ACTIVE',
       },
     });
 
-    // TODO: Create subscription record when schema is updated
-    const subscription = null;
+    // Create subscription record
+    const subscription = await prisma.subscription.create({
+      data: {
+        organizationId,
+        paymentGatewaySubscriptionId: paymentId,
+        status: 'ACTIVE',
+        planType: planType as any,
+        billingCycle: billingCycle as any,
+        currentPeriodStart: now,
+        currentPeriodEnd: periodEnd,
+        amount,
+        currency: plan.currency,
+        userLimit: plan.maxUsers,
+        agentLimit: plan.maxAgents,
+        workflowLimit: plan.maxWorkflows,
+        apiCallLimit: plan.maxApiCalls,
+        nextBillingDate: periodEnd,
+      },
+    });
 
-    // TODO: Create invoice record when schema is updated
+    // Create invoice record
+    const invoiceNumber = `INV-${Date.now()}-${organizationId.slice(-6)}`;
+    const invoice = await prisma.invoice.create({
+      data: {
+        organizationId,
+        subscriptionId: subscription.id,
+        invoiceNumber,
+        status: 'PAID',
+        amount,
+        currency: plan.currency,
+        totalAmount: amount,
+        billingPeriodStart: now,
+        billingPeriodEnd: periodEnd,
+        dueDate: now,
+        paidAt: now,
+        paymentGatewayInvoiceId: orderId,
+        paymentGatewayChargeId: paymentId,
+      },
+    });
+
+    // Create payment record
+    await prisma.payment.create({
+      data: {
+        organizationId,
+        subscriptionId: subscription.id,
+        invoiceId: invoice.id,
+        amount,
+        currency: plan.currency,
+        status: 'CAPTURED',
+        paymentGateway: 'razorpay',
+        gatewayPaymentId: paymentId,
+        gatewayOrderId: orderId,
+        capturedAt: now,
+        description: `${planType} ${billingCycle} subscription`,
+      },
+    });
 
     return {
       success: true,
       data: {
         organization,
         subscription,
+        invoice,
       },
     };
   } catch (error: any) {

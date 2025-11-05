@@ -29,6 +29,7 @@ import {
   ConnectionTimeoutError,
   QueryFailedError,
 } from '../infrastructure/errors';
+import { ConnectorRateLimiter } from './rate-limiter';
 
 export abstract class BaseConnector implements IConnector {
   protected config!: ConnectorConfig;
@@ -37,9 +38,21 @@ export abstract class BaseConnector implements IConnector {
   protected healthStatus: boolean = false;
   protected errorCount: number = 0;
   protected requestCount: number = 0;
+  protected rateLimiter?: ConnectorRateLimiter;
 
   constructor(config: ConnectorConfig) {
     this.config = config;
+
+    // Initialize rate limiter if enabled
+    if (config.rateLimitEnabled) {
+      this.rateLimiter = new ConnectorRateLimiter(config.id, {
+        enabled: config.rateLimitEnabled,
+        requestsPerMinute: config.rateLimitPerMinute,
+        requestsPerHour: config.rateLimitPerHour,
+        requestsPerDay: config.rateLimitPerDay,
+        burstSize: config.rateLimitBurstSize,
+      });
+    }
   }
 
   // ==================== PROPERTIES ====================
@@ -281,12 +294,38 @@ export abstract class BaseConnector implements IConnector {
    * Rate limiting check
    */
   protected async checkRateLimit(): Promise<void> {
-    if (!this.config.rateLimitEnabled) {
+    if (!this.rateLimiter) {
       return;
     }
 
-    // TODO: Implement rate limiting with Redis
-    // For now, just a placeholder
+    try {
+      await this.rateLimiter.checkRateLimit();
+    } catch (error: any) {
+      logger.warn('Rate limit exceeded for connector', {
+        connectorId: this.id,
+        connectorType: this.type,
+        error: error.message,
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Record a request (for rate limiting)
+   */
+  protected async recordRequest(): Promise<void> {
+    this.requestCount++;
+
+    if (this.rateLimiter) {
+      try {
+        await this.rateLimiter.recordRequest();
+      } catch (error: any) {
+        logger.error('Error recording request for rate limiting', {
+          connectorId: this.id,
+          error: error.message,
+        });
+      }
+    }
   }
 
   /**

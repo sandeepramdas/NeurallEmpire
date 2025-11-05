@@ -8,6 +8,7 @@ import crypto from 'crypto';
 import { config } from '@/config/env';
 import jwt from 'jsonwebtoken';
 import { logger } from '@/infrastructure/logger';
+import { EmailService } from '@/infrastructure/email/email.service';
 
 interface CreateOrganizationDTO {
   name: string;
@@ -366,9 +367,19 @@ export async function inviteUserToOrganization(data: InviteUserDTO) {
       },
     });
 
-    // TODO: Send invite email
-    logger.info('📧 Send invite email to:', email);
-    logger.info('📧 Invite link:', `${config.FRONTEND_URL}/accept-invite/${inviteToken}`);
+    // Send invite email
+    try {
+      await EmailService.sendOrganizationInvite(
+        email,
+        invite.organization.name,
+        inviteToken,
+        organizationId
+      );
+      logger.info('📧 Invite email sent to:', email);
+    } catch (emailError: any) {
+      logger.error('📧 Failed to send invite email:', emailError);
+      // Don't fail the invite if email fails - the invite is still created
+    }
 
     return {
       success: true,
