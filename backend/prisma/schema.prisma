@@ -2991,6 +2991,7 @@ model AIModelConfig {
   topP            Float?   @default(1.0)
   frequencyPenalty Float?  @default(0.0)
   presencePenalty  Float?  @default(0.0)
+  timeoutSeconds  Int      @default(120) // Request timeout in seconds (default: 2 minutes)
 
   // Cost & Usage
   costPerPromptToken  Decimal? @db.Decimal(10, 6) // Cost in USD
