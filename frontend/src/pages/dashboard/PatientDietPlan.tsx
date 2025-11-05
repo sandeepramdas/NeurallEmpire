@@ -42,6 +42,7 @@ const PatientDietPlan: React.FC = () => {
 
   useEffect(() => {
     fetchDietPlans();
+    fetchDefaultAIModel();
   }, []);
 
   const fetchDietPlans = async () => {
@@ -52,6 +53,20 @@ const PatientDietPlan: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Error fetching diet plans:', err);
+    }
+  };
+
+  const fetchDefaultAIModel = async () => {
+    try {
+      const response = await api.get('/ai-models/configs');
+      if (response.data.success && response.data.configs.length > 0) {
+        // Find default model or use first one
+        const defaultModel = response.data.configs.find((m: any) => m.isDefault) || response.data.configs[0];
+        setFormData(prev => ({ ...prev, aiModelConfigId: defaultModel.id }));
+        console.log('Auto-selected AI model:', defaultModel.displayName);
+      }
+    } catch (err: any) {
+      console.error('Error fetching AI models:', err);
     }
   };
 
@@ -291,15 +306,18 @@ const PatientDietPlan: React.FC = () => {
                   placeholder="Meals per day (1-6)"
                 />
               </div>
-              <div>
-                <ModelSelector
-                  value={formData.aiModelConfigId}
-                  onChange={(id) => setFormData(prev => ({ ...prev, aiModelConfigId: id }))}
-                  label="AI Model"
-                  required
-                  placeholder="Select an AI model"
-                />
-              </div>
+              {/* AI Model selector - hidden if model already selected */}
+              {!formData.aiModelConfigId && (
+                <div>
+                  <ModelSelector
+                    value={formData.aiModelConfigId}
+                    onChange={(id) => setFormData(prev => ({ ...prev, aiModelConfigId: id }))}
+                    label="AI Model"
+                    required={false}
+                    placeholder="Select an AI model (auto-selected)"
+                  />
+                </div>
+              )}
             </div>
 
             <div>
