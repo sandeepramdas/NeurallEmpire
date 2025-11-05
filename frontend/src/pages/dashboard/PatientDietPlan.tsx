@@ -96,10 +96,13 @@ const PatientDietPlan: React.FC = () => {
         aiModelConfigId: formData.aiModelConfigId
       };
 
-      const response = await api.post('/diet-plans/generate', payload);
+      // Create axios instance with extended timeout for AI generation
+      const response = await api.post('/diet-plans/generate', payload, {
+        timeout: 120000, // 2 minutes timeout for AI generation
+      });
 
       if (response.data.success) {
-        setSuccess('Diet plan generated successfully!');
+        setSuccess(`🎉 Diet plan generated successfully! Cost: $${response.data.data.generationTokens?.cost.toFixed(3) || '0.00'}`);
         setShowForm(false);
         fetchDietPlans();
         // Reset form
@@ -120,11 +123,19 @@ const PatientDietPlan: React.FC = () => {
     } catch (err: any) {
       console.error('Diet plan generation error:', err);
       console.error('Error response:', err.response);
-      const errorMessage = err.response?.data?.message ||
-                          err.response?.data?.error ||
-                          err.message ||
-                          'Failed to generate diet plan. Please check the console for details.';
-      setError(errorMessage);
+
+      // Check if it's a timeout error
+      if (err.code === 'ECONNABORTED' || err.message.includes('timeout')) {
+        setError('⏱️ Generation is taking longer than expected. Please check "Generated Plans" below in a moment - your plan may still be processing.');
+        // Refresh the list after a delay
+        setTimeout(() => fetchDietPlans(), 5000);
+      } else {
+        const errorMessage = err.response?.data?.message ||
+                            err.response?.data?.error ||
+                            err.message ||
+                            'Failed to generate diet plan. Please try again.';
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -306,18 +317,16 @@ const PatientDietPlan: React.FC = () => {
                   placeholder="Meals per day (1-6)"
                 />
               </div>
-              {/* AI Model selector - hidden if model already selected */}
-              {!formData.aiModelConfigId && (
-                <div>
-                  <ModelSelector
-                    value={formData.aiModelConfigId}
-                    onChange={(id) => setFormData(prev => ({ ...prev, aiModelConfigId: id }))}
-                    label="AI Model"
-                    required={false}
-                    placeholder="Select an AI model (auto-selected)"
-                  />
-                </div>
-              )}
+              {/* AI Model selector */}
+              <div>
+                <ModelSelector
+                  value={formData.aiModelConfigId}
+                  onChange={(id) => setFormData(prev => ({ ...prev, aiModelConfigId: id }))}
+                  label="AI Model"
+                  required={true}
+                  placeholder="Select an AI model"
+                />
+              </div>
             </div>
 
             <div>
@@ -383,7 +392,10 @@ const PatientDietPlan: React.FC = () => {
                 {loading ? (
                   <>
                     <Loader className="w-5 h-5 animate-spin" />
-                    Generating...
+                    <span className="flex flex-col items-start">
+                      <span className="font-semibold">Generating with AI...</span>
+                      <span className="text-xs text-green-100">This may take 1-2 minutes</span>
+                    </span>
                   </>
                 ) : (
                   <>
