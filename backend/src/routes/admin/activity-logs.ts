@@ -89,12 +89,8 @@ router.get('/', authenticate, async (req, res) => {
             select: {
               id: true,
               email: true,
-              profile: {
-                select: {
-                  firstName: true,
-                  lastName: true,
-                },
-              },
+              firstName: true,
+              lastName: true,
             },
           },
         },
