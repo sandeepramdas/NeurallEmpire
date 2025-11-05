@@ -175,9 +175,24 @@ export class CostTrackingController {
     try {
       const organizationId = (req as any).user.organizationId;
 
-      // TODO: Fetch from database when BudgetAlert model is added to schema
-      // For now, return mock data structure
-      const alerts: BudgetAlert[] = [];
+      const alerts = await prisma.budgetAlert.findMany({
+        where: {
+          organizationId,
+        },
+        include: {
+          creator: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
 
       res.json({
         success: true,
@@ -201,17 +216,31 @@ export class CostTrackingController {
       const organizationId = (req as any).user.organizationId;
       const userId = (req as any).user.id;
 
-      // TODO: Create in database when BudgetAlert model is added to schema
-      // For now, return mock response
+      const alert = await prisma.budgetAlert.create({
+        data: {
+          organizationId,
+          createdBy: userId,
+          alertType: validatedData.alertType,
+          threshold: validatedData.threshold,
+          notifyEmails: validatedData.notifyEmails || [],
+          enabled: validatedData.enabled,
+        },
+        include: {
+          creator: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
+          },
+        },
+      });
+
       res.status(201).json({
         success: true,
         message: 'Budget alert created successfully',
-        alert: {
-          id: 'temp-id',
-          ...validatedData,
-          organizationId,
-          createdBy: userId,
-        },
+        alert,
       });
     } catch (error: any) {
       logger.error('Error creating budget alert:', error);
@@ -240,16 +269,37 @@ export class CostTrackingController {
       const validatedData = updateBudgetAlertSchema.parse(req.body);
       const organizationId = (req as any).user.organizationId;
 
-      // TODO: Update in database when BudgetAlert model is added to schema
-      // For now, return mock response
+      // Verify the alert belongs to the organization
+      const existingAlert = await prisma.budgetAlert.findFirst({
+        where: { id, organizationId },
+      });
+
+      if (!existingAlert) {
+        return res.status(404).json({
+          success: false,
+          error: 'Budget alert not found',
+        });
+      }
+
+      const alert = await prisma.budgetAlert.update({
+        where: { id },
+        data: validatedData,
+        include: {
+          creator: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
+          },
+        },
+      });
+
       res.json({
         success: true,
         message: 'Budget alert updated successfully',
-        alert: {
-          id,
-          ...validatedData,
-          organizationId,
-        },
+        alert,
       });
     } catch (error: any) {
       logger.error('Error updating budget alert:', error);
@@ -277,8 +327,22 @@ export class CostTrackingController {
       const { id } = req.params;
       const organizationId = (req as any).user.organizationId;
 
-      // TODO: Delete from database when BudgetAlert model is added to schema
-      // For now, return mock response
+      // Verify the alert belongs to the organization
+      const existingAlert = await prisma.budgetAlert.findFirst({
+        where: { id, organizationId },
+      });
+
+      if (!existingAlert) {
+        return res.status(404).json({
+          success: false,
+          error: 'Budget alert not found',
+        });
+      }
+
+      await prisma.budgetAlert.delete({
+        where: { id },
+      });
+
       res.json({
         success: true,
         message: 'Budget alert deleted successfully',
