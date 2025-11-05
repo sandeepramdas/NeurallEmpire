@@ -186,6 +186,7 @@ model Organization {
   agentWebhooks    AgentWebhook[] // NEW: Agent webhooks
   agentIntegrations AgentIntegrationConfig[] // NEW: Agent third-party integrations
   budgetAlerts     BudgetAlert[] @relation("OrgBudgetAlerts") // NEW: Cost tracking budget alerts
+  videoAgents      VideoAgent[] // NEW: AI Video Agents
 
   @@index([status])
   @@index([planType])
@@ -513,6 +514,7 @@ model User {
   uploadedFiles  File[]            @relation("UploadedFiles") // NEW: Uploaded files
   analyticsEvents AnalyticsEvent[]  @relation("UserEvents") // NEW: Analytics events
   budgetAlertsCreated BudgetAlert[] @relation("BudgetAlertCreator") // NEW: Created budget alerts
+  videoAgents    VideoAgent[]      // NEW: Created video agents
 
   @@index([organizationId, status])
   @@index([email])
@@ -1135,6 +1137,7 @@ model Agent {
   apiKeys         AgentAPIKey[]
   webhooks        AgentWebhook[]
   integrationConfigs AgentIntegrationConfig[]
+  videoAgent      VideoAgent?  // NEW: Video agent configuration
 
   @@index([organizationId, status])
   @@index([isPublic, category])
@@ -2540,6 +2543,8 @@ enum AgentType {
   INTEGRATION_AGENT
   MONITORING_AGENT
   RESEARCH_AGENT
+  VIDEO_AGENT          // NEW: AI Video Avatar Agent
+  VOICE_AGENT          // NEW: Voice-only Agent
   CUSTOM
 }
 
@@ -3563,4 +3568,153 @@ enum RegimeType {
   RANGING
   VOLATILE
   UNCERTAIN
+}
+
+// ==================== AI VIDEO AGENTS ====================
+
+model VideoAgent {
+  id              String   @id @default(cuid())
+  uuid            String   @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId  String
+  agentId         String   @unique
+  userId          String
+
+  // Video Avatar Configuration
+  avatarType      VideoAvatarType @default(REALISTIC_3D)
+  avatarGender    String?  @default("neutral")
+  avatarStyle     String?  // e.g., "professional", "casual", "friendly"
+  avatarImageUrl  String?  // Custom avatar image
+  avatarVideoUrl  String?  // Pre-recorded avatar video
+
+  // Voice Configuration
+  voiceProvider   VoiceProvider @default(ELEVENLABS)
+  voiceId         String?  // Voice ID from provider
+  voiceName       String?  // Voice name/description
+  voiceGender     String?  @default("neutral")
+  voiceLanguage   String   @default("en-US")
+  voiceSpeed      Float    @default(1.0)
+  voicePitch      Float    @default(1.0)
+  voiceStability  Float    @default(0.5)
+  voiceSimilarity Float    @default(0.75)
+
+  // Speech-to-Text Configuration
+  sttProvider     STTProvider @default(OPENAI_WHISPER)
+  sttLanguage     String   @default("en")
+  sttModel        String   @default("whisper-1")
+
+  // Interaction Settings
+  enableVideo     Boolean  @default(true)
+  enableVoice     Boolean  @default(true)
+  enableText      Boolean  @default(true)
+  enableEmotions  Boolean  @default(true)
+  emotionIntensity Float   @default(0.7)
+
+  // Conversation Settings
+  conversationMode String  @default("interactive") // interactive, presentation, interview
+  responseDelay   Int      @default(500)  // ms delay before response
+  idleAnimation   Boolean  @default(true)
+  backgroundMusic String?  // Optional background music URL
+  backgroundImage String?  // Optional background image
+
+  // Analytics
+  totalConversations Int   @default(0)
+  totalMessages     Int    @default(0)
+  avgSessionDuration Float @default(0)
+  satisfactionScore  Float @default(0)
+
+  // Metadata
+  isActive        Boolean  @default(true)
+  lastUsedAt      DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  agent           Agent        @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  user            User         @relation(fields: [userId], references: [id])
+  sessions        VideoAgentSession[]
+
+  @@index([organizationId])
+  @@index([agentId])
+  @@index([userId])
+  @@index([isActive])
+  @@map("video_agents")
+}
+
+model VideoAgentSession {
+  id              String   @id @default(cuid())
+  videoAgentId    String
+  sessionId       String   @unique
+  userId          String?
+  visitorId       String?  // For anonymous users
+
+  // Session Info
+  startedAt       DateTime @default(now())
+  endedAt         DateTime?
+  duration        Int      @default(0)  // in seconds
+  messageCount    Int      @default(0)
+
+  // Session Data
+  transcript      Json?    // Full conversation transcript
+  sentiment       String?  // overall, positive, negative, neutral
+  topics          String[] @default([])
+  language        String   @default("en")
+
+  // Technical Data
+  videoQuality    String?  // high, medium, low
+  audioQuality    String?  // high, medium, low
+  connectionIssues Int     @default(0)
+
+  // Feedback
+  userRating      Int?     // 1-5 stars
+  userFeedback    String?
+
+  // Metadata
+  ipAddress       String?
+  userAgent       String?
+  location        String?
+  device          String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  videoAgent      VideoAgent @relation(fields: [videoAgentId], references: [id], onDelete: Cascade)
+
+  @@index([videoAgentId])
+  @@index([sessionId])
+  @@index([startedAt])
+  @@map("video_agent_sessions")
+}
+
+// ==================== VIDEO AGENT ENUMS ====================
+
+enum VideoAvatarType {
+  REALISTIC_3D      // Photorealistic 3D avatar
+  CARTOON           // Cartoon/animated style
+  ANIME             // Anime style
+  PROFESSIONAL      // Professional business avatar
+  CUSTOM            // Custom uploaded avatar
+  STATIC_IMAGE      // Static image with lip sync
+  VIDEO_LOOP        // Looping video avatar
+}
+
+enum VoiceProvider {
+  ELEVENLABS        // ElevenLabs (best quality)
+  OPENAI_TTS        // OpenAI Text-to-Speech
+  GOOGLE_TTS        // Google Cloud Text-to-Speech
+  AZURE_TTS         // Microsoft Azure TTS
+  AWS_POLLY         // Amazon Polly
+  PLAY_HT           // Play.ht
+  RESEMBLE_AI       // Resemble.ai
+  MURF_AI           // Murf.ai
+}
+
+enum STTProvider {
+  OPENAI_WHISPER    // OpenAI Whisper
+  GOOGLE_STT        // Google Cloud Speech-to-Text
+  AZURE_STT         // Microsoft Azure Speech
+  AWS_TRANSCRIBE    // Amazon Transcribe
+  ASSEMBLY_AI       // AssemblyAI
+  DEEPGRAM          // Deepgram
 }
