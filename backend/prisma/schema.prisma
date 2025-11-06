@@ -187,6 +187,7 @@ model Organization {
   agentIntegrations AgentIntegrationConfig[] // NEW: Agent third-party integrations
   budgetAlerts     BudgetAlert[] @relation("OrgBudgetAlerts") // NEW: Cost tracking budget alerts
   videoAgents      VideoAgent[] // NEW: AI Video Agents
+  videoGenProviders VideoGenerationProvider[] // NEW: Video generation provider configs
   ttsConfigs       TTSConfig[] @relation("OrgTTSConfigs") // NEW: TTS Configurations
   avatarConfigs    AvatarConfig[] @relation("OrgAvatarConfigs") // NEW: Avatar Configurations
   promptTemplates  PromptTemplate[] // NEW: AI Prompt Templates
@@ -3755,6 +3756,7 @@ model VideoAgent {
   ttsConfig       TTSConfig?   @relation(fields: [ttsConfigId], references: [id])
   avatarConfig    AvatarConfig? @relation(fields: [avatarConfigId], references: [id])
   sessions        VideoAgentSession[]
+  videoGenProviders VideoGenerationProvider[] // Video generation providers for this agent
 
   @@index([organizationId])
   @@index([agentId])
@@ -3811,7 +3813,80 @@ model VideoAgentSession {
   @@map("video_agent_sessions")
 }
 
+// ==================== VIDEO GENERATION PROVIDER CONFIG ====================
+
+model VideoGenerationProvider {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Provider Info
+  name            String   // "D-ID", "HeyGen", "Synthesia", "Wav2Lip"
+  type            VideoGenProviderType
+  displayName     String   // For UI display
+  description     String?
+  logoUrl         String?
+
+  // API Configuration
+  apiKey          String?  // Encrypted
+  apiSecret       String?  // Encrypted
+  apiUrl          String?  // Custom endpoint URL
+  webhookUrl      String?  // For async callbacks
+
+  // Provider-specific settings
+  // Examples: D-ID: { driver_expressions, fluent, pad_audio }, HeyGen: { aspect_ratio, background }, Wav2Lip: { gpu_id, batch_size, quality }
+  config          Json?    // Provider-specific configuration
+
+  // Features
+  supportsLipSync     Boolean @default(true)
+  supportsEyeMovement Boolean @default(false)
+  supportsEmotions    Boolean @default(false)
+  supportsBackground  Boolean @default(false)
+
+  // Limits & Pricing
+  monthlyMinutes      Int?     // Monthly video minutes quota
+  costPerMinute       Float?   // Cost in USD per minute
+  maxVideoLength      Int?     // Max video length in seconds
+  maxResolution       String?  // "1080p", "720p", etc.
+
+  // Performance
+  avgProcessingTime   Int?     // Average processing time in seconds
+  priority            Int      @default(0) // Higher = preferred
+
+  // Status
+  isActive            Boolean  @default(true)
+  isDefault           Boolean  @default(false)
+  lastUsedAt          DateTime?
+  lastHealthCheck     DateTime?
+  healthStatus        String?  @default("unknown") // healthy, degraded, down
+
+  // Metadata
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relations
+  organization        Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  videoAgent          VideoAgent?  @relation(fields: [videoAgentId], references: [id])
+  videoAgentId        String?
+
+  @@index([organizationId])
+  @@index([type])
+  @@index([isActive])
+  @@index([isDefault])
+  @@map("video_generation_providers")
+}
+
 // ==================== VIDEO AGENT ENUMS ====================
+
+enum VideoGenProviderType {
+  D_ID              // D-ID Creative Reality Studio
+  HEYGEN            // HeyGen
+  SYNTHESIA         // Synthesia
+  WAV2LIP           // Wav2Lip (self-hosted)
+  SADTALKER         // SadTalker (self-hosted)
+  LIVEPORTRAIT      // LivePortrait (self-hosted)
+  MURF_AI           // Murf.ai
+  CUSTOM            // Custom integration
+}
 
 enum VideoAvatarType {
   REALISTIC_3D      // Photorealistic 3D avatar

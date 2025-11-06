@@ -26,6 +26,8 @@ const CreateVideoAgent: React.FC = () => {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [step, setStep] = useState(1);
   const [testingVoice, setTestingVoice] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     agentId: '',
@@ -117,6 +119,55 @@ const CreateVideoAgent: React.FC = () => {
       setTestingVoice(false);
       toast.success('Voice test completed!');
     }, 2000);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size should be less than 5MB');
+      return;
+    }
+
+    setUploadingImage(true);
+
+    try {
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+
+      // Upload to server
+      const formDataUpload = new FormData();
+      formDataUpload.append('file', file);
+      formDataUpload.append('type', 'avatar');
+
+      const response = await api.post('/files/upload', formDataUpload, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      const imageUrl = response.data.url || response.data.data?.url;
+      setFormData({ ...formData, avatarImageUrl: imageUrl });
+      toast.success('Image uploaded successfully!');
+    } catch (error: any) {
+      console.error('Error uploading image:', error);
+      toast.error(error.response?.data?.error || 'Failed to upload image');
+      setImagePreview(null);
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const avatarTypes = [
@@ -313,6 +364,78 @@ const CreateVideoAgent: React.FC = () => {
                     ))}
                   </div>
                 </div>
+
+                {/* Custom Avatar Image Upload */}
+                {formData.avatarType === 'CUSTOM' && (
+                  <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                      Upload Avatar Image
+                    </label>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                      Upload a photo or image that will be used as your video avatar. The AI will animate this image to speak with lip-sync.
+                    </p>
+
+                    <div className="flex items-center gap-4">
+                      {imagePreview ? (
+                        <div className="relative">
+                          <img
+                            src={imagePreview}
+                            alt="Avatar preview"
+                            className="w-32 h-32 object-cover rounded-lg border-2 border-indigo-600"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setImagePreview(null);
+                              setFormData({ ...formData, avatarImageUrl: '' });
+                            }}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      ) : (
+                        <label className="flex flex-col items-center justify-center w-32 h-32 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg cursor-pointer hover:border-indigo-500 transition-colors">
+                          <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                          </svg>
+                          <span className="mt-2 text-xs text-gray-500">Upload Image</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            className="hidden"
+                            disabled={uploadingImage}
+                          />
+                        </label>
+                      )}
+
+                      <div className="flex-1">
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                          <p className="font-medium mb-1">Recommended:</p>
+                          <ul className="list-disc list-inside space-y-1 text-xs">
+                            <li>Clear, front-facing photo</li>
+                            <li>Good lighting</li>
+                            <li>Neutral expression</li>
+                            <li>Max size: 5MB</li>
+                            <li>Format: JPG, PNG, WEBP</li>
+                          </ul>
+                        </div>
+                        {uploadingImage && (
+                          <p className="mt-2 text-sm text-indigo-600 flex items-center gap-2">
+                            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                            Uploading...
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Gender */}
                 <div>
