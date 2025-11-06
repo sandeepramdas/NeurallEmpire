@@ -411,10 +411,17 @@ export const login = async (
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
       email: req.body?.email,
+      errorName: error instanceof Error ? error.name : typeof error,
+      fullError: JSON.stringify(error, null, 2),
     });
+
+    // Return more detailed error in development/for debugging
+    const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
+
     return res.status(500).json({
       success: false,
       error: 'Internal Server Error',
+      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
     });
   }
 };

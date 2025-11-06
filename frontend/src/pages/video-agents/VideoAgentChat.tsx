@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import { api } from '@/services/api';
 import toast from 'react-hot-toast';
 import {
   MicrophoneIcon,
@@ -15,8 +15,6 @@ interface Message {
   content: string;
   timestamp: Date;
 }
-
-const API_URL = import.meta.env.VITE_API_URL || 'https://neurallempire-production.up.railway.app';
 
 const VideoAgentChat: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -39,11 +37,7 @@ const VideoAgentChat: React.FC = () => {
 
   const fetchVideoAgent = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/video-agents/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      const response = await api.get(`/video-agents/${id}`);
       setVideoAgent(response.data.videoAgent);
 
       // Add welcome message

@@ -55,6 +55,11 @@ import SalesInvoice from '@/pages/dashboard/SalesInvoice';
 // Import Healthcare pages
 import PatientDietPlan from '@/pages/dashboard/PatientDietPlan';
 
+// Import Video Agents pages
+import VideoAgentsList from '@/pages/video-agents/VideoAgentsList';
+import CreateVideoAgent from '@/pages/video-agents/CreateVideoAgent';
+import VideoAgentChat from '@/pages/video-agents/VideoAgentChat';
+
 // Import Settings pages
 import AIModelsSettings from '@/pages/settings/AIModelsSettings';
 import ProvidersSettings from '@/pages/settings/ProvidersSettings';
@@ -298,6 +303,10 @@ const App: React.FC = () => {
           <Route path="sales-invoice" element={<SalesInvoice />} />
           {/* Healthcare Routes */}
           <Route path="patient-diet-plan" element={<PatientDietPlan />} />
+          {/* Video Agents Routes */}
+          <Route path="video-agents" element={<VideoAgentsList />} />
+          <Route path="video-agents/create" element={<CreateVideoAgent />} />
+          <Route path="video-agents/:id/chat" element={<VideoAgentChat />} />
           {/* V2 Feature Routes */}
           <Route path="entities" element={<EntityDefinitions />} />
           <Route path="hierarchy" element={<OrganizationHierarchy />} />

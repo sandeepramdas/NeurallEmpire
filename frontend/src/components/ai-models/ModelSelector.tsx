@@ -59,7 +59,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
     try {
       setLoading(true);
 
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('authToken');
 
       // If no token, user needs to log in
       if (!token) {
@@ -141,7 +141,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
 
   // Show configuration link if no models exist
   if (models.length === 0) {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken');
     const isTokenExpired = !token;
 
     return (

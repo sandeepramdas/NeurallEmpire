@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { api } from '@/services/api';
 import toast from 'react-hot-toast';
 import {
   VideoCameraIcon,
@@ -19,8 +19,6 @@ interface Agent {
   type: string;
   status: string;
 }
-
-const API_URL = import.meta.env.VITE_API_URL || 'https://neurallempire-production.up.railway.app';
 
 const CreateVideoAgent: React.FC = () => {
   const navigate = useNavigate();
@@ -79,12 +77,8 @@ const CreateVideoAgent: React.FC = () => {
 
   const fetchAgents = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/agents`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      setAgents(response.data.agents || []);
+      const response = await api.get('/agents');
+      setAgents(response.data.data || []);
     } catch (error) {
       console.error('Error fetching agents:', error);
       toast.error('Failed to load agents');
@@ -102,17 +96,9 @@ const CreateVideoAgent: React.FC = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
-      await axios.post(
-        `${API_URL}/api/video-agents`,
-        formData,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
+      await api.post('/video-agents', formData);
       toast.success('Video agent created successfully! 🎉');
-      navigate('/video-agents');
+      navigate('..');
     } catch (error: any) {
       console.error('Error creating video agent:', error);
       const message = error.response?.data?.error || 'Failed to create video agent';

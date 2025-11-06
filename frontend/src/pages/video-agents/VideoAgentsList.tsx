@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { api } from '@/services/api';
 import toast from 'react-hot-toast';
 import {
   VideoCameraIcon,
@@ -32,8 +32,6 @@ interface VideoAgent {
   };
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://neurallempire-production.up.railway.app';
-
 const VideoAgentsList: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -46,11 +44,7 @@ const VideoAgentsList: React.FC = () => {
 
   const fetchVideoAgents = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/video-agents`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      const response = await api.get('/video-agents');
       setVideoAgents(response.data.videoAgents || []);
     } catch (error) {
       console.error('Error fetching video agents:', error);
@@ -68,11 +62,7 @@ const VideoAgentsList: React.FC = () => {
     setDeleting(id);
 
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}/api/video-agents/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      await api.delete(`/video-agents/${id}`);
       toast.success('Video agent deleted successfully');
       setVideoAgents(videoAgents.filter((va) => va.id !== id));
     } catch (error) {
@@ -120,7 +110,7 @@ const VideoAgentsList: React.FC = () => {
             </p>
           </div>
           <button
-            onClick={() => navigate('/video-agents/create')}
+            onClick={() => navigate('create')}
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
           >
             <PlusIcon className="h-5 w-5 mr-2" />
@@ -212,7 +202,7 @@ const VideoAgentsList: React.FC = () => {
               Create your first AI video agent to get started with intelligent video interactions
             </p>
             <button
-              onClick={() => navigate('/video-agents/create')}
+              onClick={() => navigate('create')}
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
             >
               <PlusIcon className="h-5 w-5 mr-2" />
@@ -283,21 +273,21 @@ const VideoAgentsList: React.FC = () => {
 
                   <div className="pt-4 border-t border-gray-200 dark:border-gray-700 flex gap-2">
                     <button
-                      onClick={() => navigate(`/video-agents/${videoAgent.id}/chat`)}
+                      onClick={() => navigate(`${videoAgent.id}/chat`)}
                       className="flex-1 inline-flex justify-center items-center px-3 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
                     >
                       <PlayIcon className="h-4 w-4 mr-1" />
                       Launch
                     </button>
                     <button
-                      onClick={() => navigate(`/video-agents/${videoAgent.id}/analytics`)}
+                      onClick={() => navigate(`${videoAgent.id}/analytics`)}
                       className="flex-1 inline-flex justify-center items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
                     >
                       <ChartBarIcon className="h-4 w-4 mr-1" />
                       Analytics
                     </button>
                     <button
-                      onClick={() => navigate(`/video-agents/${videoAgent.id}/edit`)}
+                      onClick={() => navigate(`${videoAgent.id}/edit`)}
                       className="inline-flex justify-center items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
                     >
                       <Cog6ToothIcon className="h-4 w-4" />

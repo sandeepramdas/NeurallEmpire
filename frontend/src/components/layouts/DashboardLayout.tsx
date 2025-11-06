@@ -39,7 +39,8 @@ import {
   DollarSign,
   Apple,
   Heart,
-  Sparkles
+  Sparkles,
+  Video
 } from 'lucide-react';
 
 interface NavItem {
@@ -116,6 +117,11 @@ const DashboardLayout: React.FC = () => {
       children: [
         { path: 'patient-diet-plan', label: 'Patient Diet Plan', icon: Apple },
       ],
+    },
+    {
+      path: 'video-agents',
+      label: 'Video AI Agents',
+      icon: Video,
     },
     {
       path: 'insights',
