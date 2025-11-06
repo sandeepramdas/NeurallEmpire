@@ -63,6 +63,7 @@ import VideoAgentChat from '@/pages/video-agents/VideoAgentChat';
 // Import Settings pages
 import AIModelsSettings from '@/pages/settings/AIModelsSettings';
 import ProvidersSettings from '@/pages/settings/ProvidersSettings';
+import VideoGenerationProviders from '@/pages/settings/VideoGenerationProviders';
 
 // Import Admin pages
 import ActivityLogs from '@/pages/admin/ActivityLogs';
@@ -322,6 +323,7 @@ const App: React.FC = () => {
           <Route path="settings/domains" element={<DomainSettings />} />
           <Route path="settings/ai-models" element={<AIModelsSettings />} />
           <Route path="settings/providers" element={<ProvidersSettings />} />
+          <Route path="settings/video-providers" element={<VideoGenerationProviders />} />
           <Route path="settings/data" element={<Settings />} />
           <Route path="settings/emails" element={<Settings />} />
           <Route path="profile" element={<UserProfile />} />

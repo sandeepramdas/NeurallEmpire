@@ -54,6 +54,10 @@ import dashboardRoutes from './dashboard.routes';
 import ttsConfigRoutes from './tts-config.routes';
 import avatarConfigRoutes from './avatar-config.routes';
 
+// Import Video Generation Provider routes
+import videoGenerationProvidersRoutes from './video-generation-providers.routes';
+import videoGenerationRoutes from './video-generation.routes';
+
 const router = Router();
 
 // Health check
@@ -137,6 +141,12 @@ router.use('/dashboard', dashboardRoutes);
 // TTS & Avatar configuration routes (require authentication)
 router.use('/tts-configs', ttsConfigRoutes);
 router.use('/avatar-configs', avatarConfigRoutes);
+
+// Video Generation Provider routes (require authentication)
+router.use('/video-generation-providers', videoGenerationProvidersRoutes);
+
+// Video Generation routes (require authentication)
+router.use('/video-generation', videoGenerationRoutes);
 
 // API documentation
 router.get('/', (req, res) => {
